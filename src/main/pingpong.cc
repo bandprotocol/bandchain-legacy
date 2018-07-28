@@ -8,7 +8,10 @@ using boost::asio::ip::tcp;
 class session
 {
 public:
-  session(boost::asio::io_service& io_service) : socket_(io_service) {}
+  session(boost::asio::io_service& io_service)
+      : socket_(io_service)
+  {
+  }
 
   tcp::socket& socket() { return socket_; }
 
@@ -50,8 +53,8 @@ class server
 {
 public:
   server(boost::asio::io_service& io_service, short port)
-      : io_service_(io_service),
-        acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
+      : io_service_(io_service)
+      , acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
   {
     session* new_session = new session(io_service_);
     acceptor_.async_accept(new_session->socket(),

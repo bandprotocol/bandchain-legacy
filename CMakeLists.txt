@@ -12,7 +12,11 @@ include_directories(abci src)
 find_package(Boost 1.67.0 COMPONENTS system REQUIRED)
 find_package(Protobuf 3.5.0 REQUIRED)
 
-add_library(types STATIC abci/types.pb.cc)
+add_library(types STATIC
+            abci/types.pb.h abci/types.pb.cc)
+
+add_library(server STATIC
+            src/net/server.h src/net/server.cc)
 
 add_executable(hello src/main/hello.cc)
 

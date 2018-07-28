@@ -3,3 +3,8 @@ Language: Cpp
 BasedOnStyle: LLVM
 BreakBeforeBraces: Linux
 PointerAlignment: Left
+BreakConstructorInitializers: BeforeComma
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
