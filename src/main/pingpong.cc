@@ -82,9 +82,6 @@ private:
 
 int main(int argc, char* argv[])
 {
-  int32_t x = 10;
-  int y = 20;
-  std::cout << x << std::endl;
   try {
     if (argc != 2) {
       std::cerr << "Usage: async_tcp_echo_server <port>\n";
