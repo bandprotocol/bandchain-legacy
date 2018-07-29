@@ -16,9 +16,16 @@ add_library(types STATIC
             abci/types.pb.h abci/types.pb.cc)
 
 add_library(server STATIC
-            src/net/server.h src/net/server.cc)
+            src/net/server.h src/net/server.cc
+            src/net/session.h src/net/session.cc)
 
-add_executable(hello src/main/hello.cc)
+add_library(common STATIC
+            src/util/buffer.h src/util/buffer.cc)
+
+add_executable(welcome src/main/welcome.cc)
 
 add_executable(pingpong src/main/pingpong.cc)
-target_link_libraries(pingpong ${Boost_LIBRARIES})
+target_link_libraries(pingpong
+                      ${Boost_LIBRARIES}
+                      common
+                      server)

@@ -1,105 +1,23 @@
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <cstdlib>
-#include <iostream>
+#include "net/server.h"
 
-using boost::asio::ip::tcp;
-
-class session
+class PingPongApplication : public Application
 {
-public:
-  session(boost::asio::io_service& io_service)
-      : socket_(io_service)
-  {
-  }
-
-  tcp::socket& socket() { return socket_; }
-
-  void start()
-  {
-    socket_.async_read_some(boost::asio::buffer(data_, max_length),
-                            boost::bind(&session::handle_read, this, _1, _2));
-  }
-
-  void handle_read(const boost::system::error_code& error,
-                   size_t bytes_transferred)
-  {
-    if (!error) {
-      boost::asio::async_write(socket_,
-                               boost::asio::buffer(data_, bytes_transferred),
-                               boost::bind(&session::handle_write, this, _1));
-    } else {
-      delete this;
-    }
-  }
-
-  void handle_write(const boost::system::error_code& error)
-  {
-    if (!error) {
-      socket_.async_read_some(boost::asio::buffer(data_, max_length),
-                              boost::bind(&session::handle_read, this, _1, _2));
-    } else {
-      delete this;
-    }
-  }
-
 private:
-  tcp::socket socket_;
-  enum { max_length = 1024 };
-  char data_[max_length];
+  void process(Buffer& read_buffer, Buffer& write_buffer) final
+  {
+    write_buffer.append(read_buffer);
+    read_buffer.clear();
+  }
 };
 
-class server
+int main()
 {
-public:
-  server(boost::asio::io_service& io_service, short port)
-      : io_service_(io_service)
-      , acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
-  {
-    session* new_session = new session(io_service_);
-    acceptor_.async_accept(new_session->socket(),
-                           boost::bind(&server::handle_accept, this,
-                                       new_session,
-                                       boost::asio::placeholders::error));
-  }
+  PingPongApplication     app;
+  boost::asio::io_service service;
 
-  void handle_accept(session* new_session,
-                     const boost::system::error_code& error)
-  {
-    if (!error) {
-      new_session->start();
-      new_session = new session(io_service_);
-      acceptor_.async_accept(new_session->socket(),
-                             boost::bind(&server::handle_accept, this,
-                                         new_session,
-                                         boost::asio::placeholders::error));
-    } else {
-      delete new_session;
-    }
-  }
+  Server server(service, app, 9990);
+  server.start();
 
-private:
-  boost::asio::io_service& io_service_;
-  tcp::acceptor acceptor_;
-};
-
-int main(int argc, char* argv[])
-{
-  try {
-    if (argc != 2) {
-      std::cerr << "Usage: async_tcp_echo_server <port>\n";
-      return 1;
-    }
-
-    boost::asio::io_service io_service;
-
-    using namespace std;
-    server s(io_service, atoi(argv[1]));
-
-    io_service.run();
-  } catch (std::exception& e) {
-    std::cerr << "Exception: " << e.what() << "\n";
-  }
-
+  service.run();
   return 0;
 }

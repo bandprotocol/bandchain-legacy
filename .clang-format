@@ -4,7 +4,17 @@ BasedOnStyle: LLVM
 BreakBeforeBraces: Linux
 PointerAlignment: Left
 BreakConstructorInitializers: BeforeComma
+AlignConsecutiveDeclarations: true
 AllowShortBlocksOnASingleLine: false
-AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
+ColumnLimit: 80
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:           '^"[a-z]+\.h"$'
+    Priority:        1
+  - Regex:           '^<'
+    Priority:        2
+  - Regex:           '.*'
+    Priority:        3
