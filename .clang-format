@@ -10,6 +10,7 @@ AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 ColumnLimit: 80
+IndentCaseLabels: true
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex:           '^"[a-z]+\.h"$'

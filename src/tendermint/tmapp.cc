@@ -7,7 +7,13 @@ bool TendermintApplication::read_integer(Buffer& read_buffer, int& value)
     int byte = std::to_integer<int>(read_buffer[i]);
     value |= (byte & 0x7F) << (7 * i);
     if (!(byte & 0x80)) {
-      return read_buffer.size() >= 1 + i + value;
+      value >>= 1;
+      if (read_buffer.size() > i + value) {
+        read_buffer.consume(1 + i);
+        return true;
+      } else {
+        return false;
+      }
     }
   }
   return false;

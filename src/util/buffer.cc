@@ -9,12 +9,12 @@ std::byte* Buffer::begin()
   return &(*buf.begin());
 }
 
-bool Buffer::empty()
+bool Buffer::empty() const
 {
   return buf.empty();
 }
 
-size_t Buffer::size()
+size_t Buffer::size() const
 {
   return buf.size();
 }

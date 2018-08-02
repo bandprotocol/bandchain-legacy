@@ -2,7 +2,7 @@
 // modification to remove Go dependency.
 
 syntax = "proto3";
-package types;
+package abci;
 
 
 //----------------------------------------
