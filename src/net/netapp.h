@@ -2,11 +2,11 @@
 
 #include "util/buffer.h"
 
-class Application
+class NetApplication
 {
 public:
   //! TODO: comment
-  virtual ~Application(){};
+  virtual ~NetApplication(){};
 
   //! TODO: comment
   virtual void process(Buffer& read_buffer, Buffer& write_buffer) = 0;

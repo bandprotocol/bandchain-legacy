@@ -2,12 +2,12 @@
 
 #include <boost/asio.hpp>
 
-#include "net/app.h"
+#include "net/netapp.h"
 
 class Server
 {
 public:
-  Server(boost::asio::io_service& service, Application& app, uint16_t port);
+  Server(boost::asio::io_service& service, NetApplication& app, uint16_t port);
 
   //! Run the server and block forever
   void start();
@@ -18,7 +18,7 @@ private:
   void accept_connection();
 
 private:
-  Application& app;
+  NetApplication& app;
 
   boost::asio::io_service&       service;
   boost::asio::ip::tcp::acceptor acceptor;

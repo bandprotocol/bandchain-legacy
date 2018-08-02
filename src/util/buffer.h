@@ -9,15 +9,22 @@ public:
 
   std::byte* begin();
 
+  std::byte& operator[](size_t idx)
+  {
+    return buf[idx];
+  }
+
   bool empty();
 
-  std::size_t size();
+  size_t size();
 
   void clear();
 
-  void consume(std::size_t length);
+  void consume(size_t length);
 
-  void append(const std::byte* data, std::size_t length);
+  void append(std::byte data);
+
+  void append(const std::byte* data, size_t length);
 
   void append(const Buffer& data);
 

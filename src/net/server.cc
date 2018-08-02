@@ -4,7 +4,7 @@
 
 using boost::asio::ip::tcp;
 
-Server::Server(boost::asio::io_service& _service, Application& _app,
+Server::Server(boost::asio::io_service& _service, NetApplication& _app,
                uint16_t port)
     : app(_app)
     , service(_service)

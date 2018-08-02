@@ -1,6 +1,6 @@
 #include "net/server.h"
 
-class PingPongApplication : public Application
+class PingPongApplication : public NetApplication
 {
 private:
   void process(Buffer& read_buffer, Buffer& write_buffer) final
@@ -15,7 +15,7 @@ int main()
   PingPongApplication     app;
   boost::asio::io_service service;
 
-  Server server(service, app, 9990);
+  Server server(service, app, 46658);
   server.start();
 
   service.run();

@@ -14,7 +14,7 @@ bool Buffer::empty()
   return buf.empty();
 }
 
-std::size_t Buffer::size()
+size_t Buffer::size()
 {
   return buf.size();
 }
@@ -24,12 +24,17 @@ void Buffer::clear()
   buf.clear();
 }
 
-void Buffer::consume(std::size_t length)
+void Buffer::consume(size_t length)
 {
   buf.erase(buf.begin(), buf.begin() + length);
 }
 
-void Buffer::append(const std::byte* data, std::size_t length)
+void Buffer::append(std::byte data)
+{
+  buf.push_back(data);
+}
+
+void Buffer::append(const std::byte* data, size_t length)
 {
   buf.insert(buf.end(), data, data + length);
 }
