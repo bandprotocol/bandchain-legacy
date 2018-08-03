@@ -22,7 +22,7 @@ void Server::accept_connection()
       std::make_shared<Session>(std::move(socket), app)->serve();
       accept_connection();
     } else {
-      // TODO: log_error
+      throw std::runtime_error("Failed to accept socket connection");
     }
   });
 }

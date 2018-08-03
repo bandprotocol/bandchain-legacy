@@ -31,7 +31,7 @@ void Session::async_read()
         if (!ec) {
           self->process_read(length);
         } else {
-          // TODO: log_err
+          throw std::runtime_error("Failed to read from socket");
         }
       });
 }
@@ -48,7 +48,7 @@ void Session::async_write()
         if (!ec) {
           self->process_write(length);
         } else {
-          // TODO: log_err
+          throw std::runtime_error("Failed to write to socket");
         }
       });
 }

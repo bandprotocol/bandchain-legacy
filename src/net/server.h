@@ -9,7 +9,7 @@ class Server
 public:
   Server(boost::asio::io_service& service, NetApplication& app, uint16_t port);
 
-  //! Run the server and block forever
+  //! Run the server and block forever.
   void start();
 
 private:
