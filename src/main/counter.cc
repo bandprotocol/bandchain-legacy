@@ -3,7 +3,7 @@
 
 int main()
 {
-  TendermintApplication   app;
+  TendermintApplication app;
   boost::asio::io_service service;
 
   Server server(service, app, 46658);

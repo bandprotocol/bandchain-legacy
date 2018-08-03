@@ -20,7 +20,7 @@ private:
 private:
   NetApplication& app;
 
-  boost::asio::io_service&       service;
+  boost::asio::io_service& service;
   boost::asio::ip::tcp::acceptor acceptor;
-  boost::asio::ip::tcp::socket   socket;
+  boost::asio::ip::tcp::socket socket;
 };

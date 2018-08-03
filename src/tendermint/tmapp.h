@@ -11,23 +11,24 @@ public:
 private:
   void process(Buffer& read_buffer, Buffer& write_buffer) final
   {
-    (void)read_buffer;
-    (void)write_buffer;
-
     int size = 0;
     if (!read_integer(read_buffer, size))
       return;
 
     abci::Request request;
-    request.ParseFromArray(read_buffer.begin(), size);
+    abci::Response response;
 
+    request.ParseFromArray(read_buffer.begin(), size);
     if (!request.IsInitialized()) {
       // TODO: log_err
     }
 
     std::cout << request.DebugString().c_str() << std::endl;
+    (void)write_buffer;
+
     switch (request.value_case()) {
       case abci::Request::ValueCase::kEcho:;
+        *response.mutable_echo() = process_echo(request.echo());
       case abci::Request::ValueCase::kFlush:
       case abci::Request::ValueCase::kInfo:
       case abci::Request::ValueCase::kSetOption:
@@ -61,6 +62,13 @@ private:
   bool read_integer(Buffer& read_buffer, int& value);
 
   void write_integer(Buffer& write_buffer, int value);
+
+  abci::ResponseEcho process_echo(const abci::RequestEcho& request)
+  {
+    abci::ResponseEcho response;
+    response.set_message(request.message());
+    return response;
+  }
 
 private:
 };

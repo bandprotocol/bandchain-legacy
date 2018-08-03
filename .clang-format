@@ -4,7 +4,6 @@ BasedOnStyle: LLVM
 BreakBeforeBraces: Linux
 PointerAlignment: Left
 BreakConstructorInitializers: BeforeComma
-AlignConsecutiveDeclarations: true
 AllowShortBlocksOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false

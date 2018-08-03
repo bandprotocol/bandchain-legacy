@@ -12,7 +12,7 @@ private:
 
 int main()
 {
-  PingPongApplication     app;
+  PingPongApplication app;
   boost::asio::io_service service;
 
   Server server(service, app, 46658);

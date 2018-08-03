@@ -20,7 +20,7 @@ private:
   void async_write();
 
 private:
-  NetApplication&              app;
+  NetApplication& app;
   boost::asio::ip::tcp::socket socket;
 
   Buffer read_buffer;
