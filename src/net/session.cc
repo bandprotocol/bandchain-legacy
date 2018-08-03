@@ -1,22 +1,18 @@
 #include "session.h"
 
-#include <iostream>
-
 Session::Session(boost::asio::ip::tcp::socket _socket, NetApplication& _app)
     : app(_app)
     , socket(std::move(_socket))
 {
 }
 
-void Session::serve()
-{
-  async_read();
-}
+void Session::serve() { async_read(); }
 
 void Session::process_read(size_t length)
 {
   read_buffer.append(socket_buffer, length);
-  app.process(read_buffer, write_buffer);
+  while (app.process(read_buffer, write_buffer))
+    ;
   async_write();
 }
 
@@ -28,8 +24,9 @@ void Session::process_write(size_t length)
 
 void Session::async_read()
 {
-  socket.async_read_some(
-      boost::asio::buffer(socket_buffer, sizeof(socket_buffer)),
+  boost::asio::async_read(
+      socket, boost::asio::buffer(socket_buffer, sizeof(socket_buffer)),
+      boost::asio::transfer_at_least(1),
       [self = shared_from_this()](const auto ec, size_t length) {
         if (!ec) {
           self->process_read(length);

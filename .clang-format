@@ -5,7 +5,7 @@ BreakBeforeBraces: Linux
 PointerAlignment: Left
 BreakConstructorInitializers: BeforeComma
 AllowShortBlocksOnASingleLine: false
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 ColumnLimit: 80

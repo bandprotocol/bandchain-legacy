@@ -21,6 +21,7 @@ bool TendermintApplication::read_integer(Buffer& read_buffer, int& value)
 
 void TendermintApplication::write_integer(Buffer& write_buffer, int value)
 {
+  value <<= 1;
   while (true) {
     std::byte towrite = static_cast<std::byte>(value & 0x7F);
     value >>= 7;

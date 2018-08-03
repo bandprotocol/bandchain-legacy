@@ -9,15 +9,16 @@ public:
 
   std::byte* begin();
 
-  const std::byte& operator[](size_t idx) const
+  std::byte* reserve(size_t reserve_size)
   {
-    return buf[idx];
+    size_t current_size = size();
+    buf.resize(current_size + reserve_size);
+    return &buf[current_size];
   }
 
-  std::byte& operator[](size_t idx)
-  {
-    return buf[idx];
-  }
+  const std::byte& operator[](size_t idx) const { return buf[idx]; }
+
+  std::byte& operator[](size_t idx) { return buf[idx]; }
 
   bool empty() const;
 

@@ -26,5 +26,5 @@ private:
   Buffer read_buffer;
   Buffer write_buffer;
 
-  std::byte socket_buffer[5];
+  std::byte socket_buffer[1024];
 };

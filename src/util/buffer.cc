@@ -1,38 +1,21 @@
 #include "buffer.h"
 
-Buffer::Buffer()
-{
-}
+Buffer::Buffer() {}
 
-std::byte* Buffer::begin()
-{
-  return &(*buf.begin());
-}
+std::byte* Buffer::begin() { return &(*buf.begin()); }
 
-bool Buffer::empty() const
-{
-  return buf.empty();
-}
+bool Buffer::empty() const { return buf.empty(); }
 
-size_t Buffer::size() const
-{
-  return buf.size();
-}
+size_t Buffer::size() const { return buf.size(); }
 
-void Buffer::clear()
-{
-  buf.clear();
-}
+void Buffer::clear() { buf.clear(); }
 
 void Buffer::consume(size_t length)
 {
   buf.erase(buf.begin(), buf.begin() + length);
 }
 
-void Buffer::append(std::byte data)
-{
-  buf.push_back(data);
-}
+void Buffer::append(std::byte data) { buf.push_back(data); }
 
 void Buffer::append(const std::byte* data, size_t length)
 {
