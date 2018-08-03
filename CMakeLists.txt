@@ -10,6 +10,7 @@ add_compile_options(-Wall -Werror -Wextra)
 include_directories(. src)
 
 find_package(Boost 1.67.0 COMPONENTS system REQUIRED)
+find_package(OpenSSL 1.0.2 REQUIRED)
 find_package(Protobuf 3.5.0 REQUIRED)
 
 add_library(abci STATIC
