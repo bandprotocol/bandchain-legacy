@@ -48,7 +48,6 @@ bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
       break;
     default:
       throw std::runtime_error("Unexpected request type");
-      break;
   }
 
   std::cout << req.DebugString().c_str() << std::endl;

@@ -1,5 +1,5 @@
 #include "net/server.h"
-#include "tendermint/tmapp.h"
+#include "net/tmapp.h"
 
 class CounterApplication : public TendermintApplication
 {

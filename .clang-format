@@ -8,6 +8,7 @@ AllowShortBlocksOnASingleLine: false
 AllowShortFunctionsOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
+AlwaysBreakTemplateDeclarations: true
 ColumnLimit: 80
 IndentCaseLabels: true
 IncludeBlocks: Regroup
