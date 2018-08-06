@@ -7,42 +7,32 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_compile_options(-Wall -Werror -Wextra)
+add_definitions(-include src/util/autoinclude.h)
 
 find_package(Boost 1.67.0 COMPONENTS system REQUIRED)
 find_package(Protobuf 3.5.0 REQUIRED)
-find_package(Sodium REQUIRED)
+find_package(Sodium 1.0.16 REQUIRED)
 
 include_directories(. src)
 
-add_library(abci STATIC
-            abci/abci.pb.h abci/abci.pb.cc)
+file(GLOB source_files "src/**/*.h" "src/**/*.cc")
 
-add_library(net STATIC
-            src/net/netapp.h
-            src/net/server.h src/net/server.cc
-            src/net/session.h src/net/session.cc
-            src/net/tmapp.h src/net/tmapp.cc)
+add_library(bandprotocol STATIC
+            abci/abci.pb.h
+            abci/abci.pb.cc
+            ${source_files})
 
-add_library(util STATIC
-            src/util/enum.h
-            src/util/buffer.h src/util/buffer.cc
-            src/util/log.h src/util/log.cc)
-
-add_executable(counter src/main/counter.cc)
-add_executable(cryptotest src/main/cryptotest.cc)
-add_executable(welcome src/main/welcome.cc)
-add_executable(pingpong src/main/pingpong.cc)
-
-
-target_link_libraries(cryptotest
-                      ${sodium_LIBRARY_RELEASE})
-target_link_libraries(pingpong
-                      ${Boost_LIBRARIES}
-                      net
-                      util)
-target_link_libraries(counter
+target_link_libraries(bandprotocol
                       ${Boost_LIBRARIES}
                       ${Protobuf_LIBRARIES}
-                      abci
-                      net
-                      util)
+                      ${sodium_LIBRARY_RELEASE})
+
+add_executable(counter src/main/counter.cxx)
+add_executable(cryptotest src/main/cryptotest.cxx)
+add_executable(welcome src/main/welcome.cxx)
+add_executable(pingpong src/main/pingpong.cxx)
+
+target_link_libraries(cryptotest bandprotocol)
+target_link_libraries(pingpong bandprotocol)
+target_link_libraries(counter bandprotocol)
+target_link_libraries(welcome bandprotocol)
