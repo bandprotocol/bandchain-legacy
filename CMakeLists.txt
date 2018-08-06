@@ -27,12 +27,10 @@ target_link_libraries(bandprotocol
                       ${Protobuf_LIBRARIES}
                       ${sodium_LIBRARY_RELEASE})
 
-add_executable(counter src/main/counter.cxx)
-add_executable(cryptotest src/main/cryptotest.cxx)
-add_executable(welcome src/main/welcome.cxx)
-add_executable(pingpong src/main/pingpong.cxx)
-
-target_link_libraries(cryptotest bandprotocol)
-target_link_libraries(pingpong bandprotocol)
-target_link_libraries(counter bandprotocol)
-target_link_libraries(welcome bandprotocol)
+file(GLOB main_files "src/main/*.cxx")
+foreach(main_file ${main_files})
+  get_filename_component(executable "${main_file}" NAME)
+  string(REGEX REPLACE "\\.[^.]*$" "" executable ${executable})
+  add_executable("${executable}" ${main_file})
+  target_link_libraries("${executable}" bandprotocol)
+endforeach()

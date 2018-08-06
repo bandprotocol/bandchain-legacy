@@ -9,12 +9,12 @@ class Server
 public:
   Server(boost::asio::io_service& service, NetApplication& app, uint16_t port);
 
-  //! Run the server and block forever.
+  /// Run the server and block forever.
   void start();
 
 private:
-  //! Add an asynchronous call to accept a new connection. Once a connection is
-  //! accepted, another accept_connection will be invoked automatically.
+  /// Add an asynchronous call to accept a new connection. Once a connection is
+  /// accepted, another accept_connection will be invoked automatically.
   void accept_connection();
 
 private:
