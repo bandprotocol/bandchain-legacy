@@ -11,16 +11,21 @@ add_definitions(-include src/util/autoinclude.h)
 
 find_package(Boost 1.67.0 COMPONENTS system REQUIRED)
 find_package(Protobuf 3.5.0 REQUIRED)
-find_package(Sodium 1.0.16 REQUIRED)
+find_package(Sodium REQUIRED)
+find_package(CxxTest REQUIRED)
 
-include_directories(. src)
+include_directories(. src test)
 
 file(GLOB source_files "src/**/*.h" "src/**/*.cc")
-
 add_library(bandprotocol STATIC
             abci/abci.pb.h
             abci/abci.pb.cc
             ${source_files})
+
+enable_testing()
+file(GLOB test_files "test/*_test.h")
+CXXTEST_ADD_TEST(band_test_runner foo_test.cc "${test_files}")
+target_link_libraries(band_test_runner bandprotocol)
 
 target_link_libraries(bandprotocol
                       ${Boost_LIBRARIES}
