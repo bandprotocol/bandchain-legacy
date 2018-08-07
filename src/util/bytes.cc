@@ -52,6 +52,7 @@ std::string Bytes<SIZE>::to_string() const
 }
 
 template class Bytes<16>;
+template class Bytes<20>;
 template class Bytes<32>;
 template class Bytes<64>;
 template class Bytes<128>;
