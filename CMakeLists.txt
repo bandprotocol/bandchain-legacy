@@ -24,7 +24,7 @@ add_library(bandprotocol STATIC
 
 enable_testing()
 file(GLOB test_files "test/*_test.h")
-CXXTEST_ADD_TEST(band_test_runner foo_test.cc "${test_files}")
+CXXTEST_ADD_TEST(band_test_runner band_test_runner.cc "${test_files}")
 target_link_libraries(band_test_runner bandprotocol)
 
 target_link_libraries(bandprotocol

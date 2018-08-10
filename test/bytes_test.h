@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-class BarTestSuite : public CxxTest::TestSuite
+class BytesTest : public CxxTest::TestSuite
 {
 public:
   void testBarAddition(void)
