@@ -10,14 +10,17 @@ public:
   Bytes() = default;
   Bytes(const Bytes& bytes) = default;
 
+  static constexpr size_t Size = SIZE;
+
   /// Create an n-byte structure from a raw string.
   static Bytes from_raw(const std::string& raw_string);
 
   /// Parse a hex string into an n-byte structure.
   static Bytes from_hex(const std::string& hex_string);
 
-  /// Simple comparison operator.
+  /// Simple comparison operators.
   bool operator==(const Bytes& rhs) const;
+  bool operator!=(const Bytes& rhs) const { return !operator==(rhs); }
 
   /// Concat this bytes with another.
   template <int RHS_SIZE>
@@ -44,9 +47,12 @@ private:
   std::array<std::byte, SIZE> rawdata;
 };
 
-using VerifyKey = Bytes<32>;
-using SecretKey = Bytes<64>;
-using Signature = Bytes<64>;
+using Address = Bytes<20>;   //< TODO
+using Hash = Bytes<32>;      //< TODO
+using Ident = Bytes<32>;     //< TODO
+using VerifyKey = Bytes<32>; //< TODO
+using SecretKey = Bytes<64>; //< TODO
+using Signature = Bytes<64>; //< TODO
 
 namespace std
 {

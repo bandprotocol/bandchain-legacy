@@ -34,8 +34,9 @@ int main()
 
   auto [verify_key, secret_key] = ed25519_generate_keypair();
   Log::info("Randomly generated Ed25519 keypair:");
-  Log::info("verify_key = {}", verify_key);
   Log::info("secret_key = {}", secret_key);
+  Log::info("verify_key = {}", verify_key);
+  Log::info("address = {}", ed25519_vk_to_addr(verify_key));
   Signature band_sig = ed25519_sign(secret_key, "BAND");
   Log::info("sign(\"BAND\") = {}", band_sig);
   Log::info("verify(sig, vk, \"BAND\"): {}",

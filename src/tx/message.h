@@ -29,14 +29,14 @@ struct TxMsg : public Msg {
   uint8_t output_cnt = 0;
 
   struct TxInput {
-    Bytes<32> ident;
-    Bytes<12> addr_suffix;
+    Bytes<32> id;
+    Bytes<32> vk;
     Bytes<64> sig;
   };
 
   struct TxOutput {
     Bytes<20> addr;
-    uint64_t amount = 0;
+    uint64_t value = 0;
   };
 
   size_t extension_size() const
@@ -89,7 +89,7 @@ std::string msg_as_hex(const T& msg)
 }
 
 template <typename T>
-Bytes<32> msg_unique_hash(const T& msg)
+Hash msg_unique_hash(const T& msg)
 {
   return sha256(reinterpret_cast<const std::byte*>(&msg), sizeof(T));
 }

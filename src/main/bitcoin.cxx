@@ -15,22 +15,26 @@ public:
     if (req.version() != "0.17.1") {
       throw "Invalid Version";
     }
-    res.set_data("bitcoin");
+    res.set_data("bitcoin-like");
     res.set_version("1.0");
   }
 
   virtual void do_init_chain(const RequestInitChain&, ResponseInitChain&)
   {
     utxos.clear();
+    utxos[Ident()] = std::pair(
+        Address::from_hex("79e56486055732bc050fea8de33635e6cda17cd1"), 10'000);
     last_block_height = 0;
+    tx_count = 0;
   }
 
   virtual void do_query(const RequestQuery&, ResponseQuery& res)
   {
     std::string ret;
+    ret += "tx count: {}\n"_format(tx_count);
     for (auto& [tx_id, tx_value] : utxos) {
-      ret += "{}: owner={} amount={}\n"_format(tx_id, tx_value.first,
-                                               tx_value.second);
+      ret += "{}: owner={} value={}\n"_format(tx_id, tx_value.first,
+                                              tx_value.second);
     }
 
     res.set_value(ret);
@@ -43,16 +47,9 @@ public:
     // Noop
   }
 
-  virtual void do_check_tx(const RequestCheckTx&, ResponseCheckTx& res)
+  template <typename Req, typename Res>
+  void process_tx(const Req& req, Res& res, bool mutate)
   {
-    // Noop
-    res.set_code(0);
-  }
-
-  virtual void do_deliver_tx(const RequestDeliverTx& req,
-                             ResponseDeliverTx& res)
-  {
-
     const std::string& msg_data = req.tx();
     const size_t msg_size = msg_data.size();
 
@@ -74,56 +71,62 @@ public:
         return;
       }
 
-      uint64_t total_input_amount = 0;
-      uint64_t total_output_amount = 0;
+      uint64_t total_input_value = 0;
+      uint64_t total_output_value = 0;
       const Bytes<32> tx_hash = msg_unique_hash(tx_msg);
 
       for (uint8_t idx = 0; idx < tx_msg.input_cnt; ++idx) {
         const TxMsg::TxInput& tx_input = tx_msg.get_input(idx);
-        auto it = utxos.find(tx_input.ident);
+        auto it = utxos.find(tx_input.id);
         if (it == utxos.end()) {
           res.set_code(1);
           return;
         }
 
-        if (!ed25519_verify(tx_input.sig,
-                            it->second.first + tx_input.addr_suffix,
-                            tx_hash.data(), 32)) {
+        if (ed25519_vk_to_addr(tx_input.vk) != it->second.first) {
           res.set_code(1);
           return;
         }
 
-        if (total_input_amount + it->second.second < total_input_amount) {
+        if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_hash.data(), 32)) {
           res.set_code(1);
           return;
         }
-        total_input_amount += it->second.second;
+
+        if (total_input_value + it->second.second < total_input_value) {
+          res.set_code(1);
+          return;
+        }
+        total_input_value += it->second.second;
       }
 
       for (uint8_t idx = 0; idx < tx_msg.output_cnt; ++idx) {
         const TxMsg::TxOutput& tx_output = tx_msg.get_output(idx);
-        if (total_output_amount + tx_output.amount < total_output_amount) {
+        if (total_output_value + tx_output.value < total_output_value) {
           res.set_code(1);
           return;
         }
-        total_output_amount += tx_output.amount;
+        total_output_value += tx_output.value;
       }
 
-      if (total_input_amount != total_output_amount) {
+      if (total_input_value != total_output_value) {
         res.set_code(1);
         return;
       }
 
-      for (uint8_t idx = 0; idx < tx_msg.input_cnt; ++idx) {
-        const TxMsg::TxInput& tx_input = tx_msg.get_input(idx);
-        utxos.erase(tx_input.ident);
-      }
+      if (mutate) {
+        for (uint8_t idx = 0; idx < tx_msg.input_cnt; ++idx) {
+          const TxMsg::TxInput& tx_input = tx_msg.get_input(idx);
+          utxos.erase(tx_input.id);
+        }
 
-      Bytes<32> output_tx_hash = tx_hash;
-      for (uint8_t idx = 0; idx < tx_msg.output_cnt; ++idx) {
-        const TxMsg::TxOutput& tx_output = tx_msg.get_output(idx);
-        output_tx_hash = sha256(output_tx_hash.data(), 32);
-        utxos[output_tx_hash] = std::pair(tx_output.addr, tx_output.amount);
+        Bytes<32> output_tx_hash = tx_hash;
+        for (uint8_t idx = 0; idx < tx_msg.output_cnt; ++idx) {
+          const TxMsg::TxOutput& tx_output = tx_msg.get_output(idx);
+          output_tx_hash = sha256(output_tx_hash.data(), 32);
+          utxos[output_tx_hash] = std::pair(tx_output.addr, tx_output.value);
+        }
+        ++tx_count;
       }
 
       res.set_code(0);
@@ -134,6 +137,17 @@ public:
     }
   }
 
+  virtual void do_check_tx(const RequestCheckTx& req, ResponseCheckTx& res)
+  {
+    process_tx(req, res, false);
+  }
+
+  virtual void do_deliver_tx(const RequestDeliverTx& req,
+                             ResponseDeliverTx& res)
+  {
+    process_tx(req, res, true);
+  }
+
   virtual void do_end_block(const RequestEndBlock&, ResponseEndBlock&)
   {
     // Noop
@@ -142,11 +156,12 @@ public:
   virtual void do_commit(const RequestCommit&, ResponseCommit& res)
   {
     ++last_block_height;
-    res.set_data(std::to_string(last_block_height));
+    res.set_data(std::to_string(tx_count));
   }
 
 private:
-  std::unordered_map<Bytes<32>, std::pair<Bytes<20>, uint64_t>> utxos;
+  std::unordered_map<Ident, std::pair<Address, uint64_t>> utxos;
+  int tx_count = 0;
   int last_block_height = 0;
 };
 
@@ -154,10 +169,6 @@ int main()
 {
   BitcoinApplication app;
   boost::asio::io_service service;
-
-  std::unordered_set<Bytes<32>> utxos;
-  utxos.insert(Bytes<32>::from_hex(
-      "be0cba0e63b4ddd47d9866dc0e71b81520c83a20a54323d2350588db86f0fa85"));
 
   Server server(service, app, 46658);
   server.start();

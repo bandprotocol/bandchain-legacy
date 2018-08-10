@@ -2,6 +2,8 @@
 
 #include <sodium/crypto_sign_ed25519.h>
 
+#include "crypto/sha256.h"
+
 std::pair<VerifyKey, SecretKey> ed25519_generate_keypair()
 {
   std::pair<VerifyKey, SecretKey> keypair;
@@ -17,7 +19,11 @@ VerifyKey ed25519_sk_to_vk(const SecretKey& secret_key)
                                (const unsigned char*)secret_key.data());
   return verify_key;
 }
-int crypto_sign_ed25519_sk_to_pk(unsigned char* pk, const unsigned char* sk);
+
+Address ed25519_vk_to_addr(const VerifyKey& verify_key)
+{
+  return sha256(verify_key.data(), VerifyKey::Size).suffix<Address::Size>();
+}
 
 Signature ed25519_sign(const SecretKey& secret_key, const unsigned char* data,
                        size_t size)
@@ -34,7 +40,7 @@ Signature ed25519_sign(const SecretKey& secret_key, const char* data,
   return ed25519_sign(secret_key, (const unsigned char*)data, size);
 }
 
-Signature ed25519_sign(const SecretKey& secret_key, std::byte* data,
+Signature ed25519_sign(const SecretKey& secret_key, const std::byte* data,
                        size_t size)
 {
   return ed25519_sign(secret_key, (const unsigned char*)data, size);
