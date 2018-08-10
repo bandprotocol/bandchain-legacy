@@ -1,5 +1,8 @@
 #pragma once
 
+#include <boost/endian/arithmetic.hpp>
+using namespace boost::endian;
+
 #include "crypto/sha256.h"
 #include "util/bytes.h"
 
@@ -16,8 +19,8 @@ struct MsgType {
 #pragma pack(push, 1)
 
 struct Msg {
-  uint16_t msg_type = 0; //< The type of this message
-  uint64_t msg_ts = 0;   //< Epoch timestamp when this message is created
+  big_uint16_t msg_type = 0; //< The type of this message
+  big_uint64_t msg_ts = 0;   //< Epoch timestamp when this message is created
 
   size_t extension_size() const { return 0; }
 };
@@ -25,8 +28,8 @@ struct Msg {
 struct TxMsg : public Msg {
   static constexpr uint16_t MsgID = MsgType::TX;
 
-  uint8_t input_cnt = 0;
-  uint8_t output_cnt = 0;
+  big_uint8_t input_cnt = 0;
+  big_uint8_t output_cnt = 0;
 
   struct TxInput {
     Bytes<32> id;
@@ -36,7 +39,7 @@ struct TxMsg : public Msg {
 
   struct TxOutput {
     Bytes<20> addr;
-    uint64_t value = 0;
+    big_uint64_t value = 0;
   };
 
   size_t extension_size() const
