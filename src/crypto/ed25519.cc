@@ -49,8 +49,8 @@ bool ed25519_verify(const Signature& sig, const VerifyKey& verify_key,
                     const unsigned char* data, size_t size)
 {
   return crypto_sign_ed25519_verify_detached(
-      (const unsigned char*)sig.data(), data, size,
-      (const unsigned char*)verify_key.data());
+             (const unsigned char*)sig.data(), data, size,
+             (const unsigned char*)verify_key.data()) == 0;
 }
 
 bool ed25519_verify(const Signature& sig, const VerifyKey& verify_key,
