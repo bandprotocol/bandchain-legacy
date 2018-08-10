@@ -31,6 +31,7 @@ void Session::async_read()
         if (!ec) {
           self->process_read(length);
         } else {
+          log::info("hey {}", ec.message());
           throw std::runtime_error("Failed to read from socket");
         }
       });

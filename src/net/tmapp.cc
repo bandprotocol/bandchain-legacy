@@ -1,5 +1,61 @@
 #include "tmapp.h"
 
+void TendermintApplication::do_info(const RequestInfo& req, ResponseInfo& res)
+{
+  if (req.version() != get_tm_version()) {
+    throw std::runtime_error("Invalid Version");
+  }
+  res.set_data(get_name());
+  res.set_version(get_version());
+  if (last_block_height != 0) {
+    res.set_last_block_height(last_block_height);
+    res.set_last_block_app_hash(get_current_app_hash());
+  }
+}
+
+void TendermintApplication::do_init_chain(const RequestInitChain& req)
+{
+  init(req.app_state_bytes());
+}
+
+void TendermintApplication::do_query(const RequestQuery& req,
+                                     ResponseQuery& res)
+{
+  res.set_code(0);
+  res.set_height(last_block_height);
+  res.set_value(query(req.path(), req.data()));
+}
+
+void TendermintApplication::do_begin_block(const RequestBeginBlock&)
+{
+  // TODO: Penalize missing validators
+}
+
+void TendermintApplication::do_check_tx(const RequestCheckTx& req,
+                                        ResponseCheckTx& res)
+{
+  res.set_code(check(req.tx(), false) ? 0 : 1);
+}
+
+void TendermintApplication::do_deliver_tx(const RequestDeliverTx& req,
+                                          ResponseDeliverTx& res)
+{
+  res.set_code(check(req.tx(), true) ? 0 : 1);
+}
+
+void TendermintApplication::do_end_block(const RequestEndBlock&,
+                                         ResponseEndBlock&)
+{
+  // TODO: Update the set of validators
+}
+
+void TendermintApplication::do_commit(ResponseCommit& res)
+{
+  // TODO: Notify the application to flush the blockchain state
+  ++last_block_height;
+  res.set_data(get_current_app_hash());
+}
+
 bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
 {
   int size = 0;
@@ -23,16 +79,18 @@ bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
       do_info(req.info(), *res.mutable_info());
       break;
     case abci::Request::ValueCase::kSetOption:
-      do_set_option(req.set_option(), *res.mutable_set_option());
+      throw std::runtime_error("set_option is not supported");
       break;
     case abci::Request::ValueCase::kInitChain:
-      do_init_chain(req.init_chain(), *res.mutable_init_chain());
+      res.mutable_init_chain();
+      do_init_chain(req.init_chain());
       break;
     case abci::Request::ValueCase::kQuery:
       do_query(req.query(), *res.mutable_query());
       break;
     case abci::Request::ValueCase::kBeginBlock:
-      do_begin_block(req.begin_block(), *res.mutable_begin_block());
+      res.mutable_begin_block();
+      do_begin_block(req.begin_block());
       break;
     case abci::Request::ValueCase::kCheckTx:
       do_check_tx(req.check_tx(), *res.mutable_check_tx());
@@ -44,7 +102,7 @@ bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
       do_end_block(req.end_block(), *res.mutable_end_block());
       break;
     case abci::Request::ValueCase::kCommit:
-      do_commit(req.commit(), *res.mutable_commit());
+      do_commit(*res.mutable_commit());
       break;
     default:
       throw std::runtime_error("Unexpected request type");

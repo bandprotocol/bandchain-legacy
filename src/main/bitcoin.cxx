@@ -10,65 +10,53 @@
 class BitcoinApplication : public TendermintApplication
 {
 public:
-  virtual void do_info(const RequestInfo& req, ResponseInfo& res)
+  std::string get_name() const final { return "bitcoin-like"; }
+  std::string get_version() const final { return "1.0"; }
+
+  std::string get_current_app_hash() const final
   {
-    if (req.version() != "0.17.1") {
-      throw "Invalid Version";
-    }
-    res.set_data("bitcoin-like");
-    res.set_version("1.0");
+    return std::to_string(tx_count);
   }
 
-  virtual void do_init_chain(const RequestInitChain&, ResponseInitChain&)
+  void init(const std::string& init_state) final
   {
+    (void)init_state;
     utxos.clear();
     utxos[Ident()] = std::pair(
         Address::from_hex("79e56486055732bc050fea8de33635e6cda17cd1"), 10'000);
-    last_block_height = 0;
     tx_count = 0;
   }
 
-  virtual void do_query(const RequestQuery&, ResponseQuery& res)
+  std::string query(const std::string& path,
+                    const std::string& data) const final
   {
+    (void)path;
+    (void)data;
     std::string ret;
     ret += "tx count: {}\n"_format(tx_count);
     for (auto& [tx_id, tx_value] : utxos) {
       ret += "{}: owner={} value={}\n"_format(tx_id, tx_value.first,
                                               tx_value.second);
     }
-
-    res.set_value(ret);
-    res.set_code(0);
-    res.set_height(last_block_height);
+    return ret;
   }
 
-  virtual void do_begin_block(const RequestBeginBlock&, ResponseBeginBlock&)
+  bool check(const std::string& msg_data, bool apply) final
   {
-    // Noop
-  }
-
-  template <typename Req, typename Res>
-  void process_tx(const Req& req, Res& res, bool mutate)
-  {
-    const std::string& msg_data = req.tx();
     const size_t msg_size = msg_data.size();
-
     if (msg_size < sizeof(Msg)) {
-      res.set_code(1);
-      return;
+      return false;
     }
 
     const Msg& msg = *reinterpret_cast<const Msg*>(msg_data.c_str());
     if (msg.msg_type == MsgType::TX) {
       if (msg_size < sizeof(TxMsg)) {
-        res.set_code(1);
-        return;
+        return false;
       }
 
       const TxMsg& tx_msg = static_cast<const TxMsg&>(msg);
       if (msg_size < sizeof(TxMsg) + tx_msg.extension_size()) {
-        res.set_code(1);
-        return;
+        return false;
       }
 
       uint64_t total_input_value = 0;
@@ -79,23 +67,18 @@ public:
         const TxMsg::TxInput& tx_input = tx_msg.get_input(idx);
         auto it = utxos.find(tx_input.id);
         if (it == utxos.end()) {
-          res.set_code(1);
-          return;
+          return false;
         }
 
         if (ed25519_vk_to_addr(tx_input.vk) != it->second.first) {
-          res.set_code(1);
-          return;
+          return false;
         }
 
-        if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_hash.data(), 32)) {
-          res.set_code(1);
-          return;
-        }
+        if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_hash.data(), 32))
+          return false;
 
         if (total_input_value + it->second.second < total_input_value) {
-          res.set_code(1);
-          return;
+          return false;
         }
         total_input_value += it->second.second;
       }
@@ -103,18 +86,16 @@ public:
       for (uint8_t idx = 0; idx < tx_msg.output_cnt; ++idx) {
         const TxMsg::TxOutput& tx_output = tx_msg.get_output(idx);
         if (total_output_value + tx_output.value < total_output_value) {
-          res.set_code(1);
-          return;
+          return false;
         }
         total_output_value += tx_output.value;
       }
 
       if (total_input_value != total_output_value) {
-        res.set_code(1);
-        return;
+        return false;
       }
 
-      if (mutate) {
+      if (apply) {
         for (uint8_t idx = 0; idx < tx_msg.input_cnt; ++idx) {
           const TxMsg::TxInput& tx_input = tx_msg.get_input(idx);
           utxos.erase(tx_input.id);
@@ -129,40 +110,14 @@ public:
         ++tx_count;
       }
 
-      res.set_code(0);
-      return;
-    } else {
-      res.set_code(1);
-      return;
+      return true;
     }
-  }
-
-  virtual void do_check_tx(const RequestCheckTx& req, ResponseCheckTx& res)
-  {
-    process_tx(req, res, false);
-  }
-
-  virtual void do_deliver_tx(const RequestDeliverTx& req,
-                             ResponseDeliverTx& res)
-  {
-    process_tx(req, res, true);
-  }
-
-  virtual void do_end_block(const RequestEndBlock&, ResponseEndBlock&)
-  {
-    // Noop
-  }
-
-  virtual void do_commit(const RequestCommit&, ResponseCommit& res)
-  {
-    ++last_block_height;
-    res.set_data(std::to_string(tx_count));
+    return false;
   }
 
 private:
   std::unordered_map<Ident, std::pair<Address, uint64_t>> utxos;
   int tx_count = 0;
-  int last_block_height = 0;
 };
 
 int main()

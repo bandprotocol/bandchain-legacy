@@ -19,29 +19,29 @@ int main()
                    std::chrono::system_clock::now().time_since_epoch())
                    .count();
 
-  Log::info("How many input tx?");
+  log::info("How many input tx?");
   std::cin >> int_temp;
   msg.input_cnt = int_temp;
 
   for (int idx = 0; idx < msg.input_cnt; ++idx) {
-    Log::info("Input #{} id hex:", idx);
+    log::info("Input #{} id hex:", idx);
     std::cin >> temp;
     msg.get_input(idx).id = Ident::from_hex(temp);
-    Log::info("Input #{} sk hex:", idx);
+    log::info("Input #{} sk hex:", idx);
     std::cin >> temp;
     secret_keys.push_back(SecretKey::from_hex(temp));
     msg.get_input(idx).vk = ed25519_sk_to_vk(secret_keys[idx]);
   }
 
-  Log::info("How many output tx?");
+  log::info("How many output tx?");
   std::cin >> int_temp;
   msg.output_cnt = int_temp;
 
   for (int idx = 0; idx < msg.output_cnt; ++idx) {
-    Log::info("Output #{} addr hex:", idx);
+    log::info("Output #{} addr hex:", idx);
     std::cin >> temp;
     msg.get_output(idx).addr = Address::from_hex(temp);
-    Log::info("Output #{} value:", idx);
+    log::info("Output #{} value:", idx);
     std::cin >> msg.get_output(idx).value;
   }
 
@@ -51,6 +51,6 @@ int main()
         ed25519_sign(secret_keys[idx], tx_hash.data(), Hash::Size);
   }
 
-  Log::info("{}", msg_as_hex(msg));
+  log::info("{}", msg_as_hex(msg));
   return 0;
 }

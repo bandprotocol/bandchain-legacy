@@ -4,7 +4,7 @@
 #include <spdlog/spdlog.h>
 #include <utility>
 
-class Log
+class log
 {
 public:
   template <typename... Args>

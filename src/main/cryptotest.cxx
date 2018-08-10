@@ -12,9 +12,9 @@ int main()
   }
   auto end_sha256 = std::chrono::system_clock::now();
   std::chrono::duration<double> diff_sha256 = end_sha256 - start_sha256;
-  Log::info("sha256(\"BAND\") = {}", sha256("BAND").to_string());
-  Log::info("sha256(\"DNAB\") = {}", sha256("DNAB").to_string());
-  Log::info("Time to do 1M sha256 is {}s", diff_sha256.count());
+  log::info("sha256(\"BAND\") = {}", sha256("BAND").to_string());
+  log::info("sha256(\"DNAB\") = {}", sha256("DNAB").to_string());
+  log::info("Time to do 1M sha256 is {}s", diff_sha256.count());
 
   auto sig = Signature::from_hex(
       "d53e6dd9dc1c72cded26fde1c9fba01d6ac747123a105cdcf6d183d6f31f62bffa9baf90"
@@ -30,16 +30,16 @@ int main()
   }
   auto end_ed25519 = std::chrono::system_clock::now();
   std::chrono::duration<double> diff_ed25519 = end_ed25519 - start_ed25519;
-  Log::info("Time to do 10k ed25519 is {}s", diff_ed25519.count());
+  log::info("Time to do 10k ed25519 is {}s", diff_ed25519.count());
 
   auto [verify_key, secret_key] = ed25519_generate_keypair();
-  Log::info("Randomly generated Ed25519 keypair:");
-  Log::info("secret_key = {}", secret_key);
-  Log::info("verify_key = {}", verify_key);
-  Log::info("address = {}", ed25519_vk_to_addr(verify_key));
+  log::info("Randomly generated Ed25519 keypair:");
+  log::info("secret_key = {}", secret_key);
+  log::info("verify_key = {}", verify_key);
+  log::info("address = {}", ed25519_vk_to_addr(verify_key));
   Signature band_sig = ed25519_sign(secret_key, "BAND");
-  Log::info("sign(\"BAND\") = {}", band_sig);
-  Log::info("verify(sig, vk, \"BAND\"): {}",
+  log::info("sign(\"BAND\") = {}", band_sig);
+  log::info("verify(sig, vk, \"BAND\"): {}",
             ed25519_verify(band_sig, verify_key, "BAND"));
   return 0;
 }
