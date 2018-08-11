@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "crypto/ed25519.h"
-#include "tx/message.h"
+#include "msg/tx.h"
 
 int main()
 {
@@ -45,12 +45,12 @@ int main()
     std::cin >> msg.get_output(idx).value;
   }
 
-  Hash tx_hash = msg_unique_hash(msg);
+  Hash tx_hash = msg.hash();
   for (int idx = 0; idx < msg.input_cnt; ++idx) {
-    msg.get_input(idx).sig =
+    msg.get_signature(idx) =
         ed25519_sign(secret_keys[idx], tx_hash.data(), Hash::Size);
   }
 
-  log::info("{}", msg_as_hex(msg));
+  log::info("{}", msg_hex(msg));
   return 0;
 }

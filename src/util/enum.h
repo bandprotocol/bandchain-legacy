@@ -249,9 +249,12 @@
   X(f, l, 5)                                                                   \
   X(f, l, 6)                                                                   \
   X(f, l, 7)                                                                   \
-  X(f, l, 8) X(f, l, 9) X(f, l, 10) X(f, l, 11) X(f, l, 12) X(f, l, 13)        \
-      X(f, l, 14) X(f, l, 15) X(f, l, 16) X(f, l, 17) X(f, l, 18) X(f, l, 19)  \
-          X(f, l, 20) X(f, l, 21) X(f, l, 22) X(f, l, 23)
+  X(f, l, 8)                                                                   \
+  X(f, l, 9)                                                                   \
+  X(f, l, 10)                                                                  \
+  X(f, l, 11) X(f, l, 12) X(f, l, 13) X(f, l, 14) X(f, l, 15) X(f, l, 16)      \
+      X(f, l, 17) X(f, l, 18) X(f, l, 19) X(f, l, 20) X(f, l, 21) X(f, l, 22)  \
+          X(f, l, 23)
 
 #endif // #ifdef BETTER_ENUMS_MACRO_FILE else case
 
@@ -260,22 +263,26 @@ namespace better_enums
 
 // Optional type.
 
-template <typename T> BETTER_ENUMS_CONSTEXPR_ inline T _default()
+template <typename T>
+BETTER_ENUMS_CONSTEXPR_ inline T _default()
 {
   return static_cast<typename T::_enumerated>(0);
 }
 
-template <> BETTER_ENUMS_CONSTEXPR_ inline const char* _default<const char*>()
+template <>
+BETTER_ENUMS_CONSTEXPR_ inline const char* _default<const char*>()
 {
   return BETTER_ENUMS_NULLPTR;
 }
 
-template <> BETTER_ENUMS_CONSTEXPR_ inline std::size_t _default<std::size_t>()
+template <>
+BETTER_ENUMS_CONSTEXPR_ inline std::size_t _default<std::size_t>()
 {
   return 0;
 }
 
-template <typename T> struct optional {
+template <typename T>
+struct optional {
   BETTER_ENUMS_CONSTEXPR_ optional()
       : _valid(false)
       , _value(_default<T>())
@@ -346,7 +353,8 @@ BETTER_ENUMS_CONSTEXPR_ U continue_with(T BETTER_ENUMS_UNUSED(ignored), U value)
 
 // Values array declaration helper.
 
-template <typename EnumType> struct _eat_assign {
+template <typename EnumType>
+struct _eat_assign {
   explicit BETTER_ENUMS_CONSTEXPR_ _eat_assign(EnumType value)
       : _value(value)
   {
@@ -367,7 +375,8 @@ private:
 
 // Iterables.
 
-template <typename Element> struct _Iterable {
+template <typename Element>
+struct _Iterable {
   typedef const Element* iterator;
 
   BETTER_ENUMS_CONSTEXPR_ iterator begin() const { return iterator(_array); }
@@ -475,7 +484,8 @@ inline void _trim_names(const char* const* raw_names,
 }
 
 // Eager initialization.
-template <typename Enum> struct _initialize_at_program_start {
+template <typename Enum>
+struct _initialize_at_program_start {
   _initialize_at_program_start() { Enum::initialize(); }
 };
 
@@ -1035,14 +1045,16 @@ namespace better_enums
 
 // Maps.
 
-template <typename T> struct map_compare {
+template <typename T>
+struct map_compare {
   BETTER_ENUMS_CONSTEXPR_ static bool less(const T& a, const T& b)
   {
     return a < b;
   }
 };
 
-template <> struct map_compare<const char*> {
+template <>
+struct map_compare<const char*> {
   BETTER_ENUMS_CONSTEXPR_ static bool less(const char* a, const char* b)
   {
     return less_loop(a, b);
@@ -1101,7 +1113,8 @@ BETTER_ENUMS_CONSTEXPR_ map<Enum, T> make_map(T (*f)(Enum))
 // This template is used as a sort of enable_if for SFINAE. It should be
 // possible to use std::enable_if, however <type_traits> is not available in
 // C++98. Non-char streams are currently not supported.
-template <typename T, typename Enum> struct only_if_enum {
+template <typename T, typename Enum>
+struct only_if_enum {
   typedef T type;
 };
 

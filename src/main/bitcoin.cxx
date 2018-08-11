@@ -2,10 +2,10 @@
 
 #include "crypto/ed25519.h"
 #include "crypto/sha256.h"
+#include "msg/tx.h"
 #include "net/server.h"
 #include "net/tmapp.h"
 #include "state/output.h"
-#include "tx/message.h"
 
 class BitcoinApplication : public TendermintApplication
 {
@@ -55,13 +55,13 @@ public:
       }
 
       const TxMsg& tx_msg = static_cast<const TxMsg&>(msg);
-      if (msg_size < sizeof(TxMsg) + tx_msg.extension_size()) {
+      if (msg_size < tx_msg.size()) {
         return false;
       }
 
       uint64_t total_input_value = 0;
       uint64_t total_output_value = 0;
-      const Bytes<32> tx_hash = msg_unique_hash(tx_msg);
+      const Bytes<32> tx_hash = tx_msg.hash();
 
       for (uint8_t idx = 0; idx < tx_msg.input_cnt; ++idx) {
         const TxMsg::TxInput& tx_input = tx_msg.get_input(idx);
@@ -74,7 +74,8 @@ public:
           return false;
         }
 
-        if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_hash.data(), 32))
+        if (!ed25519_verify(tx_msg.get_signature(idx), tx_input.vk,
+                            tx_hash.data(), 32))
           return false;
 
         if (total_input_value + it->second.second < total_input_value) {
