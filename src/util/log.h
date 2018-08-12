@@ -1,8 +1,9 @@
 #pragma once
 
 #include <memory>
-#include <spdlog/spdlog.h>
 #include <utility>
+
+#include "spdlog/spdlog.h"
 
 class log
 {
