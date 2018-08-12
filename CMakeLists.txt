@@ -14,6 +14,7 @@ find_package(Protobuf 3.5.0 REQUIRED)
 find_package(Sodium REQUIRED)
 find_package(CxxTest REQUIRED)
 
+include_directories(3pc/spdlog-0.17.0/include)
 include_directories(. src test)
 
 file(GLOB source_files "src/**/*.h" "src/**/*.cc")
