@@ -18,6 +18,12 @@ the following command.
 docker build -t band/buildenv .
 ```
 
+Particularly if you are residing in non-us region, we highly encourage you to provide your country code so docker uses the closest mirror to install dependencies.
+
+```
+docker build --build-arg country_code=uk -t band/buildenv .
+```
+
 Inside the container, Band Protocol uses [CMake](https://cmake.org/) to facilitate 
 the build process. The binaries will be located under the same `build` directory.
 

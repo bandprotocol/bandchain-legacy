@@ -1,6 +1,10 @@
 FROM ubuntu:18.04
 MAINTAINER Band Protocol <dev@bandprotocol.com>
 
+# Use your best mirror
+ARG country_code=us
+RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1${country_code}.\2/" /etc/apt/sources.list
+
 RUN cd ~
 
 RUN apt-get update
