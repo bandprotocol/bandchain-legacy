@@ -111,7 +111,7 @@ bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
   std::cout << req.DebugString().c_str() << std::endl;
   std::cout << res.DebugString().c_str() << std::endl;
 
-  size_t write_size = res.ByteSizeLong();
+  size_t write_size = res.ByteSize();
   write_integer(write_buffer, write_size);
   std::byte* write_location = write_buffer.reserve(write_size);
   res.SerializeToArray(write_location, write_size);

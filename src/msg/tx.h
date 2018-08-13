@@ -5,8 +5,8 @@
 struct TxMsg : Msg {
   static constexpr MsgType MsgID = MsgType::TX;
 
-  big_uint8_t input_cnt = 0;
-  big_uint8_t output_cnt = 0;
+  uint8_t input_cnt = 0;
+  uint8_t output_cnt = 0;
 
   struct TxInput {
     Hash id;
@@ -15,7 +15,7 @@ struct TxMsg : Msg {
 
   struct TxOutput {
     Address addr;
-    big_uint64_t value = 0;
+    uint64_t value = 0;
   };
 
   struct TxSig {

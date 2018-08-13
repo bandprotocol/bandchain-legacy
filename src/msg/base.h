@@ -13,8 +13,8 @@ BETTER_ENUM(MsgType, uint16_t, UNSET = 0, TX = 1);
 
 /// Base message type. Any message to the blockchain must be a subclass of this.
 struct Msg {
-  big_uint16_t msg_type = 0; //< The type of this message
-  big_uint64_t msg_ts = 0;   //< Epoch timestamp when this message is created
+  uint16_t msg_type = 0; //< The type of this message
+  uint64_t msg_ts = 0;   //< Epoch timestamp when this message is created
 
   /// To be implemented by each of the messages.
   size_t size() const { throw std::runtime_error("size unimplemented"); }
