@@ -11,25 +11,35 @@ see https://bandprotocol.com/.
 Build
 -----
 
-Band Protocol requires the following dependencies. Be sure to have them
-available in your local system.
-- [Tendermint](https://tendermint.com/)
+If you use [Docker](https://www.docker.com/), you can create a docker image using
+the following command.
+
+```
+docker build -t band/buildenv .
+```
+
+Inside the container, Band Protocol uses [CMake](https://cmake.org/) to facilitate 
+the build process. The binaries will be located under the same `build` directory.
+
+```
+docker run --rm -v `pwd`:/bandprotocol -it band/buildenv bash
+$ cd bandprotocol
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+```
+
+Alternatively, to build locally, Band Protocol requires the following dependencies.
+Be sure to have them available in your local system (version as listed in 
+[CMakeList.txt](CMakeList.txt)).
+
 - [Boost](https://www.boost.org/)
 - [ProtoBuf](https://developers.google.com/protocol-buffers/)
 - [libsodium](https://github.com/jedisct1/libsodium)
-- [spdlog](https://github.com/gabime/spdlog)
 - [CxxTest](https://cxxtest.com/)
 
-Band Protocol uses [CMake](https://cmake.org/) to facilitate the build process.
-
-```
-mkdir build
-cd build
-cmake ..
-make
-```
-
-The binaries will be located in the same `build` directory.
+Then follow the normal `cmake` process as shown above. 
 
 License
 -------
