@@ -18,7 +18,8 @@ the following command.
 docker build -t band/buildenv .
 ```
 
-Particularly if you are residing in non-us region, we highly encourage you to provide your country code so docker uses the closest mirror to install dependencies.
+Particularly if you are residing in non-us region, we highly encourage you to provide 
+your country code so docker uses the closest mirror to install dependencies.
 
 ```
 docker build --build-arg country_code=uk -t band/buildenv .
@@ -30,6 +31,7 @@ the build process. The binaries will be located under the same `build` directory
 ```
 docker run --rm -v `pwd`:/bandprotocol -it band/buildenv bash
 $ cd bandprotocol
+$ protoc --cpp_out=. abci/abci.proto
 $ mkdir build
 $ cd build
 $ cmake ..
