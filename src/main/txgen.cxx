@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "crypto/ed25519.h"
+#include "msg/mint.h"
 #include "msg/tx.h"
 
 int main()
@@ -11,6 +12,7 @@ int main()
   TxMsg& msg = *(new (buffer) TxMsg());
 
   int int_temp;
+  uint256_t uint256_temp;
   std::string temp;
   std::vector<SecretKey> secret_keys;
 
@@ -26,7 +28,7 @@ int main()
   for (int idx = 0; idx < msg.input_cnt; ++idx) {
     log::info("Input #{} id hex:", idx);
     std::cin >> temp;
-    msg.get_input(idx).id = Ident::from_hex(temp);
+    msg.get_input(idx).id = Hash::from_hex(temp);
     log::info("Input #{} sk hex:", idx);
     std::cin >> temp;
     secret_keys.push_back(SecretKey::from_hex(temp));
@@ -42,7 +44,8 @@ int main()
     std::cin >> temp;
     msg.get_output(idx).addr = Address::from_hex(temp);
     log::info("Output #{} value:", idx);
-    std::cin >> msg.get_output(idx).value;
+    std::cin >> uint256_temp;
+    msg.get_output(idx).value = BigInt::from_uint256(uint256_temp);
   }
 
   Hash tx_hash = msg.hash();

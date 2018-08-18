@@ -7,16 +7,14 @@
 std::pair<VerifyKey, SecretKey> ed25519_generate_keypair()
 {
   std::pair<VerifyKey, SecretKey> keypair;
-  crypto_sign_ed25519_keypair((unsigned char*)keypair.first.data(),
-                              (unsigned char*)keypair.second.data());
+  crypto_sign_ed25519_keypair(keypair.first.data(), keypair.second.data());
   return keypair;
 }
 
 VerifyKey ed25519_sk_to_vk(const SecretKey& secret_key)
 {
   VerifyKey verify_key;
-  crypto_sign_ed25519_sk_to_pk((unsigned char*)verify_key.data(),
-                               (const unsigned char*)secret_key.data());
+  crypto_sign_ed25519_sk_to_pk(verify_key.data(), secret_key.data());
   return verify_key;
 }
 
@@ -25,25 +23,13 @@ Address ed25519_vk_to_addr(const VerifyKey& verify_key)
   return sha256(verify_key.data(), VerifyKey::Size).suffix<Address::Size>();
 }
 
-Signature ed25519_sign(const SecretKey& secret_key, const unsigned char* data,
+Signature ed25519_sign(const SecretKey& secret_key, const void* data,
                        size_t size)
 {
   SecretKey sig;
-  crypto_sign_ed25519_detached((unsigned char*)sig.data(), nullptr, data, size,
-                               (const unsigned char*)secret_key.data());
+  crypto_sign_ed25519_detached(sig.data(), nullptr, (const unsigned char*)data,
+                               size, secret_key.data());
   return sig;
-}
-
-Signature ed25519_sign(const SecretKey& secret_key, const char* data,
-                       size_t size)
-{
-  return ed25519_sign(secret_key, (const unsigned char*)data, size);
-}
-
-Signature ed25519_sign(const SecretKey& secret_key, const std::byte* data,
-                       size_t size)
-{
-  return ed25519_sign(secret_key, (const unsigned char*)data, size);
 }
 
 Signature ed25519_sign(const SecretKey& secret_key, const std::string& data)
@@ -52,24 +38,11 @@ Signature ed25519_sign(const SecretKey& secret_key, const std::string& data)
 }
 
 bool ed25519_verify(const Signature& sig, const VerifyKey& verify_key,
-                    const unsigned char* data, size_t size)
+                    const void* data, size_t size)
 {
-  return true;
-  // return crypto_sign_ed25519_verify_detached(
-  //            (const unsigned char*)sig.data(), data, size,
-  //            (const unsigned char*)verify_key.data()) == 0;
-}
-
-bool ed25519_verify(const Signature& sig, const VerifyKey& verify_key,
-                    const char* data, size_t size)
-{
-  return ed25519_verify(sig, verify_key, (const unsigned char*)data, size);
-}
-
-bool ed25519_verify(const Signature& sig, const VerifyKey& verify_key,
-                    const std::byte* data, size_t size)
-{
-  return ed25519_verify(sig, verify_key, (const unsigned char*)data, size);
+  return crypto_sign_ed25519_verify_detached(sig.data(),
+                                             (const unsigned char*)data, size,
+                                             verify_key.data()) == 0;
 }
 
 bool ed25519_verify(const Signature& sig, const VerifyKey& verify_key,

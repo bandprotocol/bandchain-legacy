@@ -18,6 +18,12 @@ public:
   /// Parse a hex string into an n-byte structure.
   static Bytes from_hex(const std::string& hex_string);
 
+  /// Parse a boost's uint256 into 64-byte representation.
+  static Bytes<32> from_uint256(const uint256_t& int_value);
+
+  /// Convert this structure into a boost's uint256.
+  uint256_t as_uint256() const;
+
   /// Simple comparison operators.
   bool operator==(const Bytes& rhs) const;
   bool operator!=(const Bytes& rhs) const { return !operator==(rhs); }
@@ -26,33 +32,39 @@ public:
   template <int RHS_SIZE>
   Bytes<SIZE + RHS_SIZE> operator+(const Bytes<RHS_SIZE>& rhs) const;
 
-  /// Return the first RET_SIZE bytes of this structure
+  /// Return the first RET_SIZE bytes of this structure.
   template <int RET_SIZE>
   Bytes<RET_SIZE> prefix() const;
 
-  /// Return the last RET_SIZE bytes of this structure
+  /// Return the last RET_SIZE bytes of this structure.
   template <int RET_SIZE>
   Bytes<RET_SIZE> suffix() const;
 
+  /// Return the idx^bit of this structure.
+  bool get_bit(size_t idx) const;
+
+  /// Return the idx^th byte of this structure.
+  unsigned char get_byte(size_t idx) const { return rawdata[idx]; };
+
   /// Return the raw representation.
-  std::byte* data() { return rawdata.data(); }
+  unsigned char* data() { return rawdata.data(); }
 
   /// Similar to above, but for const variant.
-  const std::byte* data() const { return rawdata.data(); }
+  const unsigned char* data() const { return rawdata.data(); }
 
   /// Return a friendly hex representation of this hash value.
   std::string to_string() const;
 
 private:
-  std::array<std::byte, SIZE> rawdata;
+  std::array<unsigned char, SIZE> rawdata = {};
 };
 
-using Address = Bytes<20>;   //< TODO
-using Hash = Bytes<32>;      //< TODO
-using Ident = Bytes<32>;     //< TODO
-using VerifyKey = Bytes<32>; //< TODO
-using SecretKey = Bytes<64>; //< TODO
-using Signature = Bytes<64>; //< TODO
+using Address = Bytes<20>;   //< Public wallet address
+using BigInt = Bytes<32>;    //< Big-endian 256 bit unsigned integer
+using Hash = Bytes<32>;      //< SHA-256 hash value
+using VerifyKey = Bytes<32>; //< Ed25519 verify key
+using SecretKey = Bytes<64>; //< Ed25519 secret key
+using Signature = Bytes<64>; //< Ed25519 signature
 
 namespace std
 {
@@ -66,14 +78,14 @@ struct hash<Bytes<SIZE>> {
 } // namespace std
 
 ////////////////////////////////////////////////////////////////////////////////
-static inline std::byte hex_to_byte(char hex_digit)
+static inline unsigned char hex_to_byte(char hex_digit)
 {
   if ('0' <= hex_digit && hex_digit <= '9') {
-    return std::byte(hex_digit - '0');
+    return hex_digit - '0';
   } else if ('a' <= hex_digit && hex_digit <= 'f') {
-    return std::byte(hex_digit - 'a' + 10);
+    return hex_digit - 'a' + 10;
   } else if ('A' <= hex_digit && hex_digit <= 'F') {
-    return std::byte(hex_digit - 'A' + 10);
+    return hex_digit - 'A' + 10;
   } else {
     throw std::runtime_error("Invalid hex digit character");
   }
@@ -98,10 +110,28 @@ Bytes<SIZE> Bytes<SIZE>::from_hex(const std::string& hex_string)
   }
   Bytes<SIZE> ret;
   for (int i = 0; i < SIZE; ++i) {
-    ret.rawdata[i] = std::byte((hex_to_byte(hex_string[2 * i + 0]) << 4) |
-                               (hex_to_byte(hex_string[2 * i + 1]) << 0));
+    ret.rawdata[i] = (hex_to_byte(hex_string[2 * i + 0]) << 4) |
+                     (hex_to_byte(hex_string[2 * i + 1]) << 0);
   }
   return ret;
+}
+
+template <int SIZE>
+Bytes<32> Bytes<SIZE>::from_uint256(const uint256_t& int_value)
+{
+  Bytes<32> ret;
+  export_bits(int_value, ret.rawdata.rbegin(), 8, false);
+  return ret;
+}
+
+template <int SIZE>
+uint256_t Bytes<SIZE>::as_uint256() const
+{
+  static_assert(SIZE == 32, "Only Bytes<32> can be converted to uint256_t");
+  uint256_t ret;
+  import_bits(ret, rawdata.begin(), rawdata.end());
+  return ret;
+  return 0;
 }
 
 template <int SIZE>
@@ -139,11 +169,17 @@ Bytes<RET_SIZE> Bytes<SIZE>::suffix() const
 }
 
 template <int SIZE>
+bool Bytes<SIZE>::get_bit(size_t idx) const
+{
+  return get_byte(idx >> 3) & (128 >> (idx & 7));
+}
+
+template <int SIZE>
 std::string Bytes<SIZE>::to_string() const
 {
   std::string ret;
-  for (std::byte b : rawdata) {
-    ret += "{:02x}"_format((unsigned char)b);
+  for (unsigned char b : rawdata) {
+    ret += "{:02x}"_format(b);
   }
   return ret;
 }

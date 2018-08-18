@@ -5,8 +5,8 @@
 struct TxMsg : Msg {
   static constexpr MsgType MsgID = MsgType::TX;
 
-  uint8_t input_cnt = 0;
-  uint8_t output_cnt = 0;
+  big_uint8_t input_cnt = 0;
+  big_uint8_t output_cnt = 0;
 
   struct TxInput {
     Hash id;
@@ -15,11 +15,11 @@ struct TxMsg : Msg {
 
   struct TxOutput {
     Address addr;
-    uint64_t value = 0;
+    BigInt value;
   };
 
   struct TxSig {
-    Bytes<64> sig;
+    Signature sig;
   };
 
   /// As required by base message.
@@ -37,5 +37,4 @@ struct TxMsg : Msg {
   /// Return the idx^th input signature of this transaction.
   Signature& get_signature(uint8_t idx);
   const Signature& get_signature(uint8_t idx) const;
-
-} __attribute__((packed));
+};

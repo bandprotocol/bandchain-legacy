@@ -22,15 +22,15 @@ add_library(bandprotocol STATIC
             abci/abci.pb.cc
             ${source_files})
 
-enable_testing()
-file(GLOB test_files "test/*_test.h")
-CXXTEST_ADD_TEST(band_test_runner band_test_runner.cc "${test_files}")
-target_link_libraries(band_test_runner bandprotocol)
-
 target_link_libraries(bandprotocol
                       ${Boost_LIBRARIES}
                       ${Protobuf_LIBRARIES}
                       ${sodium_LIBRARY_RELEASE})
+
+enable_testing()
+file(GLOB test_files "test/*_test.h")
+CXXTEST_ADD_TEST(band_test_runner band_test_runner.cc "${test_files}")
+target_link_libraries(band_test_runner bandprotocol)
 
 file(GLOB main_files "src/main/*.cxx")
 foreach(main_file ${main_files})

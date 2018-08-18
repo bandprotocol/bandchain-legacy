@@ -5,6 +5,7 @@
 #include "msg/tx.h"
 #include "net/server.h"
 #include "net/tmapp.h"
+#include "state/merkle.h"
 #include "state/output.h"
 
 class BitcoinApplication : public TendermintApplication
@@ -21,9 +22,10 @@ public:
   void init(const std::string& init_state) final
   {
     (void)init_state;
-    utxos.clear();
-    utxos[Ident()] = std::pair(
-        Address::from_hex("79e56486055732bc050fea8de33635e6cda17cd1"), 10'000);
+    // utxos.clear();
+
+    Address me = Address::from_hex("79e56486055732bc050fea8de33635e6cda17cd1");
+    state.add(std::make_unique<TxOutput>(me, 10'000, Hash()));
     tx_count = 0;
   }
 
@@ -33,11 +35,7 @@ public:
     (void)path;
     (void)data;
     std::string ret;
-    ret += "tx count: {}\n"_format(tx_count);
-    for (auto& [tx_id, tx_value] : utxos) {
-      ret += "{}: owner={} value={}\n"_format(tx_id, tx_value.first,
-                                              tx_value.second);
-    }
+    ret += "tx count: {}\n{}\n"_format(tx_count, state);
     return ret;
   }
 
@@ -59,18 +57,20 @@ public:
         return false;
       }
 
-      uint64_t total_input_value = 0;
-      uint64_t total_output_value = 0;
+      uint256_t total_input_value = 0;
+      uint256_t total_output_value = 0;
       const Bytes<32> tx_hash = tx_msg.hash();
 
       for (uint8_t idx = 0; idx < tx_msg.input_cnt; ++idx) {
         const TxMsg::TxInput& tx_input = tx_msg.get_input(idx);
-        auto it = utxos.find(tx_input.id);
-        if (it == utxos.end()) {
+
+        const Hashable& data = state.find(tx_input.id);
+        if (data.type() != HashableType::TxOutput) {
           return false;
         }
 
-        if (ed25519_vk_to_addr(tx_input.vk) != it->second.first) {
+        const TxOutput& txo = static_cast<const TxOutput&>(data);
+        if (!txo.spendable(tx_input.vk)) {
           return false;
         }
 
@@ -78,18 +78,19 @@ public:
                             tx_hash.data(), 32))
           return false;
 
-        if (total_input_value + it->second.second < total_input_value) {
+        if (total_input_value + txo.get_value() < total_input_value) {
           return false;
         }
-        total_input_value += it->second.second;
+        total_input_value += txo.get_value();
       }
 
       for (uint8_t idx = 0; idx < tx_msg.output_cnt; ++idx) {
         const TxMsg::TxOutput& tx_output = tx_msg.get_output(idx);
-        if (total_output_value + tx_output.value < total_output_value) {
+        if (total_output_value + tx_output.value.as_uint256() <
+            total_output_value) {
           return false;
         }
-        total_output_value += tx_output.value;
+        total_output_value += tx_output.value.as_uint256();
       }
 
       if (total_input_value != total_output_value) {
@@ -99,14 +100,16 @@ public:
       if (apply) {
         for (uint8_t idx = 0; idx < tx_msg.input_cnt; ++idx) {
           const TxMsg::TxInput& tx_input = tx_msg.get_input(idx);
-          utxos.erase(tx_input.id);
+          TxOutput& txo = static_cast<TxOutput&>(state.find(tx_input.id));
+          txo.spend();
         }
 
-        Bytes<32> output_tx_hash = tx_hash;
+        Bytes<32> output_tx_nonce = tx_hash;
         for (uint8_t idx = 0; idx < tx_msg.output_cnt; ++idx) {
           const TxMsg::TxOutput& tx_output = tx_msg.get_output(idx);
-          output_tx_hash = sha256(output_tx_hash.data(), 32);
-          utxos[output_tx_hash] = std::pair(tx_output.addr, tx_output.value);
+          output_tx_nonce = sha256(output_tx_nonce);
+          state.add(std::make_unique<TxOutput>(
+              tx_output.addr, tx_output.value.as_uint256(), output_tx_nonce));
         }
         ++tx_count;
       }
@@ -117,7 +120,7 @@ public:
   }
 
 private:
-  std::unordered_map<Ident, std::pair<Address, uint64_t>> utxos;
+  MerkleTree state;
   int tx_count = 0;
 };
 

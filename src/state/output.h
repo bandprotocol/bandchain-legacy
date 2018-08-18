@@ -1,12 +1,32 @@
 #pragma once
 
-class TxOutput
+#include "state/hashable.h"
+
+class TxOutput : public Hashable
 {
 public:
-  TxOutput() = default;
-  TxOutput(const TxOutput& txo) = default;
+  TxOutput(const Address& _owner, const uint256_t& _value, const Hash& _ident);
+
+  TxOutput(const TxOutput& rhs) = default;
+
+  /// As required by Hashable.
+  HashableType type() const final { return HashableType::TxOutput; }
+  Hash key() const final;
+  Hash hash() const final;
+  std::string to_string() const final;
+
+  /// Spend this transaction output.
+  void spend() { spent = true; }
+
+  /// Check if this transaction output can be spent by the given verify key.
+  bool spendable(const VerifyKey& vk) const;
+
+  /// Getter method to return the total value of this transaction ouput.
+  uint256_t get_value() const { return value; }
 
 private:
-  // Address owner;   //< Who owns this TxOutput?
-  // uint64_t amount; //< How much is this?
+  Address owner;      //< The address of the transaction output's owner
+  uint256_t value;    //< The total value of this transaction output
+  Hash ident;         //< Unique identifier of this transaction output
+  bool spent = false; //< Whether this output is spent
 };
