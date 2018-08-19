@@ -64,7 +64,7 @@ public:
 
 private:
   std::array<unsigned char, SIZE> rawdata = {};
-};
+} __attribute__((packed));
 
 using Address = Bytes<20>;   //< Public wallet address
 using BigInt = Bytes<32>;    //< Big-endian 256 bit unsigned integer

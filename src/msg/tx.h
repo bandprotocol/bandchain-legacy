@@ -38,3 +38,4 @@ struct TxMsg : Msg {
   Signature& get_signature(uint8_t idx);
   const Signature& get_signature(uint8_t idx) const;
 };
+static_assert(sizeof(TxMsg) == sizeof(Msg) + 2, "Invalid TxMsg size");
