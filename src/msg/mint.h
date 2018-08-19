@@ -3,10 +3,11 @@
 #include "msg/base.h"
 
 struct MintMsg : Msg {
-  static constexpr MsgType MsgID = MsgType::MINT;
+  static constexpr MsgType MsgID = MsgType::Mint;
 
   Address addr;
   BigInt value;
+  Hash ident;
 
   /// As required by base message.
   size_t size() const { return sizeof(MintMsg); }

@@ -6,11 +6,9 @@ class TxOutput : public Hashable
 {
 public:
   TxOutput(const Address& _owner, const uint256_t& _value, const Hash& _ident);
-
   TxOutput(const TxOutput& rhs) = default;
 
   /// As required by Hashable.
-  HashableType type() const final { return HashableType::TxOutput; }
   Hash key() const final;
   Hash hash() const final;
   std::string to_string() const final;
@@ -19,7 +17,7 @@ public:
   void spend() { spent = true; }
 
   /// Check if this transaction output can be spent by the given verify key.
-  bool spendable(const VerifyKey& vk) const;
+  bool is_spendable(const VerifyKey& vk) const;
 
   /// Getter method to return the total value of this transaction ouput.
   uint256_t get_value() const { return value; }

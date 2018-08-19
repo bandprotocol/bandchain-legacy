@@ -34,13 +34,40 @@ void TendermintApplication::do_begin_block(const RequestBeginBlock&)
 void TendermintApplication::do_check_tx(const RequestCheckTx& req,
                                         ResponseCheckTx& res)
 {
-  res.set_code(check(req.tx(), false) ? 0 : 1);
+  try {
+    apply(req.tx(), DryRun::Yes);
+    res.set_code(0);
+  } catch (const std::invalid_argument& err) {
+    res.set_info(err.what());
+    res.set_code(1);
+  } catch (const std::overflow_error& e) {
+    res.set_info("uint256 integer overflow");
+    res.set_code(1);
+  } catch (const std::range_error& e) {
+    res.set_info("uint256 range error");
+    res.set_code(1);
+  } catch (const std::bad_cast& e) {
+    res.set_info("Invalid identifier");
+    res.set_code(1);
+  }
 }
 
 void TendermintApplication::do_deliver_tx(const RequestDeliverTx& req,
                                           ResponseDeliverTx& res)
 {
-  res.set_code(check(req.tx(), true) ? 0 : 1);
+  try {
+    apply(req.tx(), DryRun::No);
+    res.set_code(0);
+  } catch (const std::invalid_argument& err) {
+    res.set_info(err.what());
+    res.set_code(1);
+  } catch (const std::overflow_error& e) {
+    res.set_info("uint256 integer overflow");
+    res.set_code(1);
+  } catch (const std::range_error& e) {
+    res.set_info("Invalid identifier");
+    res.set_code(1);
+  }
 }
 
 void TendermintApplication::do_end_block(const RequestEndBlock&,

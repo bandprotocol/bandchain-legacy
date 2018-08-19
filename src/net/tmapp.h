@@ -22,9 +22,11 @@ public:
   virtual std::string query(const std::string& path,
                             const std::string& data) const = 0;
 
-  /// Check an incoming message. If 'apply' is true, also apply the message
-  /// to the internal state.
-  virtual bool check(const std::string& msg_data, bool apply) = 0;
+  enum class DryRun : uint8_t { Yes, No };
+
+  /// Apply an incoming message. If DryRun is Yes, do not actually modify
+  /// the internal state.
+  virtual void apply(const std::string& msg_data, DryRun dry_run) = 0;
 
 protected:
   uint64_t last_block_height = 0;

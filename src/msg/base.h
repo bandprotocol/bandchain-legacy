@@ -5,7 +5,7 @@
 #include "util/enum.h"
 
 /// All message types in Band Protocol.
-BETTER_ENUM(MsgType, uint16_t, UNSET = 0, MINT = 1, TX = 2);
+BETTER_ENUM(MsgType, uint16_t, UNSET = 0, Mint = 1, Tx = 2);
 
 /// Base message type. Any message to the blockchain must be a subclass of this.
 struct Msg {
@@ -15,6 +15,7 @@ struct Msg {
   /// To be implemented by each of the messages.
   size_t size() const { throw std::runtime_error("size unimplemented"); }
 
+  /// Return the hash data of the message. Used to verify message validity.
   /// To be implemented by each of the messages.
   Hash hash() const { throw std::runtime_error("hash unimplemented"); }
 };

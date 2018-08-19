@@ -3,13 +3,13 @@
 #include "msg/base.h"
 
 struct TxMsg : Msg {
-  static constexpr MsgType MsgID = MsgType::TX;
+  static constexpr MsgType MsgID = MsgType::Tx;
 
   big_uint8_t input_cnt = 0;
   big_uint8_t output_cnt = 0;
 
   struct TxInput {
-    Hash id;
+    Hash ident;
     VerifyKey vk;
   };
 

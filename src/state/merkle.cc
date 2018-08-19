@@ -23,7 +23,7 @@ bool MerkleTree::add(std::unique_ptr<Hashable> data)
   return true;
 }
 
-Hashable& MerkleTree::find(const Hash& key)
+Hashable& MerkleTree::find_hashable(const Hash& key) const
 {
   auto current = std::ref(root);
 
@@ -50,13 +50,13 @@ Hash MerkleTree::MerkleNode::hash() const
   Hash hash0 = children[0] ? children[0]->hash() : Hash();
   Hash hash1 = children[1] ? children[1]->hash() : Hash();
 
-  if (hash0 != Hash() && hash1 != Hash())
+  if (!hash0.is_empty() && !hash1.is_empty())
     return sha256(hash0 + hash1);
 
-  if (hash0 != Hash())
+  if (!hash0.is_empty())
     return hash0;
 
-  if (hash1 != Hash())
+  if (!hash1.is_empty())
     return hash1;
 
   return Hash();
@@ -72,5 +72,5 @@ std::string MerkleTree::MerkleNode::to_string() const
     return children[1]->to_string();
   if (!children[1])
     return children[0]->to_string();
-  return children[0]->to_string() + children[1]->to_string();
+  return children[0]->to_string() + "\n" + children[1]->to_string();
 }

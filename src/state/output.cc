@@ -24,7 +24,7 @@ std::string TxOutput::to_string() const
                                                    spent ? " [SPENT]" : "");
 }
 
-bool TxOutput::spendable(const VerifyKey& vk) const
+bool TxOutput::is_spendable(const VerifyKey& vk) const
 {
   return !spent && ed25519_vk_to_addr(vk) == owner;
 }

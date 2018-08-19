@@ -21,3 +21,9 @@ bool ed25519_verify(const Signature& sig, const VerifyKey& verify_key,
                     const void* data, size_t size);
 bool ed25519_verify(const Signature& sig, const VerifyKey& verify_key,
                     const std::string& data);
+template <int SIZE>
+bool ed25519_verify(const Signature& sig, const VerifyKey& verify_key,
+                    const Bytes<SIZE>& data)
+{
+  return ed25519_verify(sig, verify_key, data.data(), SIZE);
+}

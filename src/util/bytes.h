@@ -28,6 +28,9 @@ public:
   bool operator==(const Bytes& rhs) const;
   bool operator!=(const Bytes& rhs) const { return !operator==(rhs); }
 
+  ///  Convinient function to check if all bits are zeroes.
+  bool is_empty() const { return operator==(Bytes()); }
+
   /// Concat this bytes with another.
   template <int RHS_SIZE>
   Bytes<SIZE + RHS_SIZE> operator+(const Bytes<RHS_SIZE>& rhs) const;
@@ -51,6 +54,9 @@ public:
 
   /// Similar to above, but for const variant.
   const unsigned char* data() const { return rawdata.data(); }
+
+  /// Return a string containing this data.
+  std::string to_raw_string() const;
 
   /// Return a friendly hex representation of this hash value.
   std::string to_string() const;
@@ -172,6 +178,12 @@ template <int SIZE>
 bool Bytes<SIZE>::get_bit(size_t idx) const
 {
   return get_byte(idx >> 3) & (128 >> (idx & 7));
+}
+
+template <int SIZE>
+std::string Bytes<SIZE>::to_raw_string() const
+{
+  return std::string((const char*)data(), SIZE);
 }
 
 template <int SIZE>

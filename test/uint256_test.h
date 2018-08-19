@@ -7,10 +7,12 @@ class UnsignedInt256Test : public CxxTest::TestSuite
 public:
   void testHello()
   {
-    uint256_t n1 = 1024 * 1024 * 1024;
+    uint256_t n1 = 9'223'372'036'854'775'807;
+    n1 *= 9'223'372'036'854'775'807;
     auto x = BigInt::from_uint256(n1);
     uint256_t n2 = x.as_uint256();
     TS_ASSERT_EQUALS(n1, n2);
+    log::info("yo {}", n1);
     log::info("hello {}", x);
 
     auto y = Bytes<1>::from_hex("f1");

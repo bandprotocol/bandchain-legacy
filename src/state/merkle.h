@@ -2,8 +2,6 @@
 
 #include <boost/optional.hpp>
 #include <memory>
-// #include <optional>
-// #include <variant>
 
 #include "state/hashable.h"
 
@@ -17,7 +15,18 @@ public:
   /// Find the hashable data corresponding to the given key. Return the
   /// reference on to nil if the key does not exist. The reference will be
   /// valid if the data is removed from the tree.
-  Hashable& find(const Hash& key);
+  Hashable& find_hashable(const Hash& key) const;
+
+  /// Check if the given key exists in this structure.
+  bool contains(const Hash& key) const { return &find_hashable(key) != &NIL; }
+
+  /// Find the hashable data as the given type. Throw std::bad_cast on failure.
+  template <typename T,
+            typename = std::enable_if_t<std::is_base_of_v<Hashable, T>>>
+  T& find(const Hash& key) const
+  {
+    return dynamic_cast<T&>(find_hashable(key));
+  }
 
   /// Return the hash of this merkle tree's root.
   Hash hash() const { return root->hash(); }
