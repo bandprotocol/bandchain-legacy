@@ -11,6 +11,7 @@ public:
   Bytes(const Bytes& bytes) = default;
 
   static constexpr size_t Size = SIZE;
+  static constexpr size_t Bits = SIZE << 3;
 
   /// Create an n-byte structure from a raw string.
   static Bytes from_raw(const std::string& raw_string);
