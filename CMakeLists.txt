@@ -14,6 +14,7 @@ find_package(Sodium REQUIRED)
 find_package(CxxTest REQUIRED)
 
 include_directories(3pc/spdlog-0.17.0/include)
+include_directories(3pc/gsl-0cebbd7/include)
 include_directories(. src test)
 
 file(GLOB source_files "src/**/*.h" "src/**/*.cc")
