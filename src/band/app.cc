@@ -29,6 +29,10 @@ void BandApplication::apply(const std::string& msg_data, DryRun dry_run)
         "Invalid base message size {}"_format(msg_size));
 
   const Msg& msg = *reinterpret_cast<const Msg*>(msg_data.c_str());
+  if (msg_size != msg.msg_size)
+    throw std::invalid_argument(
+        "Inconsistent message size {} vs {}"_format(msg_size, msg.msg_size));
+
   switch (msg.msg_type) {
 #define CASE(TYPE, TYPE_LOWER)                                                 \
   case MsgType::TYPE: {                                                        \
@@ -36,7 +40,7 @@ void BandApplication::apply(const std::string& msg_data, DryRun dry_run)
       throw std::invalid_argument(                                             \
           "Invalid static message size {}"_format(msg_size));                  \
     const TYPE##Msg& actual_msg = static_cast<const TYPE##Msg&>(msg);          \
-    if (msg_size < actual_msg.size())                                          \
+    if (msg_size < base::msg_size(actual_msg))                                 \
       throw std::invalid_argument(                                             \
           "Invalid dynamic message size {}"_format(msg_size));                 \
     check_##TYPE_LOWER(actual_msg);                                            \
@@ -75,22 +79,23 @@ void BandApplication::check_tx(const TxMsg& tx_msg) const
   uint256_t total_input_value = 0;
   uint256_t total_output_value = 0;
 
-  for (size_t idx = 0; idx < tx_msg.input_cnt; ++idx) {
-    const auto& tx_input = tx_msg.get_input(idx);
+  const Hash tx_det_hash = tx_msg.deterministic_hash();
+
+  for (const auto& tx_input : tx_msg.inputs()) {
     const auto& tx_input_object = state.find<TxOutput>(tx_input.ident);
 
     if (!tx_input_object.is_spendable(tx_input.vk))
       throw std::invalid_argument("Ident {} is not spendable by {}"_format(
           tx_input.ident, tx_input.vk));
 
-    if (!ed25519_verify(tx_msg.get_signature(idx), tx_input.vk, tx_msg.hash()))
+    // TODO
+    if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_det_hash))
       throw std::invalid_argument("Bad Tx signature");
 
     total_input_value += tx_input_object.get_value();
   }
 
-  for (size_t idx = 0; idx < tx_msg.output_cnt; ++idx) {
-    const auto& tx_output = tx_msg.get_output(idx);
+  for (const auto& tx_output : tx_msg.outputs()) {
     total_output_value += tx_output.value.as_uint256();
   }
 
@@ -102,17 +107,14 @@ void BandApplication::check_tx(const TxMsg& tx_msg) const
 
 void BandApplication::apply_tx(const TxMsg& tx_msg)
 {
-  for (size_t idx = 0; idx < tx_msg.input_cnt; ++idx) {
-    const auto& tx_input = tx_msg.get_input(idx);
+  for (const auto& tx_input : tx_msg.inputs()) {
     auto& tx_input_object = state.find<TxOutput>(tx_input.ident);
-
     tx_input_object.spend();
   }
 
-  Hash tx_output_ident = tx_msg.hash();
-  for (size_t idx = 0; idx < tx_msg.output_cnt; ++idx) {
-    const auto& tx_output = tx_msg.get_output(idx);
-
+  // TODO
+  Hash tx_output_ident; // = tx_msg.hash();
+  for (const auto& tx_output : tx_msg.outputs()) {
     tx_output_ident = sha256(tx_output_ident);
     state.add(std::make_unique<TxOutput>(
         tx_output.addr, tx_output.value.as_uint256(), tx_output_ident));

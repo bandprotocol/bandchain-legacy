@@ -1,16 +1,18 @@
 #pragma once
 
+#include "crypto/sha256.h"
 #include "msg/base.h"
 
 struct TxMsg : Msg {
   static constexpr MsgType MsgID = MsgType::Tx;
 
-  big_uint8_t input_cnt = 0;
-  big_uint8_t output_cnt = 0;
+  big_uint8_t input_count = 0;
+  big_uint8_t output_count = 0;
 
   struct TxInput {
     Hash ident;
     VerifyKey vk;
+    Signature sig;
   };
 
   struct TxOutput {
@@ -18,24 +20,45 @@ struct TxMsg : Msg {
     BigInt value;
   };
 
-  struct TxSig {
-    Signature sig;
-  };
-
-  /// As required by base message.
+  /// Return the dynamic size of this transaction message.
   size_t size() const;
-  Hash hash() const;
 
-  /// Return the idx^th input of this transaction.
-  TxInput& get_input(uint8_t idx);
-  const TxInput& get_input(uint8_t idx) const;
+  /// Return the sha256 hash of this transaction, with all signatures set to 0.
+  /// This is not very efficient and should only be called once per transaction.
+  Hash deterministic_hash() const;
 
-  /// Return the idx^th output of this transaction.
-  TxOutput& get_output(uint8_t idx);
-  const TxOutput& get_output(uint8_t idx) const;
+  gsl::span<TxInput> inputs();
+  gsl::span<const TxInput> inputs() const;
 
-  /// Return the idx^th input signature of this transaction.
-  Signature& get_signature(uint8_t idx);
-  const Signature& get_signature(uint8_t idx) const;
+  gsl::span<TxOutput> outputs();
+  gsl::span<const TxOutput> outputs() const;
 };
 static_assert(sizeof(TxMsg) == sizeof(Msg) + 2, "Invalid TxMsg size");
+
+////////////////////////////////////////////////////////////////////////////////
+inline Hash TxMsg::deterministic_hash() const
+{
+  std::vector<unsigned char> copy_buf(size());
+  return sha256(copy_buf);
+}
+
+inline size_t TxMsg::size() const
+{
+  const size_t base_size = sizeof(TxMsg);
+  const size_t input_size = sizeof(TxMsg::TxInput) * input_count;
+  const size_t output_size = sizeof(TxMsg::TxOutput) * output_count;
+  return base_size + input_size + output_size;
+}
+
+inline gsl::span<const TxMsg::TxInput> TxMsg::inputs() const
+{
+  auto base = reinterpret_cast<const unsigned char*>(this) + sizeof(TxMsg);
+  return {reinterpret_cast<const TxInput*>(base), input_count};
+}
+
+inline gsl::span<const TxMsg::TxOutput> TxMsg::outputs() const
+{
+  auto base = reinterpret_cast<const unsigned char*>(this) + sizeof(TxMsg);
+  auto offset = sizeof(TxMsg::TxInput) * input_count;
+  return {reinterpret_cast<const TxOutput*>(base + offset), output_count};
+}

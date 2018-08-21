@@ -60,19 +60,19 @@ public:
 
       uint256_t total_input_value = 0;
       uint256_t total_output_value = 0;
-      const Bytes<32> tx_hash = tx_msg.hash();
+      // TODO
+      const Bytes<32> tx_hash; // = tx_msg.hash();
 
-      for (uint8_t idx = 0; idx < tx_msg.input_cnt; ++idx) {
-        const TxMsg::TxInput& tx_input = tx_msg.get_input(idx);
-
+      for (const auto& tx_input : tx_msg.inputs()) {
         const auto& txo = state.find<TxOutput>(tx_input.ident);
         if (!txo.is_spendable(tx_input.vk)) {
           throw std::invalid_argument("Tx is not spendable");
         }
 
-        if (!ed25519_verify(tx_msg.get_signature(idx), tx_input.vk,
-                            tx_hash.data(), 32))
-          throw std::invalid_argument("Bad tx signature");
+        // TODO
+        // if (!ed25519_verify(tx_msg.get_signature(idx), tx_input.vk,
+        //                     tx_hash.data(), 32))
+        //   throw std::invalid_argument("Bad tx signature");
 
         if (total_input_value + txo.get_value() < total_input_value) {
           throw std::invalid_argument("overflow");
@@ -80,8 +80,7 @@ public:
         total_input_value += txo.get_value();
       }
 
-      for (uint8_t idx = 0; idx < tx_msg.output_cnt; ++idx) {
-        const TxMsg::TxOutput& tx_output = tx_msg.get_output(idx);
+      for (const auto& tx_output : tx_msg.outputs()) {
         if (total_output_value + tx_output.value.as_uint256() <
             total_output_value) {
           throw std::invalid_argument("overflow");
@@ -94,15 +93,13 @@ public:
       }
 
       if (dry_run == DryRun::No) {
-        for (uint8_t idx = 0; idx < tx_msg.input_cnt; ++idx) {
-          const TxMsg::TxInput& tx_input = tx_msg.get_input(idx);
+        for (const auto& tx_input : tx_msg.inputs()) {
           auto& txo = state.find<TxOutput>(tx_input.ident);
           txo.spend();
         }
 
         Bytes<32> output_tx_nonce = tx_hash;
-        for (uint8_t idx = 0; idx < tx_msg.output_cnt; ++idx) {
-          const TxMsg::TxOutput& tx_output = tx_msg.get_output(idx);
+        for (const auto& tx_output : tx_msg.outputs()) {
           output_tx_nonce = sha256(output_tx_nonce);
           state.add(std::make_unique<TxOutput>(
               tx_output.addr, tx_output.value.as_uint256(), output_tx_nonce));

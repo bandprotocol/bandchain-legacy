@@ -1,13 +1,12 @@
 #pragma once
 
+#include <sodium/crypto_hash_sha256.h>
+
 #include "util/bytes.h"
 
-/// Compute SHA-256 hash of a given data buffer and size.
-Hash sha256(const void* data, size_t size);
-Hash sha256(const std::string& data);
-
-template <int SIZE>
-Hash sha256(const Bytes<SIZE>& data)
+inline Hash sha256(gsl::span<const unsigned char> data)
 {
-  return sha256(data.data(), SIZE);
+  Hash hash;
+  crypto_hash_sha256(hash.data(), data.data(), data.size());
+  return hash;
 }

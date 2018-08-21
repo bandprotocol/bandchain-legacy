@@ -25,11 +25,17 @@ public:
   /// Convert this structure into a boost's uint256.
   uint256_t as_uint256() const;
 
+  /// Anywhere that accepts span<unsigned char> can also accepts Bytes.
+  operator gsl::span<unsigned char>() { return {data(), SIZE}; }
+
+  /// Similar to above, but for const variant.
+  operator gsl::span<const unsigned char>() const { return {data(), SIZE}; }
+
   /// Simple comparison operators.
   bool operator==(const Bytes& rhs) const;
   bool operator!=(const Bytes& rhs) const { return !operator==(rhs); }
 
-  ///  Convinient function to check if all bits are zeroes.
+  /// Convinient function to check if all bits are zeroes.
   bool is_empty() const { return operator==(Bytes()); }
 
   /// Concat this bytes with another.
