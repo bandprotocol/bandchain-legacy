@@ -76,10 +76,9 @@ void BandApplication::apply_mint(const MintMsg& mint_msg)
 
 void BandApplication::check_tx(const TxMsg& tx_msg) const
 {
+  const Hash tx_unsig_hash = tx_msg.unsig_hash();
   uint256_t total_input_value = 0;
   uint256_t total_output_value = 0;
-
-  const Hash tx_det_hash = tx_msg.deterministic_hash();
 
   for (const auto& tx_input : tx_msg.inputs()) {
     const auto& tx_input_object = state.find<TxOutput>(tx_input.ident);
@@ -88,8 +87,7 @@ void BandApplication::check_tx(const TxMsg& tx_msg) const
       throw std::invalid_argument("Ident {} is not spendable by {}"_format(
           tx_input.ident, tx_input.vk));
 
-    // TODO
-    if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_det_hash))
+    if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_unsig_hash))
       throw std::invalid_argument("Bad Tx signature");
 
     total_input_value += tx_input_object.get_value();
@@ -112,8 +110,7 @@ void BandApplication::apply_tx(const TxMsg& tx_msg)
     tx_input_object.spend();
   }
 
-  // TODO
-  Hash tx_output_ident; // = tx_msg.hash();
+  Hash tx_output_ident = tx_msg.unsig_hash();
   for (const auto& tx_output : tx_msg.outputs()) {
     tx_output_ident = sha256(tx_output_ident);
     state.add(std::make_unique<TxOutput>(
