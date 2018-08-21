@@ -11,8 +11,9 @@ void Session::serve() { async_read(); }
 void Session::process_read(size_t length)
 {
   read_buffer.append(socket_buffer, length);
-  while (app.process(read_buffer, write_buffer))
-    ;
+  while (app.process(read_buffer, write_buffer)) {
+    // Keep processing incoming messages until everything is done.
+  }
   async_write();
 }
 
@@ -31,8 +32,7 @@ void Session::async_read()
         if (!ec) {
           self->process_read(length);
         } else {
-          log::info("hey {}", ec.message());
-          throw std::runtime_error("Failed to read from socket");
+          log::warn("Failed to read from socket. Client disconnected");
         }
       });
 }
@@ -49,7 +49,7 @@ void Session::async_write()
         if (!ec) {
           self->process_write(length);
         } else {
-          throw std::runtime_error("Failed to write to socket");
+          log::warn("Failed to write to socket. Client disconnected");
         }
       });
 }
