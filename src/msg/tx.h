@@ -38,7 +38,7 @@ static_assert(sizeof(TxMsg) == sizeof(Msg) + 2, "Invalid TxMsg size");
 ////////////////////////////////////////////////////////////////////////////////
 inline Hash TxMsg::unsig_hash() const
 {
-  std::vector<unsigned char> copy_buf(size());
+  std::vector<std::byte> copy_buf(size());
   std::memcpy(copy_buf.data(), this, size());
   auto copy_tx_msg = reinterpret_cast<TxMsg*>(copy_buf.data());
   for (auto& tx_input : copy_tx_msg->inputs()) {
@@ -57,26 +57,26 @@ inline size_t TxMsg::size() const
 
 inline gsl::span<TxMsg::TxInput> TxMsg::inputs()
 {
-  auto base = reinterpret_cast<unsigned char*>(this) + sizeof(TxMsg);
+  auto base = reinterpret_cast<std::byte*>(this) + sizeof(TxMsg);
   return {reinterpret_cast<TxInput*>(base), input_count};
 }
 
 inline gsl::span<const TxMsg::TxInput> TxMsg::inputs() const
 {
-  auto base = reinterpret_cast<const unsigned char*>(this) + sizeof(TxMsg);
+  auto base = reinterpret_cast<const std::byte*>(this) + sizeof(TxMsg);
   return {reinterpret_cast<const TxInput*>(base), input_count};
 }
 
 inline gsl::span<TxMsg::TxOutput> TxMsg::outputs()
 {
-  auto base = reinterpret_cast<unsigned char*>(this) + sizeof(TxMsg);
+  auto base = reinterpret_cast<std::byte*>(this) + sizeof(TxMsg);
   auto offset = sizeof(TxMsg::TxInput) * input_count;
   return {reinterpret_cast<TxOutput*>(base + offset), output_count};
 }
 
 inline gsl::span<const TxMsg::TxOutput> TxMsg::outputs() const
 {
-  auto base = reinterpret_cast<const unsigned char*>(this) + sizeof(TxMsg);
+  auto base = reinterpret_cast<const std::byte*>(this) + sizeof(TxMsg);
   auto offset = sizeof(TxMsg::TxInput) * input_count;
   return {reinterpret_cast<const TxOutput*>(base + offset), output_count};
 }

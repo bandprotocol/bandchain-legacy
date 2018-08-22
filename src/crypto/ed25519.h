@@ -9,7 +9,8 @@
 inline std::pair<VerifyKey, SecretKey> ed25519_generate_keypair()
 {
   std::pair<VerifyKey, SecretKey> keypair;
-  crypto_sign_ed25519_keypair(keypair.first.data(), keypair.second.data());
+  crypto_sign_ed25519_keypair((unsigned char*)keypair.first.data(),
+                              (unsigned char*)keypair.second.data());
   return keypair;
 }
 
@@ -17,7 +18,8 @@ inline std::pair<VerifyKey, SecretKey> ed25519_generate_keypair()
 inline VerifyKey ed25519_sk_to_vk(const SecretKey& secret_key)
 {
   VerifyKey verify_key;
-  crypto_sign_ed25519_sk_to_pk(verify_key.data(), secret_key.data());
+  crypto_sign_ed25519_sk_to_pk((unsigned char*)verify_key.data(),
+                               (unsigned char*)secret_key.data());
   return verify_key;
 }
 
@@ -29,18 +31,20 @@ inline Address ed25519_vk_to_addr(const VerifyKey& verify_key)
 
 /// Sign Ed25519 signature.
 inline Signature ed25519_sign(const SecretKey& secret_key,
-                              gsl::span<const unsigned char> data)
+                              gsl::span<const std::byte> data)
 {
   SecretKey sig;
-  crypto_sign_ed25519_detached(sig.data(), nullptr, data.data(), data.size(),
-                               secret_key.data());
+  crypto_sign_ed25519_detached((unsigned char*)sig.data(), nullptr,
+                               (unsigned char*)data.data(), data.size(),
+                               (unsigned char*)secret_key.data());
   return sig;
 }
 
 /// Verify Ed25519 signature.
 inline bool ed25519_verify(const Signature& sig, const VerifyKey& verify_key,
-                           gsl::span<const unsigned char> data)
+                           gsl::span<const std::byte> data)
 {
   return crypto_sign_ed25519_verify_detached(
-             sig.data(), data.data(), data.size(), verify_key.data()) == 0;
+             (unsigned char*)sig.data(), (unsigned char*)data.data(),
+             data.size(), (unsigned char*)verify_key.data()) == 0;
 }

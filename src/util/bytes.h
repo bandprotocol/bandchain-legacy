@@ -25,11 +25,11 @@ public:
   /// Convert this structure into a boost's uint256.
   uint256_t as_uint256() const;
 
-  /// Anywhere that accepts span<unsigned char> can also accepts Bytes.
-  operator gsl::span<unsigned char>() { return {data(), SIZE}; }
+  /// Anywhere that accepts span<std::byte> can also accepts Bytes.
+  operator gsl::span<std::byte>() { return {data(), SIZE}; }
 
   /// Similar to above, but for const variant.
-  operator gsl::span<const unsigned char>() const { return {data(), SIZE}; }
+  operator gsl::span<const std::byte>() const { return {data(), SIZE}; }
 
   /// Simple comparison operators.
   bool operator==(const Bytes& rhs) const;
@@ -54,13 +54,13 @@ public:
   bool get_bit(size_t idx) const;
 
   /// Return the idx^th byte of this structure.
-  unsigned char get_byte(size_t idx) const { return rawdata[idx]; };
+  std::byte get_byte(size_t idx) const { return rawdata[idx]; };
 
   /// Return the raw representation.
-  unsigned char* data() { return rawdata.data(); }
+  std::byte* data() { return rawdata.data(); }
 
   /// Similar to above, but for const variant.
-  const unsigned char* data() const { return rawdata.data(); }
+  const std::byte* data() const { return rawdata.data(); }
 
   /// Return a string containing this data.
   std::string to_raw_string() const;
@@ -69,7 +69,7 @@ public:
   std::string to_string() const;
 
 private:
-  std::array<unsigned char, SIZE> rawdata = {};
+  std::array<std::byte, SIZE> rawdata = {};
 } __attribute__((packed));
 
 using Address = Bytes<20>;   //< Public wallet address
@@ -91,14 +91,14 @@ struct hash<Bytes<SIZE>> {
 } // namespace std
 
 ////////////////////////////////////////////////////////////////////////////////
-static inline unsigned char hex_to_byte(char hex_digit)
+static inline std::byte hex_to_byte(char hex_digit)
 {
   if ('0' <= hex_digit && hex_digit <= '9') {
-    return hex_digit - '0';
+    return std::byte(hex_digit - '0');
   } else if ('a' <= hex_digit && hex_digit <= 'f') {
-    return hex_digit - 'a' + 10;
+    return std::byte(hex_digit - 'a' + 10);
   } else if ('A' <= hex_digit && hex_digit <= 'F') {
-    return hex_digit - 'A' + 10;
+    return std::byte(hex_digit - 'A' + 10);
   } else {
     throw std::runtime_error("Invalid hex digit character");
   }
@@ -133,7 +133,8 @@ template <int SIZE>
 Bytes<32> Bytes<SIZE>::from_uint256(const uint256_t& int_value)
 {
   Bytes<32> ret;
-  export_bits(int_value, ret.rawdata.rbegin(), 8, false);
+  // TODO
+  // export_bits(int_value, ret.rawdata.rbegin(), 8, false);
   return ret;
 }
 
@@ -142,9 +143,9 @@ uint256_t Bytes<SIZE>::as_uint256() const
 {
   static_assert(SIZE == 32, "Only Bytes<32> can be converted to uint256_t");
   uint256_t ret;
-  import_bits(ret, rawdata.begin(), rawdata.end());
+  // TODO
+  // import_bits(ret, rawdata.begin(), rawdata.end());
   return ret;
-  return 0;
 }
 
 template <int SIZE>
@@ -184,7 +185,9 @@ Bytes<RET_SIZE> Bytes<SIZE>::suffix() const
 template <int SIZE>
 bool Bytes<SIZE>::get_bit(size_t idx) const
 {
-  return get_byte(idx >> 3) & (128 >> (idx & 7));
+  // return get_byte(idx >> 3) & (128 >> (idx & 7));
+  // TODO
+  return true;
 }
 
 template <int SIZE>
@@ -197,8 +200,8 @@ template <int SIZE>
 std::string Bytes<SIZE>::to_string() const
 {
   std::string ret;
-  for (unsigned char b : rawdata) {
-    ret += "{:02x}"_format(b);
+  for (auto b : rawdata) {
+    ret += "{:02x}"_format((unsigned char)b);
   }
   return ret;
 }
