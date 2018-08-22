@@ -10,6 +10,9 @@ public:
   Bytes() = default;
   Bytes(const Bytes& bytes) = default;
 
+  /// Convert boost's uint256 into bytes.
+  explicit Bytes(const uint256_t& int_value);
+
   static constexpr size_t Size = SIZE;
   static constexpr size_t Bits = SIZE << 3;
 
@@ -18,9 +21,6 @@ public:
 
   /// Parse a hex string into an n-byte structure.
   static Bytes from_hex(const std::string& hex_string);
-
-  /// Parse a boost's uint256 into 64-byte representation.
-  static Bytes<32> from_uint256(const uint256_t& int_value);
 
   /// Convert this structure into a boost's uint256.
   uint256_t as_uint256() const;
@@ -50,11 +50,11 @@ public:
   template <int RET_SIZE>
   Bytes<RET_SIZE> suffix() const;
 
-  /// Return the idx^bit of this structure.
-  bool get_bit(size_t idx) const;
-
   /// Return the idx^th byte of this structure.
-  std::byte get_byte(size_t idx) const { return rawdata[idx]; };
+  std::byte operator[](size_t idx) { return rawdata[idx]; }
+
+  /// Similar to above, but for const variant.
+  const std::byte& operator[](size_t idx) const { return rawdata[idx]; }
 
   /// Return the raw representation.
   std::byte* data() { return rawdata.data(); }
@@ -105,6 +105,14 @@ static inline std::byte hex_to_byte(char hex_digit)
 }
 
 template <int SIZE>
+Bytes<SIZE>::Bytes(const uint256_t& int_value)
+{
+  static_assert(SIZE == 32, "Only Bytes<32> can be converted from uint256_t");
+  export_bits(int_value, (uint8_t*)data(), 8, false);
+  std::reverse(rawdata.begin(), rawdata.end());
+}
+
+template <int SIZE>
 Bytes<SIZE> Bytes<SIZE>::from_raw(const std::string& raw_string)
 {
   if (raw_string.size() != SIZE) {
@@ -122,19 +130,10 @@ Bytes<SIZE> Bytes<SIZE>::from_hex(const std::string& hex_string)
     throw std::runtime_error("Invalid hex string length");
   }
   Bytes<SIZE> ret;
-  for (int i = 0; i < SIZE; ++i) {
+  for (size_t i = 0; i < SIZE; ++i) {
     ret.rawdata[i] = (hex_to_byte(hex_string[2 * i + 0]) << 4) |
                      (hex_to_byte(hex_string[2 * i + 1]) << 0);
   }
-  return ret;
-}
-
-template <int SIZE>
-Bytes<32> Bytes<SIZE>::from_uint256(const uint256_t& int_value)
-{
-  Bytes<32> ret;
-  // TODO
-  // export_bits(int_value, ret.rawdata.rbegin(), 8, false);
   return ret;
 }
 
@@ -143,8 +142,7 @@ uint256_t Bytes<SIZE>::as_uint256() const
 {
   static_assert(SIZE == 32, "Only Bytes<32> can be converted to uint256_t");
   uint256_t ret;
-  // TODO
-  // import_bits(ret, rawdata.begin(), rawdata.end());
+  import_bits(ret, (uint8_t*)data(), (uint8_t*)data() + SIZE);
   return ret;
 }
 
@@ -180,14 +178,6 @@ Bytes<RET_SIZE> Bytes<SIZE>::suffix() const
   Bytes<RET_SIZE> ret;
   std::memcpy(ret.data(), data() + SIZE - RET_SIZE, RET_SIZE);
   return ret;
-}
-
-template <int SIZE>
-bool Bytes<SIZE>::get_bit(size_t idx) const
-{
-  // return get_byte(idx >> 3) & (128 >> (idx & 7));
-  // TODO
-  return true;
 }
 
 template <int SIZE>
