@@ -15,7 +15,7 @@ Hash TxOutput::key() const { return ident; }
 
 Hash TxOutput::hash() const
 {
-  return spent ? sha256(owner + BigInt::from_uint256(value) + ident) : Hash();
+  return spent ? sha256(owner + BigInt(value) + ident) : Hash();
 }
 
 std::string TxOutput::to_string() const

@@ -8,7 +8,9 @@ bool MerkleTree::add(std::unique_ptr<Hashable> data)
   auto current = std::ref(root);
 
   for (size_t i = 0; i < Hash::Bits; ++i) {
-    bool bit_value = key.get_bit(i);
+    // TODO
+    // bool bit_value = key.get_bit(i);
+    bool bit_value = true;
     current = current.get()->children[bit_value];
     if (!current.get()) {
       current.get() = std::make_unique<MerkleNode>();
@@ -28,7 +30,9 @@ Hashable& MerkleTree::find_hashable(const Hash& key) const
   auto current = std::ref(root);
 
   for (size_t i = 0; i < Hash::Bits; ++i) {
-    bool bit_value = key.get_bit(i);
+    // TODO
+    // bool bit_value = key.get_bit(i);
+    bool bit_value = true;
     current = current.get()->children[bit_value];
     if (!current.get()) {
       return NIL;
