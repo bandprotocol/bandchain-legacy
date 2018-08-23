@@ -17,7 +17,14 @@ include_directories(3pc/spdlog-0.17.0/include)
 include_directories(3pc/gsl-0cebbd7/include)
 include_directories(. src test)
 
-file(GLOB source_files "src/**/*.h" "src/**/*.cc")
+file(GLOB source_files
+     "src/band/*.h" "src/band/*.cc"
+     "src/crypto/*.h" "src/crypto/*.cc"
+     "src/msg/*.h" "src/msg/*.cc"
+     "src/net/*.h" "src/net/*.cc"
+     "src/state/*.h" "src/state/*.cc"
+     "src/util/*.h" "src/util/*.cc")
+
 add_library(bandprotocol STATIC
             abci/abci.pb.h
             abci/abci.pb.cc
@@ -33,7 +40,7 @@ file(GLOB test_files "test/*_test.h")
 CXXTEST_ADD_TEST(band_test_runner band_test_runner.cc "${test_files}")
 target_link_libraries(band_test_runner bandprotocol)
 
-file(GLOB main_files "src/main/*.cxx")
+file(GLOB main_files "src/main/*.cc")
 foreach(main_file ${main_files})
   get_filename_component(executable "${main_file}" NAME)
   string(REGEX REPLACE "\\.[^.]*$" "" executable ${executable})

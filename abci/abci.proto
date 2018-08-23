@@ -1,22 +1,29 @@
-// This file is copied from http://github.com/tendermint/abci with some
-// modification to remove Go dependency.
-
 syntax = "proto3";
-package abci;
+package types;
 
+// For more information on gogo.proto, see:
+// https://github.com/gogo/protobuf/blob/master/extensions.md
+// import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
+// import "github.com/tendermint/tmlibs/common/types.proto";
 //----------------------------------------
 // Abstract types
 
+// Define these here for compatibility but use tmlibs/KVPair.
 message KVPair {
   bytes key = 1;
   bytes value = 2;
 }
 
+// Define these here for compatibility but use tmlibs/KI64Pair.
 message KI64Pair {
   bytes key = 1;
   int64 value = 2;
 }
+
+// This file is copied from http://github.com/tendermint/abci
+// NOTE: When using custom types, mind the warnings.
+// https://github.com/gogo/protobuf/blob/master/custom_types.md#warnings-and-issues
 
 //----------------------------------------
 // Request types
@@ -55,8 +62,11 @@ message RequestSetOption {
 }
 
 message RequestInitChain {
-  repeated Validator validators = 1;
-  bytes app_state_bytes = 2;
+  int64 time = 1;
+  string chain_id = 2;
+  ConsensusParams consensus_params = 3;
+  repeated Validator validators = 4;  // [(gogoproto.nullable)=false];
+  bytes app_state_bytes = 5;
 }
 
 message RequestQuery {
@@ -68,9 +78,9 @@ message RequestQuery {
 
 message RequestBeginBlock {
   bytes hash = 1;
-  Header header = 2;
-  repeated int32 absent_validators = 3;
-  repeated Evidence byzantine_validators = 4;
+  Header header = 2;  // [(gogoproto.nullable)=false];
+  repeated SigningValidator validators = 3;  // [(gogoproto.nullable)=false];
+  repeated Evidence byzantine_validators = 4;  // [(gogoproto.nullable)=false];
 }
 
 message RequestCheckTx {
@@ -136,6 +146,8 @@ message ResponseSetOption {
 }
 
 message ResponseInitChain {
+  ConsensusParams consensus_params = 1;
+  repeated Validator validators = 2;  // [(gogoproto.nullable)=false];
 }
 
 message ResponseQuery {
@@ -151,6 +163,7 @@ message ResponseQuery {
 }
 
 message ResponseBeginBlock {
+  repeated KVPair tags = 1;  // [(gogoproto.nullable)=false, (gogoproto.jsontag)="tags,omitempty"];
 }
 
 message ResponseCheckTx {
@@ -160,8 +173,8 @@ message ResponseCheckTx {
   string info = 4; // nondeterministic
   int64 gas_wanted  = 5;
   int64 gas_used = 6;
-  repeated KVPair tags = 7;
-  KI64Pair fee = 8;
+  repeated KVPair tags = 7;  // [(gogoproto.nullable)=false, (gogoproto.jsontag)="tags,omitempty"];
+  KI64Pair fee = 8;  // [(gogoproto.nullable)=false];
 }
 
 message ResponseDeliverTx {
@@ -171,13 +184,14 @@ message ResponseDeliverTx {
   string info = 4; // nondeterministic
   int64 gas_wanted = 5;
   int64 gas_used = 6;
-  repeated KVPair tags = 7;
-  KI64Pair fee = 8;
+  repeated KVPair tags = 7;  // [(gogoproto.nullable)=false, (gogoproto.jsontag)="tags,omitempty"];
+  KI64Pair fee = 8;  // [(gogoproto.nullable)=false];
 }
 
 message ResponseEndBlock {
-  repeated Validator validator_updates = 1;
+  repeated Validator validator_updates = 1;  // [(gogoproto.nullable)=false];
   ConsensusParams consensus_param_updates = 2;
+  repeated KVPair tags = 3;  // [(gogoproto.nullable)=false, (gogoproto.jsontag)="tags,omitempty"];
 }
 
 message ResponseCommit {
@@ -219,36 +233,50 @@ message BlockGossip {
 //----------------------------------------
 // Blockchain Types
 
+// just the minimum the app might need
 message Header {
-  string chain_id = 1;
+  // basics
+  string chain_id = 1;  // [(gogoproto.customname)="ChainID"];
   int64 height = 2;
   int64 time = 3;
+
+  // txs
   int32 num_txs = 4;
-  BlockID last_block_id = 5;
-  bytes last_commit_hash = 6;
-  bytes data_hash = 7;
-  bytes validators_hash = 8;
-  bytes app_hash = 9;
+  int64 total_txs = 5;
+
+  // hashes
+  bytes last_block_hash = 6;
+  bytes validators_hash = 7;
+  bytes app_hash = 8;
+
+  // consensus
+  Validator proposer = 9;  // [(gogoproto.nullable)=false];
 }
 
-message BlockID {
-  bytes hash = 1;
-  PartSetHeader parts = 2;
-}
-
-message PartSetHeader {
-  int32 total = 1;
-  bytes hash = 2;
-}
-
+// Validator
 message Validator {
-  bytes pub_key = 1;
-  int64 power = 2;
+  bytes address = 1;
+  PubKey pub_key = 2;  // [(gogoproto.nullable)=false];
+  int64 power = 3;
+}
+
+// Validator with an extra bool
+message SigningValidator {
+  Validator validator = 1;  // [(gogoproto.nullable)=false];
+  bool signed_last_block = 2;
+}
+
+message PubKey {
+  string type = 1;
+  bytes  data = 2;
 }
 
 message Evidence {
-  bytes pub_key = 1;
-  int64 height = 2;
+  string type = 1;
+  Validator validator = 2; // [(gogoproto.nullable)=false];
+  int64 height = 3;
+  int64 time = 4;
+  int64 total_voting_power = 5;
 }
 
 //----------------------------------------

@@ -26,7 +26,7 @@ inline VerifyKey ed25519_sk_to_vk(const SecretKey& secret_key)
 /// Convert Ed25519 verify key to address (unique to BAND).
 inline Address ed25519_vk_to_addr(const VerifyKey& verify_key)
 {
-  return sha256(verify_key).suffix<Address::Size>();
+  return sha256(verify_key).prefix<Address::Size>();
 }
 
 /// Sign Ed25519 signature.

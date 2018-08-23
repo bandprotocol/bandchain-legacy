@@ -41,5 +41,21 @@ int main()
   // log::info("sign(\"BAND\") = {}", band_sig);
   // log::info("verify(sig, vk, \"BAND\"): {}",
   //           ed25519_verify(band_sig, verify_key, "BAND"));
+
+  auto sk = SecretKey::from_hex(
+      "524422d772e263aca74c6b8585b40e750cc823f1255014143f989ad06b889998f00185f7"
+      "ff09ac4201288b7f5d4f14cb63ca2a6136fb529b573c4f31548209fb");
+  auto vk = ed25519_sk_to_vk(sk);
+  auto h1 = sha256(vk);
+  auto h2 = sha256(h1);
+  auto h3 = sha256(sk);
+  auto h4 = sha256(h3);
+
+  log::info("{}", vk);
+  log::info("{}", h1);
+  log::info("{}", h2);
+  log::info("{}", h3);
+  log::info("{}", h4);
+
   return 0;
 }

@@ -96,39 +96,39 @@ bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
   read_buffer.consume(size);
 
   switch (req.value_case()) {
-    case abci::Request::ValueCase::kEcho:
+    case Request::ValueCase::kEcho:
       res.mutable_echo()->set_message(req.echo().message());
       break;
-    case abci::Request::ValueCase::kFlush:
+    case Request::ValueCase::kFlush:
       res.mutable_flush();
       break;
-    case abci::Request::ValueCase::kInfo:
+    case Request::ValueCase::kInfo:
       do_info(req.info(), *res.mutable_info());
       break;
-    case abci::Request::ValueCase::kSetOption:
+    case Request::ValueCase::kSetOption:
       throw std::runtime_error("set_option is not supported");
       break;
-    case abci::Request::ValueCase::kInitChain:
+    case Request::ValueCase::kInitChain:
       res.mutable_init_chain();
       do_init_chain(req.init_chain());
       break;
-    case abci::Request::ValueCase::kQuery:
+    case Request::ValueCase::kQuery:
       do_query(req.query(), *res.mutable_query());
       break;
-    case abci::Request::ValueCase::kBeginBlock:
+    case Request::ValueCase::kBeginBlock:
       res.mutable_begin_block();
       do_begin_block(req.begin_block());
       break;
-    case abci::Request::ValueCase::kCheckTx:
+    case Request::ValueCase::kCheckTx:
       do_check_tx(req.check_tx(), *res.mutable_check_tx());
       break;
-    case abci::Request::ValueCase::kDeliverTx:
+    case Request::ValueCase::kDeliverTx:
       do_deliver_tx(req.deliver_tx(), *res.mutable_deliver_tx());
       break;
-    case abci::Request::ValueCase::kEndBlock:
+    case Request::ValueCase::kEndBlock:
       do_end_block(req.end_block(), *res.mutable_end_block());
       break;
-    case abci::Request::ValueCase::kCommit:
+    case Request::ValueCase::kCommit:
       do_commit(*res.mutable_commit());
       break;
     default:

@@ -33,7 +33,7 @@ protected:
 
 private:
   /// Return Tendermint version that this app supports.
-  std::string get_tm_version() { return "0.17.1"; }
+  std::string get_tm_version() { return "0.21.0-46369a1a"; }
 
   void do_info(const RequestInfo&, ResponseInfo&);
   void do_init_chain(const RequestInitChain&);

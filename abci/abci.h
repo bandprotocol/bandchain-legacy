@@ -1,2 +1,2 @@
 #include "abci.pb.h"
-using namespace abci;
+using namespace types;

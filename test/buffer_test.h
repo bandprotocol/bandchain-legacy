@@ -1,6 +1,7 @@
 #include <cxxtest/TestSuite.h>
-#include "util/buffer.h"
 #include <vector>
+
+#include "util/buffer.h"
 
 class BufferTest : public CxxTest::TestSuite
 {
@@ -62,15 +63,15 @@ public:
     // V.emplace_back(0xCD);
     std::byte a;
 
-    a = static_cast<std::byte> (0x72);
+    a = static_cast<std::byte>(0x72);
     V.push_back(a);
-    a = static_cast<std::byte> (0xDD);
+    a = static_cast<std::byte>(0xDD);
     V.push_back(a);
-    a = static_cast<std::byte> (0xCD);
+    a = static_cast<std::byte>(0xCD);
     V.push_back(a);
-    
+
     Buffer buf;
-    buf.append(&V[1],2);
+    buf.append(&V[1], 2);
     TS_ASSERT_EQUALS(2, buf.size());
     TS_ASSERT_EQUALS(*buf.begin(), std::byte{0xDD});
     TS_ASSERT_EQUALS(buf[1], std::byte{0xCD});
@@ -105,8 +106,8 @@ public:
     buf.clear();
     TS_ASSERT_EQUALS(2, buf2.size());
     TS_ASSERT_EQUALS(0, buf.size());
-    //How to check?
-    //TS_ASSERT_EQUALS(buf.begin(), nullptr);
+    // How to check?
+    // TS_ASSERT_EQUALS(buf.begin(), nullptr);
   }
 
   void testReserve()
