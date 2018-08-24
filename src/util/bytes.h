@@ -3,6 +3,8 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 
+#include "util/string.h"
+
 template <int SIZE>
 class Bytes
 {
@@ -189,9 +191,5 @@ std::string Bytes<SIZE>::to_raw_string() const
 template <int SIZE>
 std::string Bytes<SIZE>::to_string() const
 {
-  std::string ret;
-  for (auto b : rawdata) {
-    ret += "{:02x}"_format((unsigned char)b);
-  }
-  return ret;
+  return bytes_to_hex(*this);
 }

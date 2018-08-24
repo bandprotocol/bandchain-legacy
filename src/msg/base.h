@@ -1,55 +1,66 @@
 #pragma once
 
+#include <boost/endian/arithmetic.hpp>
+
 #include "crypto/sha256.h"
-#include "util/bytes.h"
-#include "util/enum.h"
+#include "util/string.h"
+
+using boost::endian::big_uint16_t;
+using boost::endian::big_uint32_t;
+using boost::endian::big_uint64_t;
+using boost::endian::big_uint8_t;
 
 /// All message types in Band Protocol.
-BETTER_ENUM(MsgType, uint16_t, Unset = 0, Mint = 1, Tx = 2);
+enum class MsgID : uint16_t {
+  Unset = 0,
+  Mint = 1,
+  Tx = 2,
+};
 
 /// Base message type. Any message to the blockchain must be a subclass of this.
-struct Msg {
-  big_uint16_t msg_type = 0; //< The type of this message
-  big_uint16_t msg_size = 0; //< The size of this message
-  big_uint64_t msg_ts = 0;   //< Epoch timestamp when this message is created
+template <typename Msg, MsgID _MsgID>
+struct MsgBase {
+  static constexpr MsgID ID = _MsgID;
 
-  /// Must be overridden if Msg has dynamic size.
-  size_t size() const;
+  big_uint16_t msgid = 0; //< The id of this message
+  big_uint16_t size = 0;  //< The size of this message
+  big_uint64_t ts = 0;    //< Epoch timestamp when this message is created
+
+  operator gsl::span<const std::byte>() const
+  {
+    return {reinterpret_cast<const std::byte*>(this), size};
+  }
+
+  MsgID id() const { return MsgID(uint16_t(msgid)); }
+
+  size_t msg_size() const
+  {
+    // Must be overridden if Msg has dynamic size.
+    static_assert(std::is_base_of_v<MsgBase, Msg>);
+    return sizeof(Msg);
+  }
+
+  std::string hex() const
+  {
+    static_assert(std::is_base_of_v<MsgBase, Msg>);
+    bytes_to_hex(this);
+  }
 };
-static_assert(sizeof(Msg) == 12, "Invalid Msg Base size");
 
-namespace base
-{
-template <typename T>
-bool msg_size_valid(const T& msg, size_t size)
-{
-  if (size != msg.msg_size)
-    return false;
-  if (size < sizeof(T))
-    return false;
-  if (size < msg_size(msg))
-    return false;
-  return true;
-}
+struct MsgBaseVoid : MsgBase<MsgBaseVoid, MsgID::Unset> {
+  template <typename T, typename = std::enable_if_t<
+                            std::is_base_of_v<MsgBase<T, T::ID>, T>>>
+  const T& as() const
+  {
+    if (size < sizeof(T))
+      throw Error("");
 
-/// Return the size of the message.
-template <typename T>
-size_t msg_size(const T& msg)
-{
-  if constexpr (!std::is_same_v<decltype(&T::size), decltype(&Msg::size)>) {
-    return msg.size();
+    const T& msg = reinterpret_cast<const T&>(*this);
+    if (size < msg.msg_size())
+      throw Error("");
+
+    return msg;
   }
-  return sizeof(T);
-}
+};
 
-/// Return the hex representation of the message. Not meant to be efficient.
-template <typename T>
-std::string msg_hex(const T& msg)
-{
-  std::string hex;
-  for (size_t idx = 0; idx < msg.size(); ++idx) {
-    hex += "{:02x}"_format(reinterpret_cast<const unsigned char*>(&msg)[idx]);
-  }
-  return hex;
-}
-} // namespace base
+static_assert(sizeof(MsgBaseVoid) == 12, "Invalid Msg Base size");

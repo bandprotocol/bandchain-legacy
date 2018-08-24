@@ -20,8 +20,9 @@ Hash TxOutput::hash() const
 
 std::string TxOutput::to_string() const
 {
-  return "TxOutput@{}(owner={} value={}{})"_format(ident, owner, value,
-                                                   spent ? " [SPENT]" : "");
+  return "";
+  // return "TxOutput@{}(owner={} value={}{})"_format(ident, owner, value,
+  //                                                  spent ? " [SPENT]" : "");
 }
 
 bool TxOutput::is_spendable(const VerifyKey& vk) const

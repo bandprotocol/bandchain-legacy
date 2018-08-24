@@ -3,8 +3,6 @@
 #include <memory>
 #include <utility>
 
-#include "spdlog/spdlog.h"
-
 class log
 {
 public:

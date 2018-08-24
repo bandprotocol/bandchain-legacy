@@ -24,48 +24,38 @@ std::string BandApplication::query(const std::string& path,
 void BandApplication::apply(const std::string& msg_data, DryRun dry_run)
 {
   const size_t msg_size = msg_data.size();
-  if (msg_size < sizeof(Msg))
-    throw std::invalid_argument(
-        "Invalid base message size {}"_format(msg_size));
+  if (msg_size < sizeof(MsgBaseVoid))
+    throw Error("Invalid base message size {}", msg_size);
 
-  const Msg& msg = *reinterpret_cast<const Msg*>(msg_data.c_str());
-  if (msg_size != msg.msg_size)
-    throw std::invalid_argument(
-        "Inconsistent message size {} vs {}"_format(msg_size, msg.msg_size));
+  const auto& msg = *reinterpret_cast<const MsgBaseVoid*>(msg_data.c_str());
+  if (msg_size != msg.size)
+    throw Error("Inconsistent message size {} vs {}", msg_size, msg.size);
 
-  switch (msg.msg_type) {
-#define CASE(TYPE, TYPE_LOWER)                                                 \
-  case MsgType::TYPE: {                                                        \
-    if (msg_size < sizeof(TYPE##Msg))                                          \
-      throw std::invalid_argument(                                             \
-          "Invalid static message size {}"_format(msg_size));                  \
-    const TYPE##Msg& actual_msg = static_cast<const TYPE##Msg&>(msg);          \
-    if (msg_size < base::msg_size(actual_msg))                                 \
-      throw std::invalid_argument(                                             \
-          "Invalid dynamic message size {}"_format(msg_size));                 \
-    check_##TYPE_LOWER(actual_msg);                                            \
-    if (dry_run == DryRun::No)                                                 \
-      apply_##TYPE_LOWER(actual_msg);                                          \
-    break;                                                                     \
-  }
-
-    CASE(Mint, mint)
-    CASE(Tx, tx)
-#undef CASE
+  switch (msg.id()) {
+    case MintMsg::ID: {
+      const auto& mint_msg = msg.as<MintMsg>();
+      check_mint(mint_msg);
+      if (dry_run == DryRun::No)
+        apply_mint(mint_msg);
+    }
+    case TxMsg::ID: {
+      const auto& tx_msg = msg.as<TxMsg>();
+      check_tx(tx_msg);
+      if (dry_run == DryRun::No)
+        apply_tx(tx_msg);
+    }
     default:
-      throw std::invalid_argument(
-          "Unknown message type {}"_format(msg.msg_type));
+      throw Error("Invalid message id {}", msg.msgid);
   }
 }
 
 void BandApplication::check_mint(const MintMsg& mint_msg) const
 {
   if (state.contains(mint_msg.ident))
-    throw std::invalid_argument(
-        "Mint ident {} already exists"_format(mint_msg.ident));
+    throw Error("Mint ident {} already exists", mint_msg.ident);
 
   if (mint_msg.value.is_empty())
-    throw std::invalid_argument("Mint value must not be zero");
+    throw Error("Mint value must not be zero");
 }
 
 void BandApplication::apply_mint(const MintMsg& mint_msg)
@@ -76,7 +66,6 @@ void BandApplication::apply_mint(const MintMsg& mint_msg)
 
 void BandApplication::check_tx(const TxMsg& tx_msg) const
 {
-  const Hash tx_unsig_hash = tx_msg.unsig_hash();
   uint256_t total_input_value = 0;
   uint256_t total_output_value = 0;
 
@@ -84,11 +73,11 @@ void BandApplication::check_tx(const TxMsg& tx_msg) const
     const auto& tx_input_object = state.find<TxOutput>(tx_input.ident);
 
     if (!tx_input_object.is_spendable(tx_input.vk))
-      throw std::invalid_argument("Ident {} is not spendable by {}"_format(
-          tx_input.ident, tx_input.vk));
+      throw Error("Ident {} is not spendable by {}", tx_input.ident,
+                  tx_input.vk);
 
-    if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_unsig_hash))
-      throw std::invalid_argument("Bad Tx signature");
+    if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_input.ident))
+      throw Error("Bad Tx signature");
 
     total_input_value += tx_input_object.get_value();
   }
@@ -98,9 +87,8 @@ void BandApplication::check_tx(const TxMsg& tx_msg) const
   }
 
   if (total_input_value != total_output_value)
-    throw std::invalid_argument(
-        "Tx input value {} and Tx output value {} mismatched"_format(
-            total_input_value, total_output_value));
+    throw Error("Tx input value {} and Tx output value {} mismatched",
+                total_input_value, total_output_value);
 }
 
 void BandApplication::apply_tx(const TxMsg& tx_msg)
@@ -110,7 +98,7 @@ void BandApplication::apply_tx(const TxMsg& tx_msg)
     tx_input_object.spend();
   }
 
-  Hash tx_output_ident = tx_msg.unsig_hash();
+  Hash tx_output_ident = sha256(sha256(tx_msg));
   for (const auto& tx_output : tx_msg.outputs()) {
     tx_output_ident = sha256(tx_output_ident);
     state.add(std::make_unique<TxOutput>(

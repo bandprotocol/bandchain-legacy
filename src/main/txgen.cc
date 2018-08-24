@@ -8,6 +8,10 @@
 
 int main()
 {
+  // MintMsg msg;
+  // log::info("{}", msg.size());
+  // log::info("{}", msg);
+
   // char buffer[1 << 16];
 
   // int int_temp;
