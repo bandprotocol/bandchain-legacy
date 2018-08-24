@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_definitions(-include src/util/autoinclude.h)
+add_definitions(-include src/inc/autoinclude.h)
 
 find_package(Boost 1.65.1 COMPONENTS system REQUIRED)
 find_package(Protobuf 3.0.0 REQUIRED)
@@ -20,6 +20,7 @@ include_directories(. src test)
 file(GLOB source_files
      "src/band/*.h" "src/band/*.cc"
      "src/crypto/*.h" "src/crypto/*.cc"
+     "src/inc/*.h" "src/inc/*.cc"
      "src/msg/*.h" "src/msg/*.cc"
      "src/net/*.h" "src/net/*.cc"
      "src/state/*.h" "src/state/*.cc"

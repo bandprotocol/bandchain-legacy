@@ -3,7 +3,6 @@
 #include <boost/endian/arithmetic.hpp>
 
 #include "crypto/sha256.h"
-#include "util/string.h"
 
 using boost::endian::big_uint16_t;
 using boost::endian::big_uint32_t;

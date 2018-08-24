@@ -3,8 +3,6 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 
-#include "util/string.h"
-
 template <int SIZE>
 class Bytes
 {

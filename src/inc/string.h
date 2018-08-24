@@ -1,8 +1,7 @@
 #pragma once
 
-#include <spdlog/spdlog.h>
+#include <spdlog/fmt/bundled/ostream.h>
 
-#include "spdlog/fmt/bundled/ostream.h"
 using namespace fmt::literals;
 
 inline std::string bytes_to_hex(gsl::span<const std::byte> data)
