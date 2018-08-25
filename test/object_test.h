@@ -7,12 +7,12 @@
 class TestObject : public ObjectBase<TestObject, ObjectID::Test>
 {
 public:
-  friend Buffer& operator<<(Buffer& buf, const TestObject& obj)
+  friend Buffer& operator<<=(Buffer& buf, const TestObject& obj)
   {
     return buf << obj.my_data;
   }
 
-  friend Buffer& operator>>(Buffer& buf, TestObject& obj)
+  friend Buffer& operator>>=(Buffer& buf, TestObject& obj)
   {
     return buf >> obj.my_data;
   }
@@ -25,9 +25,7 @@ public:
 template <>
 std::unique_ptr<Object> Object::deserialize<TestObject::ID>(Buffer& buf)
 {
-  auto object = std::make_unique<TestObject>();
-  buf >> *object;
-  return object;
+  return TestObject::deserialize_impl(buf);
 }
 
 class ObjectTest : public CxxTest::TestSuite

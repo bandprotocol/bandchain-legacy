@@ -58,10 +58,17 @@ class ObjectBase : public Object
 public:
   static constexpr ObjectID ID = OID;
 
+  static std::unique_ptr<Object> deserialize_impl(Buffer& buf)
+  {
+    auto object = std::make_unique<ObjectType>();
+    buf >>= *object;
+    return object;
+  }
+
 private:
   /// Serialize the ID then the object itself.
   Buffer& serialize_impl(Buffer& buf) const final
   {
-    return buf << uint16_t(OID) << static_cast<const ObjectType&>(*this);
+    return buf << uint16_t(OID) <<= static_cast<const ObjectType&>(*this);
   }
 };

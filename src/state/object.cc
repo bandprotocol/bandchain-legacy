@@ -10,6 +10,8 @@ std::unique_ptr<Object> Object::load(Buffer& buf)
       return Object::deserialize<ObjectID::Unset>(buf);
     case ObjectID::Test:
       return Object::deserialize<ObjectID::Test>(buf);
+
+      // No default case.
   }
-  throw Error("TODO");
+  throw Error("Unable to load object with unexpected ID {}", object_id);
 }
