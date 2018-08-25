@@ -32,8 +32,7 @@ inline Buffer& operator<<(Buffer& buf, const uint256_t& val)
 {
   std::array<uint8_t, 32> temp_buf{};
   export_bits(val, temp_buf.rbegin(), 8, false);
-  const auto& temp_const_buf = temp_buf;
-  return buf << gsl::make_span(temp_const_buf);
+  return buf << gsl::make_span(temp_buf);
 }
 
 inline Buffer& operator>>(Buffer& buf, uint8_t& val)

@@ -32,8 +32,6 @@ public:
 
   void append(std::byte data);
 
-  void append(const std::byte* data, size_t length);
-
   void append(const Buffer& data);
 
   std::string to_string() const { return bytes_to_hex(gsl::make_span(buf)); }
@@ -43,7 +41,7 @@ private:
 };
 
 template <typename T>
-inline Buffer& operator<<(Buffer& buf, gsl::span<const T> data)
+inline Buffer& operator<<(Buffer& buf, gsl::span<T> data)
 {
   std::memcpy(buf.reserve(data.size_bytes()), data.data(), data.size_bytes());
   return buf;

@@ -30,7 +30,7 @@ public:
 
   /// Cast this object into the provided type. Throw on failure.
   template <typename T,
-            typename = std::enable_if_t<std::is_base_of_v<T, Object>>>
+            typename = std::enable_if_t<std::is_base_of_v<Object, T>>>
   const T& as()
   {
     const T* object = dynamic_cast<const T*>(this);

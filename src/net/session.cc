@@ -10,7 +10,7 @@ void Session::serve() { async_read(); }
 
 void Session::process_read(size_t length)
 {
-  read_buffer.append(socket_buffer, length);
+  read_buffer << gsl::span(socket_buffer, length);
   while (app.process(read_buffer, write_buffer)) {
     // Keep processing incoming messages until everything is done.
   }

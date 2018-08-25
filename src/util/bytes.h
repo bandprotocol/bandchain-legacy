@@ -3,6 +3,7 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 
+#include "util/buffer.h"
 #include "util/string.h"
 
 template <int SIZE>
@@ -91,6 +92,18 @@ struct hash<Bytes<SIZE>> {
   }
 };
 } // namespace std
+
+template <int SIZE>
+inline Buffer& operator<<(Buffer& buf, const Bytes<SIZE>& data)
+{
+  return buf << data.operator gsl::span<const std::byte>();
+}
+
+template <int SIZE>
+inline Buffer& operator>>(Buffer& buf, Bytes<SIZE>& data)
+{
+  return buf >> data.operator gsl::span<std::byte>();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 static inline std::byte hex_to_byte(char hex_digit)
@@ -191,5 +204,5 @@ std::string Bytes<SIZE>::to_raw_string() const
 template <int SIZE>
 std::string Bytes<SIZE>::to_string() const
 {
-  return bytes_to_hex(*this);
+  return bytes_to_hex(this->operator gsl::span<const std::byte>());
 }

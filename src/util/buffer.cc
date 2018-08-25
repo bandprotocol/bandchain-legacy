@@ -17,11 +17,6 @@ void Buffer::consume(size_t length)
 
 void Buffer::append(std::byte data) { buf.push_back(data); }
 
-void Buffer::append(const std::byte* data, size_t length)
-{
-  buf.insert(buf.end(), data, data + length);
-}
-
 void Buffer::append(const Buffer& data)
 {
   buf.insert(buf.end(), data.buf.begin(), data.buf.end());

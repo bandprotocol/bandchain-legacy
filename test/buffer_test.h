@@ -71,7 +71,7 @@ public:
     V.push_back(a);
 
     Buffer buf;
-    buf.append(&V[1], 2);
+    buf << gsl::make_span(V);
     TS_ASSERT_EQUALS(2, buf.size_bytes());
     TS_ASSERT_EQUALS(*buf.begin(), std::byte{0xDD});
     TS_ASSERT_EQUALS(buf[1], std::byte{0xCD});
