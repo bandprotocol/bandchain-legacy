@@ -149,12 +149,12 @@ bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
 bool TendermintApplication::read_integer(Buffer& read_buffer, int& value)
 {
   value = 0;
-  for (size_t i = 0; i < read_buffer.size(); ++i) {
+  for (size_t i = 0; i < read_buffer.size_bytes(); ++i) {
     int byte = std::to_integer<int>(read_buffer[i]);
     value |= (byte & 0x7F) << (7 * i);
     if (!(byte & 0x80)) {
       value >>= 1;
-      if (read_buffer.size() > i + value) {
+      if (read_buffer.size_bytes() > i + value) {
         read_buffer.consume(1 + i);
         return true;
       } else {

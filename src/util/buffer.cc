@@ -6,7 +6,7 @@ std::byte* Buffer::begin() { return &(*buf.begin()); }
 
 bool Buffer::empty() const { return buf.empty(); }
 
-size_t Buffer::size() const { return buf.size(); }
+size_t Buffer::size_bytes() const { return buf.size(); }
 
 void Buffer::clear() { buf.clear(); }
 

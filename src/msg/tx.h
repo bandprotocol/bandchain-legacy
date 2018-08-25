@@ -18,7 +18,15 @@ struct TxMsg : public MsgBase<TxMsg, MsgID::Tx> {
     BigInt value;
   };
 
-  size_t msg_size() const;
+  static size_t TxSize(uint8_t input_count, uint8_t output_count)
+  {
+    const size_t base_size = sizeof(TxMsg);
+    const size_t input_size = sizeof(TxMsg::TxInput) * input_count;
+    const size_t output_size = sizeof(TxMsg::TxOutput) * output_count;
+    return base_size + input_size + output_size;
+  }
+
+  size_t msg_size() const { return TxSize(input_count, output_count); }
 
   gsl::span<TxInput> inputs();
   gsl::span<const TxInput> inputs() const;
@@ -29,14 +37,6 @@ struct TxMsg : public MsgBase<TxMsg, MsgID::Tx> {
 static_assert(sizeof(TxMsg) == sizeof(MsgBaseVoid) + 2, "Invalid TxMsg size");
 
 ////////////////////////////////////////////////////////////////////////////////
-inline size_t TxMsg::msg_size() const
-{
-  const size_t base_size = sizeof(TxMsg);
-  const size_t input_size = sizeof(TxMsg::TxInput) * input_count;
-  const size_t output_size = sizeof(TxMsg::TxOutput) * output_count;
-  return base_size + input_size + output_size;
-}
-
 inline gsl::span<TxMsg::TxInput> TxMsg::inputs()
 {
   auto base = reinterpret_cast<std::byte*>(this) + sizeof(TxMsg);

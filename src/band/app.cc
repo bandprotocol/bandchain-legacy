@@ -66,42 +66,42 @@ void BandApplication::apply_mint(const MintMsg& mint_msg)
 
 void BandApplication::check_tx(const TxMsg& tx_msg) const
 {
-  uint256_t total_input_value = 0;
-  uint256_t total_output_value = 0;
+  // uint256_t total_input_value = 0;
+  // uint256_t total_output_value = 0;
 
-  for (const auto& tx_input : tx_msg.inputs()) {
-    const auto& tx_input_object = state.find<TxOutput>(tx_input.ident);
+  // for (const auto& tx_input : tx_msg.inputs()) {
+  //   const auto& tx_input_object = state.find<TxOutput>(tx_input.ident);
 
-    if (!tx_input_object.is_spendable(tx_input.vk))
-      throw Error("Ident {} is not spendable by {}", tx_input.ident,
-                  tx_input.vk);
+  //   if (!tx_input_object.is_spendable(tx_input.vk))
+  //     throw Error("Ident {} is not spendable by {}", tx_input.ident,
+  //                 tx_input.vk);
 
-    if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_input.ident))
-      throw Error("Bad Tx signature");
+  //   if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_input.ident))
+  //     throw Error("Bad Tx signature");
 
-    total_input_value += tx_input_object.get_value();
-  }
+  //   total_input_value += tx_input_object.get_value();
+  // }
 
-  for (const auto& tx_output : tx_msg.outputs()) {
-    total_output_value += tx_output.value.as_uint256();
-  }
+  // for (const auto& tx_output : tx_msg.outputs()) {
+  //   total_output_value += tx_output.value.as_uint256();
+  // }
 
-  if (total_input_value != total_output_value)
-    throw Error("Tx input value {} and Tx output value {} mismatched",
-                total_input_value, total_output_value);
+  // if (total_input_value != total_output_value)
+  //   throw Error("Tx input value {} and Tx output value {} mismatched",
+  //               total_input_value, total_output_value);
 }
 
 void BandApplication::apply_tx(const TxMsg& tx_msg)
 {
-  for (const auto& tx_input : tx_msg.inputs()) {
-    auto& tx_input_object = state.find<TxOutput>(tx_input.ident);
-    tx_input_object.spend();
-  }
+  // for (const auto& tx_input : tx_msg.inputs()) {
+  //   auto& tx_input_object = state.find<TxOutput>(tx_input.ident);
+  //   tx_input_object.spend();
+  // }
 
-  Hash tx_output_ident = sha256(sha256(tx_msg));
-  for (const auto& tx_output : tx_msg.outputs()) {
-    tx_output_ident = sha256(tx_output_ident);
-    state.add(std::make_unique<TxOutput>(
-        tx_output.addr, tx_output.value.as_uint256(), tx_output_ident));
-  }
+  // Hash tx_output_ident = sha256(sha256(tx_msg));
+  // for (const auto& tx_output : tx_msg.outputs()) {
+  //   tx_output_ident = sha256(tx_output_ident);
+  //   state.add(std::make_unique<TxOutput>(
+  //       tx_output.addr, tx_output.value.as_uint256(), tx_output_ident));
+  // }
 }

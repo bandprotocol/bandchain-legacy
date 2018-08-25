@@ -3,6 +3,8 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 
+#include "util/string.h"
+
 template <int SIZE>
 class Bytes
 {
@@ -10,7 +12,7 @@ public:
   Bytes() = default;
   Bytes(const Bytes& bytes) = default;
 
-  /// Convert boost's uint256 into bytes.
+  /// Convert fixed size integers into bytes.
   explicit Bytes(const uint256_t& int_value);
 
   static constexpr size_t Size = SIZE;

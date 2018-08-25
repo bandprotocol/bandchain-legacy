@@ -4,15 +4,6 @@
 
 using namespace fmt::literals;
 
-inline std::string bytes_to_hex(gsl::span<const std::byte> data)
-{
-  std::string hex;
-  for (auto b : data) {
-    hex += "{:02x}"_format(static_cast<unsigned char>(b));
-  }
-  return hex;
-}
-
 template <typename...>
 using void_t = void;
 

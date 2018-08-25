@@ -9,7 +9,7 @@ public:
   void testCreateBuffer(void)
   {
     Buffer buf;
-    TS_ASSERT_EQUALS(0, buf.size());
+    TS_ASSERT_EQUALS(0, buf.size_bytes());
   }
 
   void testAppendOneElementBuffer(void)
@@ -17,13 +17,13 @@ public:
     Buffer buf;
     std::byte A{0x55};
     buf.append(A);
-    // Check size
-    TS_ASSERT_EQUALS(1, buf.size());
+    // Check size_bytes
+    TS_ASSERT_EQUALS(1, buf.size_bytes());
 
     std::byte B{0xAB};
     buf.append(B);
-    // Check size and []
-    TS_ASSERT_EQUALS(2, buf.size());
+    // Check size_bytes and []
+    TS_ASSERT_EQUALS(2, buf.size_bytes());
     TS_ASSERT_EQUALS(buf[1], B);
 
     // Check begin
@@ -43,9 +43,9 @@ public:
     buf.append(b);
     buf.append(c);
 
-    TS_ASSERT_EQUALS(3, buf.size());
+    TS_ASSERT_EQUALS(3, buf.size_bytes());
     buf.consume(1);
-    TS_ASSERT_EQUALS(2, buf.size());
+    TS_ASSERT_EQUALS(2, buf.size_bytes());
     TS_ASSERT_EQUALS(*buf.begin(), b);
 
     buf.append(d);
@@ -72,7 +72,7 @@ public:
 
     Buffer buf;
     buf.append(&V[1], 2);
-    TS_ASSERT_EQUALS(2, buf.size());
+    TS_ASSERT_EQUALS(2, buf.size_bytes());
     TS_ASSERT_EQUALS(*buf.begin(), std::byte{0xDD});
     TS_ASSERT_EQUALS(buf[1], std::byte{0xCD});
   }
@@ -93,19 +93,19 @@ public:
     buf2.append(buf);
     buf2.append(d);
 
-    TS_ASSERT_EQUALS(4, buf2.size());
+    TS_ASSERT_EQUALS(4, buf2.size_bytes());
     TS_ASSERT_EQUALS(*buf2.begin(), std::byte{0xAA});
     TS_ASSERT_EQUALS(buf2[3], std::byte{0xDD});
 
     buf2.consume(2);
-    TS_ASSERT_EQUALS(2, buf2.size());
+    TS_ASSERT_EQUALS(2, buf2.size_bytes());
     TS_ASSERT_EQUALS(*buf2.begin(), std::byte{0xCC});
     TS_ASSERT_EQUALS(buf2[1], std::byte{0xDD});
 
     // test clear
     buf.clear();
-    TS_ASSERT_EQUALS(2, buf2.size());
-    TS_ASSERT_EQUALS(0, buf.size());
+    TS_ASSERT_EQUALS(2, buf2.size_bytes());
+    TS_ASSERT_EQUALS(0, buf.size_bytes());
     // How to check?
     // TS_ASSERT_EQUALS(buf.begin(), nullptr);
   }
@@ -122,8 +122,8 @@ public:
     buf.append(b);
     buf.append(c);
 
-    TS_ASSERT_EQUALS(3, buf.size());
+    TS_ASSERT_EQUALS(3, buf.size_bytes());
     buf.reserve(39);
-    TS_ASSERT_EQUALS(42, buf.size());
+    TS_ASSERT_EQUALS(42, buf.size_bytes());
   }
 };

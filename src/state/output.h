@@ -1,14 +1,13 @@
 #pragma once
 
-#include "state/hashable.h"
+#include "state/objectx.h"
 
-class TxOutput : public Hashable
+class TxOutput : public Object
 {
 public:
   TxOutput(const Address& _owner, const uint256_t& _value, const Hash& _ident);
   TxOutput(const TxOutput& rhs) = default;
 
-  /// As required by Hashable.
   Hash key() const final;
   Hash hash() const final;
   std::string to_string() const final;

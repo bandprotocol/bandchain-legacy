@@ -2,48 +2,49 @@
 
 #include "crypto/sha256.h"
 
-bool MerkleTree::add(std::unique_ptr<Hashable> data)
+MerkleTree MerkleTree::add(std::unique_ptr<Object> data) const
 {
-  Hash key = data->key();
-  auto current = std::ref(root);
+  return *this;
+  // Hash key = data->key();
+  // auto current = std::ref(root);
 
-  for (size_t i = 0; i < Hash::Bits; ++i) {
-    // TODO
-    // bool bit_value = key.get_bit(i);
-    bool bit_value = true;
-    current = current.get()->children[bit_value];
-    if (!current.get()) {
-      current.get() = std::make_unique<MerkleNode>();
-    }
-  }
+  // for (size_t i = 0; i < Hash::Bits; ++i) {
+  //   // TODO
+  //   // bool bit_value = key.get_bit(i);
+  //   bool bit_value = true;
+  //   current = current.get()->children[bit_value];
+  //   if (!current.get()) {
+  //     current.get() = std::make_unique<MerkleNode>();
+  //   }
+  // }
 
-  auto& current_data = current.get()->data;
-  if (current_data)
-    return false;
+  // auto& current_data = current.get()->data;
+  // if (current_data)
+  //   return false;
 
-  current_data = std::move(data);
-  return true;
+  // current_data = std::move(data);
+  // return true;
 }
 
-Hashable& MerkleTree::find_hashable(const Hash& key) const
+const Object* MerkleTree::find_object(const Hash& key) const
 {
-  auto current = std::ref(root);
+  // auto current = std::ref(root);
 
-  for (size_t i = 0; i < Hash::Bits; ++i) {
-    // TODO
-    // bool bit_value = key.get_bit(i);
-    bool bit_value = true;
-    current = current.get()->children[bit_value];
-    if (!current.get()) {
-      return NIL;
-    }
-  }
+  // for (size_t i = 0; i < Hash::Bits; ++i) {
+  //   // TODO
+  //   // bool bit_value = key.get_bit(i);
+  //   bool bit_value = true;
+  //   current = current.get()->children[bit_value];
+  //   if (!current.get()) {
+  //     return nullptr;
+  //   }
+  // }
 
-  const auto& current_data = current.get()->data;
-  if (current_data)
-    return *current_data;
+  // const auto& current_data = current.get()->data;
+  // if (current_data)
+  //   return current_data.get();
 
-  return NIL;
+  return nullptr;
 }
 
 Hash MerkleTree::MerkleNode::hash() const

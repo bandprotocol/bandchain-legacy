@@ -44,7 +44,8 @@ void Session::async_write()
   }
 
   boost::asio::async_write(
-      socket, boost::asio::buffer(write_buffer.begin(), write_buffer.size()),
+      socket,
+      boost::asio::buffer(write_buffer.begin(), write_buffer.size_bytes()),
       [self = shared_from_this()](const auto ec, size_t length) {
         if (!ec) {
           self->process_write(length);

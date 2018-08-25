@@ -3,6 +3,7 @@
 #include <boost/endian/arithmetic.hpp>
 
 #include "crypto/sha256.h"
+#include "util/string.h"
 
 using boost::endian::big_uint16_t;
 using boost::endian::big_uint32_t;
@@ -47,19 +48,19 @@ struct MsgBase {
 };
 
 struct MsgBaseVoid : MsgBase<MsgBaseVoid, MsgID::Unset> {
-  template <typename T, typename = std::enable_if_t<
-                            std::is_base_of_v<MsgBase<T, T::ID>, T>>>
-  const T& as() const
+  template <typename MsgT, typename = std::enable_if_t<std::is_base_of_v<
+                               MsgBase<MsgT, MsgT::ID>, MsgT>>>
+  const MsgT& as() const
   {
-    if (size < sizeof(T))
-      throw Error("");
+    if (size < sizeof(MsgT))
+      throw Error("Invalid static message size {}", size);
 
-    const T& msg = reinterpret_cast<const T&>(*this);
-    if (size < msg.msg_size())
-      throw Error("");
+    const MsgT& msg = reinterpret_cast<const MsgT&>(*this);
+    if (size != msg.msg_size())
+      throw Error("Invalid dynamic message size {}", size);
 
     return msg;
   }
 };
 
-static_assert(sizeof(MsgBaseVoid) == 12, "Invalid Msg Base size");
+static_assert(sizeof(MsgBaseVoid) == 12, "Invalid MsgBase size");
