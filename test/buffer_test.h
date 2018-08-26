@@ -1,6 +1,8 @@
 #include <cxxtest/TestSuite.h>
 #include <vector>
 
+#include "state/object.h"
+#include "util/bytes.h"
 #include "util/buffer.h"
 
 class BufferTest : public CxxTest::TestSuite
@@ -64,7 +66,7 @@ public:
     std::byte a;
 
     a = static_cast<std::byte>(0x72);
-    V.push_back(a);
+    //V.push_back(a);
     a = static_cast<std::byte>(0xDD);
     V.push_back(a);
     a = static_cast<std::byte>(0xCD);
@@ -110,7 +112,7 @@ public:
     // TS_ASSERT_EQUALS(buf.begin(), nullptr);
   }
 
-  void testReserve()
+  void testReserve(void)
   {
     std::byte a{0xAA};
     std::byte b{0xBB};
@@ -126,4 +128,43 @@ public:
     buf.reserve(39);
     TS_ASSERT_EQUALS(42, buf.size_bytes());
   }
+
+  void testpush(void)
+  {
+    //std::byte a{0xAA};
+    //std::byte b{0xBB};
+    // std::byte c{0xCC};
+    std::byte d{0xDD};
+
+    Bytes<32> A{0xAAA};
+    Buffer buf;
+    uint8_t b = 0xBB; 
+    buf << A;
+    TS_ASSERT_EQUALS(32, buf.size_bytes());
+
+    buf << b;
+    TS_ASSERT_EQUALS(33, buf.size_bytes());
+    log::info("Buffer now {}",buf);
+    //buf.append(a);
+    Bytes<32> B{0x00};
+    buf >> B;
+    TS_ASSERT_EQUALS(1, buf.size_bytes());
+    TS_ASSERT_EQUALS(A,B);
+    log::info("Buffer now {}",buf);
+    Bytes<32> A17{0x5324};
+    buf << A17;
+
+    TS_ASSERT_EQUALS(33, buf.size_bytes());
+    uint8_t  c;
+    buf >> c;
+    TS_ASSERT_EQUALS(32, buf.size_bytes());
+    TS_ASSERT_EQUALS(c, 187);
+
+    Bytes<32> X;
+    buf >> X;
+    TS_ASSERT_EQUALS(0, buf.size_bytes());
+    TS_ASSERT_EQUALS(X, Bytes<32>{0x5324});
+    // log::info("Begin {}", *buf.begin());
+  }
+
 };

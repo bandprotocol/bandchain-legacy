@@ -12,10 +12,12 @@ find_package(Boost 1.65.1 COMPONENTS system serialization REQUIRED)
 find_package(Protobuf 3.0.0 REQUIRED)
 find_package(Sodium REQUIRED)
 find_package(CxxTest REQUIRED)
+find_package(RocksDB REQUIRED)
 
 include_directories(3pc/spdlog-0.17.0/include)
 include_directories(3pc/gsl-0cebbd7/include)
 include_directories(. src test)
+
 
 file(GLOB source_files
      "src/band/*.h" "src/band/*.cc"
@@ -34,7 +36,8 @@ add_library(bandprotocol STATIC
 target_link_libraries(bandprotocol
                       ${Boost_LIBRARIES}
                       ${Protobuf_LIBRARIES}
-                      ${sodium_LIBRARY_RELEASE})
+                      ${sodium_LIBRARY_RELEASE}
+                      ${ROCKSDB_LIBRARIES})
 
 enable_testing()
 file(GLOB test_files "test/*_test.h")

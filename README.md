@@ -47,6 +47,35 @@ Be sure to have them available in your local system (version as listed in
 - [libsodium](https://github.com/jedisct1/libsodium)
 - [CxxTest](https://cxxtest.com/)
 
+Install rocksdb.
+
+* **OS X**:
+    * Install via [homebrew](http://brew.sh/).
+    * run `brew install rocksdb`
+
+* **Linux - Ubuntu**
+    * Install Dependencies
+        ```bash
+        apt-get update
+        apt-get -y install build-essential libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev liblz4-dev libzstd-dev
+        ```
+    * Install rocksdb by source code:
+        ```bash
+        git clone https://github.com/facebook/rocksdb.git
+        cd rocksdb & make shared_lib && make install-shared
+        ```
+* **Linux - Centos**
+    * Install Dependencies
+        ```bash
+        yum -y install epel-release && yum -y update
+        yum -y install gflags-devel snappy-devel zlib-devel bzip2-devel gcc-c++  libstdc++-devel
+        ```
+    * Install rocksdb by source code:
+        ```bash
+        git clone https://github.com/facebook/rocksdb.git
+        cd rocksdb & make shared_lib && make install-shared
+        ```
+
 Then follow the normal `cmake` process as shown above. 
 
 License
