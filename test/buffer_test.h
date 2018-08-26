@@ -65,8 +65,6 @@ public:
     // V.emplace_back(0xCD);
     std::byte a;
 
-    a = static_cast<std::byte>(0x72);
-    //V.push_back(a);
     a = static_cast<std::byte>(0xDD);
     V.push_back(a);
     a = static_cast<std::byte>(0xCD);
@@ -131,9 +129,6 @@ public:
 
   void testpush(void)
   {
-    //std::byte a{0xAA};
-    //std::byte b{0xBB};
-    // std::byte c{0xCC};
     std::byte d{0xDD};
 
     Bytes<32> A{0xAAA};
@@ -145,26 +140,43 @@ public:
     buf << b;
     TS_ASSERT_EQUALS(33, buf.size_bytes());
     log::info("Buffer now {}",buf);
-    //buf.append(a);
+
     Bytes<32> B{0x00};
     buf >> B;
     TS_ASSERT_EQUALS(1, buf.size_bytes());
     TS_ASSERT_EQUALS(A,B);
     log::info("Buffer now {}",buf);
+
     Bytes<32> A17{0x5324};
     buf << A17;
-
     TS_ASSERT_EQUALS(33, buf.size_bytes());
+    
+    uint16_t n16{0xB123};
+    buf << n16;
+    TS_ASSERT_EQUALS(35, buf.size_bytes());
+
     uint8_t  c;
     buf >> c;
-    TS_ASSERT_EQUALS(32, buf.size_bytes());
+    TS_ASSERT_EQUALS(34, buf.size_bytes());
     TS_ASSERT_EQUALS(c, 187);
 
     Bytes<32> X;
     buf >> X;
-    TS_ASSERT_EQUALS(0, buf.size_bytes());
+    TS_ASSERT_EQUALS(2, buf.size_bytes());
     TS_ASSERT_EQUALS(X, Bytes<32>{0x5324});
+
+    uint16_t n16_new;
+    buf >> n16_new;
+    TS_ASSERT_EQUALS(0, buf.size_bytes());
+    TS_ASSERT_EQUALS(n16, n16_new);
     // log::info("Begin {}", *buf.begin());
+  }
+
+  void testAddOtherSpanToBuffer(void)
+  {
+    std::vector<Bytes<32>> address;
+    Bytes<32> A{0x123123};
+    address.push_back(A);
   }
 
 };
