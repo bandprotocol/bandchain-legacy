@@ -187,5 +187,11 @@ public:
     tx.sig = sig;
 
     TS_ASSERT(tx.verify());
+
+    // Try to change address
+    addr = Address::from_hex("6b1a55b55495b731cbe9eff75f73452f70d329b9");
+    tx.addr = addr;
+    TS_ASSERT(!tx.verify());
+
   }
 };
