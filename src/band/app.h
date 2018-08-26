@@ -1,7 +1,5 @@
 #pragma once
 
-#include "msg/mint.h"
-#include "msg/tx.h"
 #include "net/tmapp.h"
 #include "state/merkle.h"
 
@@ -26,13 +24,13 @@ public:
 
 private:
   /// TODO
-  void check_mint(const MintMsg& mint_msg) const;
-  void apply_mint(const MintMsg& mint_msg);
+  // void check_mint(const MintMsg& mint_msg) const;
+  // void apply_mint(const MintMsg& mint_msg);
 
-  /// TODO
-  void check_tx(const TxMsg& tx_msg) const;
-  void apply_tx(const TxMsg& tx_msg);
+  // /// TODO
+  // void check_tx(const TxMsg& tx_msg) const;
+  // void apply_tx(const TxMsg& tx_msg);
 
 private:
-  MerkleTree state;
+  // MerkleTree state;
 };

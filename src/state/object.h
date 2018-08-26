@@ -6,6 +6,8 @@
 
 enum class ObjectID : uint16_t {
   Unset = 0,
+  Tx = 1,
+  Account = 32768,
   Test = 65535,
 };
 
