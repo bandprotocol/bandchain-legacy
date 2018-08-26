@@ -7,6 +7,7 @@ class TxTest : public CxxTest::TestSuite
 public:
   void testPushToBuffer(void)
   {
+    log::info("Tx Size = {}",sizeof(TxMsg));
     Buffer write_buf;
     TxMsg tx;
     tx.vk = VerifyKey::from_hex("6ddb22994b551f4da5818e7a257d467e9af753348194f31dddc5f9aa489d3da1");

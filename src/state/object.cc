@@ -8,6 +8,8 @@ std::unique_ptr<Object> Object::load(Buffer& buf)
   switch (ObjectID(object_id)) {
     case ObjectID::Tx:
       return Object::deserialize<ObjectID::Tx>(buf);
+    case ObjectID::Mint:
+      return Object::deserialize<ObjectID::Mint>(buf);
     case ObjectID::Unset:
       return Object::deserialize<ObjectID::Unset>(buf);
     case ObjectID::Test:
