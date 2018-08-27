@@ -18,10 +18,11 @@ public:
   {
     return buf >> mint.addr >> mint.value >> mint.ident;
   }
+
 private:
   Hash hash() const final { return Hash(); }
 };
-//static_assert(sizeof(MintMsg) == 84, "Invalid MingMsg size");
+// static_assert(sizeof(MintMsg) == 84, "Invalid MingMsg size");
 
 template <>
 std::unique_ptr<Object> Object::deserialize<MintMsg::ID>(Buffer& buf)
