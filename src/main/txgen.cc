@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "crypto/ed25519.h"
-#include "msg/mint.h"
-#include "msg/tx.h"
+// #include "msg/mint.h"
+// #include "msg/tx.h"
 
 int main()
 {

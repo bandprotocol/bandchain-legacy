@@ -3,6 +3,7 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 
+#include "crypto/random.h"
 #include "util/buffer.h"
 #include "util/string.h"
 
@@ -13,9 +14,6 @@ public:
   Bytes() = default;
   Bytes(const Bytes& bytes) = default;
 
-  /// Convert fixed size integers into bytes.
-  explicit Bytes(const uint256_t& int_value);
-
   static constexpr size_t Size = SIZE;
   static constexpr size_t Bits = SIZE << 3;
 
@@ -25,8 +23,8 @@ public:
   /// Parse a hex string into an n-byte structure.
   static Bytes from_hex(const std::string& hex_string);
 
-  /// Convert this structure into a boost's uint256.
-  uint256_t as_uint256() const;
+  /// Create an arbitrary n-byte structure. Useful for testing.
+  static Bytes rand();
 
   /// Anywhere that accepts span<std::byte> can also accepts Bytes.
   operator gsl::span<std::byte>() { return {data(), SIZE}; }
@@ -54,7 +52,7 @@ public:
   Bytes<RET_SIZE> suffix() const;
 
   /// Return the idx^th byte of this structure.
-  std::byte operator[](size_t idx) { return rawdata[idx]; }
+  std::byte& operator[](size_t idx) { return rawdata[idx]; }
 
   /// Similar to above, but for const variant.
   const std::byte& operator[](size_t idx) const { return rawdata[idx]; }
@@ -119,14 +117,6 @@ static inline std::byte hex_to_byte(char hex_digit)
 }
 
 template <int SIZE>
-Bytes<SIZE>::Bytes(const uint256_t& int_value)
-{
-  static_assert(SIZE == 32, "Only Bytes<32> can be converted from uint256_t");
-  export_bits(int_value, (uint8_t*)data(), 8, false);
-  std::reverse(rawdata.begin(), rawdata.end());
-}
-
-template <int SIZE>
 Bytes<SIZE> Bytes<SIZE>::from_raw(const std::string& raw_string)
 {
   if (raw_string.size() != SIZE) {
@@ -152,11 +142,10 @@ Bytes<SIZE> Bytes<SIZE>::from_hex(const std::string& hex_string)
 }
 
 template <int SIZE>
-uint256_t Bytes<SIZE>::as_uint256() const
+Bytes<SIZE> Bytes<SIZE>::rand()
 {
-  static_assert(SIZE == 32, "Only Bytes<32> can be converted to uint256_t");
-  uint256_t ret;
-  import_bits(ret, (uint8_t*)data(), (uint8_t*)data() + SIZE);
+  Bytes<SIZE> ret;
+  random_bytes(ret.operator gsl::span<std::byte>());
   return ret;
 }
 

@@ -1,8 +1,24 @@
 #pragma once
 
 #include <boost/endian/buffers.hpp>
+#include <type_traits>
 
 #include "util/buffer.h"
+
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+inline Buffer& operator<<(Buffer& buf, T val)
+{
+  return buf << static_cast<std::underlying_type_t<T>>(val);
+}
+
+template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+inline Buffer& operator>>(Buffer& buf, T& val)
+{
+  std::underlying_type_t<T> _val;
+  buf >> _val;
+  val = T(_val);
+  return buf;
+}
 
 inline Buffer& operator<<(Buffer& buf, uint8_t val)
 {

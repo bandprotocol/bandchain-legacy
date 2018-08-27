@@ -8,9 +8,24 @@ enum class ObjectID : uint16_t {
   Unset = 0,
   Tx = 1,
   Mint = 2,
-  Account = 32768,
+  MerkleNode = 32768,
+  Account = 32769,
   Test = 65535,
 };
+
+template <int SIZE>
+inline Buffer& operator<<(Buffer& buf, ObjectID object_id)
+{
+  return buf << static_cast<uint16_t>(object_id);
+}
+
+template <int SIZE>
+inline Buffer& operator>>(Buffer& buf, ObjectID& object_id)
+{
+  uint16_t object_id_internal;
+  return buf >> object_id_internal;
+  object_id = ObjectID(object_id_internal);
+}
 
 class Object
 {

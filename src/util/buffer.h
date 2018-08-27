@@ -58,7 +58,8 @@ template <typename T>
 inline Buffer& operator>>(Buffer& buf, gsl::span<T> data)
 {
   if (buf.size_bytes() < data.size_bytes())
-    throw Error("Out of data - %zu < %zu", buf.size_bytes(), data.size_bytes());
+    throw Error("Buffer is too short. {} < {}.", buf.size_bytes(),
+                data.size_bytes());
   std::memcpy(data.data(), buf.begin(), data.size_bytes());
   buf.consume(data.size_bytes());
   return buf;

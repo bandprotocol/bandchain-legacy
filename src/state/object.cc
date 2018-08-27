@@ -10,6 +10,7 @@ std::unique_ptr<Object> Object::load(Buffer& buf)
       return Object::deserialize<ObjectID::Tx>(buf);
     case ObjectID::Mint:
       return Object::deserialize<ObjectID::Mint>(buf);
+    case ObjectID::MerkleNode:
     case ObjectID::Account:
       return nullptr; // TODO
 
