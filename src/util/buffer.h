@@ -7,9 +7,10 @@
 class Buffer
 {
 public:
-  Buffer();
+  operator gsl::span<std::byte>() { return gsl::make_span(buf); }
+  operator gsl::span<const std::byte>() const { return gsl::make_span(buf); }
 
-  std::byte* begin();
+  std::byte* begin() { return &(*buf.begin()); }
 
   std::byte* reserve(size_t reserve_size)
   {
@@ -22,19 +23,25 @@ public:
 
   std::byte& operator[](size_t idx) { return buf[idx]; }
 
-  bool empty() const;
+  bool empty() const { return buf.empty(); }
 
-  size_t size_bytes() const;
+  size_t size_bytes() const { return buf.size(); }
 
-  void clear();
+  void clear() { buf.clear(); }
 
-  void consume(size_t length);
+  void consume(size_t length) { buf.erase(buf.begin(), buf.begin() + length); }
 
-  void append(std::byte data);
+  void append(std::byte data) { buf.push_back(data); }
 
-  void append(const Buffer& data);
+  void append(const Buffer& data)
+  {
+    buf.insert(buf.end(), data.buf.begin(), data.buf.end());
+  }
 
-  std::string to_string() const { return bytes_to_hex(gsl::make_span(buf)); }
+  std::string to_string() const
+  {
+    return bytes_to_hex(operator gsl::span<const std::byte>());
+  }
 
 private:
   std::vector<std::byte> buf;

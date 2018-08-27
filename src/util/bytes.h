@@ -76,7 +76,6 @@ private:
 } __attribute__((packed));
 
 using Address = Bytes<20>;   //< Public wallet address
-using BigInt = Bytes<32>;    //< Big-endian 256 bit unsigned integer
 using Hash = Bytes<32>;      //< SHA-256 hash value
 using VerifyKey = Bytes<32>; //< Ed25519 verify key
 using SecretKey = Bytes<64>; //< Ed25519 secret key

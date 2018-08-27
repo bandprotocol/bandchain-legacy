@@ -6,7 +6,7 @@ class MintMsg : public ObjectBase<MintMsg, ObjectID::Mint>
 {
 public:
   Address addr;
-  BigInt value;
+  uint256_t value;
   Hash ident;
 
   friend Buffer& operator<<=(Buffer& buf, const MintMsg& mint)

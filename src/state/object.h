@@ -26,7 +26,7 @@ public:
 
   /// Return the key of this object. Throw if the object cannot be stored in
   /// state tree.
-  virtual Hash key() const
+  virtual Address key() const
   {
     throw Error("Object at {} does not have key attribute", hash());
   }
