@@ -39,7 +39,7 @@ $ make
 ```
 
 Alternatively, to build locally, Band Protocol requires the following dependencies.
-Be sure to have them available in your local system (version as listed in 
+Be sure to have them available in your local system (versions as listed in 
 [CMakeLists.txt](CMakeLists.txt)).
 
 - [Boost](https://www.boost.org/)
