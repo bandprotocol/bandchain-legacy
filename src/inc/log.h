@@ -7,6 +7,12 @@ class log
 {
 public:
   template <typename... Args>
+  static void debug(Args&&... args)
+  {
+    logger->debug(std::forward<Args>(args)...);
+  }
+
+  template <typename... Args>
   static void info(Args&&... args)
   {
     logger->info(std::forward<Args>(args)...);

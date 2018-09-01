@@ -1,36 +1,36 @@
 #pragma once
 
+#include "band/handler.h"
+#include "band/msg.h"
 #include "net/tmapp.h"
-#include "state/merkle.h"
+#include "store/context.h"
 
 class BandApplication : public TendermintApplication
 {
 public:
-  std::string get_name() const final { return "band"; }
-  std::string get_version() const final { return "1.0"; }
+  BandApplication();
 
-  /// TODO
+  std::string get_name() const final { return "band"; }
+  std::string get_version() const final { return "latest"; }
+
+  /// Return the current application merkle tree hash.
   std::string get_current_app_hash() const final;
 
-  /// TODO
+  /// Initialize the blockchain according to the genesis information.
   void init(const std::string& init_state) final;
 
-  /// TODO
-  std::string query(const std::string& path,
-                    const std::string& data) const final;
+  /// Query the blockchain information. Data must be a JSON-serialized string
+  /// following BAND RPC specification.
+  std::string query(const std::string& path, const std::string& data) final;
 
-  /// TODO
-  void apply(const std::string& msg_data, DryRun dry_run) final;
+  /// Check the transaction. For now it only checks that the transaction has
+  /// a proper signature.
+  void check(const std::string& msg_raw) final;
 
-private:
-  /// TODO
-  // void check_mint(const MintMsg& mint_msg) const;
-  // void apply_mint(const MintMsg& mint_msg);
-
-  // /// TODO
-  // void check_tx(const TxMsg& tx_msg) const;
-  // void apply_tx(const TxMsg& tx_msg);
+  /// Apply the transaction to the blockchain.
+  void apply(const std::string& msg_raw) final;
 
 private:
-  // MerkleTree state;
+  Context ctx;
+  Handler handler;
 };

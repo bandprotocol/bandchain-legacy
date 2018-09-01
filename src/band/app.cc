@@ -2,6 +2,13 @@
 
 #include "crypto/ed25519.h"
 #include "crypto/sha256.h"
+#include "store/account.h"
+
+BandApplication::BandApplication()
+    : ctx()
+    , handler(ctx)
+{
+}
 
 std::string BandApplication::get_current_app_hash() const
 {
@@ -11,98 +18,65 @@ std::string BandApplication::get_current_app_hash() const
 
 void BandApplication::init(const std::string& init_state)
 {
-  // TODO
+  // Nothing here yet!
 }
 
 std::string BandApplication::query(const std::string& path,
-                                   const std::string& data) const
+                                   const std::string& data)
 {
-  // TODO
-  return "";
-  // return state.to_string();
+  Account account(ctx, Address::from_raw(data));
+  return "{}"_format(account.get_band_balance());
 }
 
-void BandApplication::apply(const std::string& msg_data, DryRun dry_run)
+void BandApplication::check(const std::string& msg_raw)
 {
-  // const size_t msg_size = msg_data.size();
-  // if (msg_size < sizeof(MsgBaseVoid))
-  //   throw Error("Invalid base message size {}", msg_size);
+  auto msg_view = gsl::make_span(msg_raw);
+  auto msg_sz = msg_raw.size();
 
-  // const auto& msg = *reinterpret_cast<const MsgBaseVoid*>(msg_data.c_str());
-  // if (msg_size != msg.size)
-  //   throw Error("Inconsistent message size {} vs {}", msg_size, msg.size);
+  if (msg_sz < sizeof(SecretKey))
+    throw Error("Message is too small");
 
-  // switch (msg.id()) {
-  //   case MintMsg::ID: {
-  //     const auto& mint_msg = msg.as<MintMsg>();
-  //     check_mint(mint_msg);
-  //     if (dry_run == DryRun::No)
-  //       apply_mint(mint_msg);
-  //   }
-  //   case TxMsg::ID: {
-  //     const auto& tx_msg = msg.as<TxMsg>();
-  //     check_tx(tx_msg);
-  //     if (dry_run == DryRun::No)
-  //       apply_tx(tx_msg);
-  //   }
-  //   default:
-  //     throw Error("Invalid message id {}", msg.msgid);
-  // }
+  /// Split the raw message into body and signature and chunks
+  auto msg_body_raw = msg_view.first(msg_sz - sizeof(SecretKey));
+  auto msg_sig_raw = msg_view.last(sizeof(SecretKey));
+
+  /// Build the buffers of those chunks
+  Buffer msg_body_buf(msg_body_raw);
+  Buffer msg_sig_buf(msg_sig_raw);
+
+  /// Retrieve the header and the signature.
+  const auto msg_hdr = msg_body_buf.read<MsgHdr>();
+  const auto sig = msg_sig_buf.read_all<Signature>();
+
+  /// Verify the signature with the message body.
+  if (!ed25519_verify(sig, msg_hdr.vk, msg_body_raw))
+    throw Error("Invalid Ed25519 signature");
 }
 
-// void BandApplication::check_mint(const MintMsg& mint_msg) const
-// {
-//   // if (state.contains(mint_msg.ident))
-//   //   throw Error("Mint ident {} already exists", mint_msg.ident);
+void BandApplication::apply(const std::string& msg_raw)
+{
+  auto msg_view = gsl::make_span(msg_raw);
+  auto msg_sz = msg_raw.size();
 
-//   // if (mint_msg.value.is_empty())
-//   //   throw Error("Mint value must not be zero");
-// }
+  if (msg_sz < sizeof(SecretKey))
+    throw Error("Message is too small");
 
-// void BandApplication::apply_mint(const MintMsg& mint_msg)
-// {
-//   // state.add(std::make_unique<TxOutput>(
-//   //     mint_msg.addr, mint_msg.value.as_uint256(), mint_msg.ident));
-// }
+  /// Split the raw message into body and signature and chunks
+  auto msg_body_raw = msg_view.first(msg_sz - sizeof(SecretKey));
+  auto msg_sig_raw = msg_view.last(sizeof(SecretKey));
 
-// void BandApplication::check_tx(const TxMsg& tx_msg) const
-// {
-//   // uint256_t total_input_value = 0;
-//   // uint256_t total_output_value = 0;
+  /// Build the buffers of those chunks
+  Buffer msg_body_buf(msg_body_raw);
+  Buffer msg_sig_buf(msg_sig_raw);
 
-//   // for (const auto& tx_input : tx_msg.inputs()) {
-//   //   const auto& tx_input_object = state.find<TxOutput>(tx_input.ident);
+  /// Retrieve the header and the signature.
+  const auto msg_hdr = msg_body_buf.read<MsgHdr>();
+  const auto sig = msg_sig_buf.read_all<Signature>();
 
-//   //   if (!tx_input_object.is_spendable(tx_input.vk))
-//   //     throw Error("Ident {} is not spendable by {}", tx_input.ident,
-//   //                 tx_input.vk);
+  /// Verify the signature with the message body.
+  if (!ed25519_verify(sig, msg_hdr.vk, msg_body_raw))
+    throw Error("Invalid Ed25519 signature");
 
-//   //   if (!ed25519_verify(tx_input.sig, tx_input.vk, tx_input.ident))
-//   //     throw Error("Bad Tx signature");
-
-//   //   total_input_value += tx_input_object.get_value();
-//   // }
-
-//   // for (const auto& tx_output : tx_msg.outputs()) {
-//   //   total_output_value += tx_output.value.as_uint256();
-//   // }
-
-//   // if (total_input_value != total_output_value)
-//   //   throw Error("Tx input value {} and Tx output value {} mismatched",
-//   //               total_input_value, total_output_value);
-// }
-
-// void BandApplication::apply_tx(const TxMsg& tx_msg)
-// {
-//   // for (const auto& tx_input : tx_msg.inputs()) {
-//   //   auto& tx_input_object = state.find<TxOutput>(tx_input.ident);
-//   //   tx_input_object.spend();
-//   // }
-
-//   // Hash tx_output_ident = sha256(sha256(tx_msg));
-//   // for (const auto& tx_output : tx_msg.outputs()) {
-//   //   tx_output_ident = sha256(tx_output_ident);
-//   //   state.add(std::make_unique<TxOutput>(
-//   //       tx_output.addr, tx_output.value.as_uint256(), tx_output_ident));
-//   // }
-// }
+  /// Pass the message to the handler.
+  handler.apply_message(msg_hdr, msg_body_buf);
+}

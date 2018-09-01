@@ -7,8 +7,41 @@
 class Buffer
 {
 public:
-  operator gsl::span<std::byte>() { return gsl::make_span(buf); }
-  operator gsl::span<const std::byte>() const { return gsl::make_span(buf); }
+  /// Initialize an empty buffer.
+  Buffer();
+
+  /// Initialize the buffer from the given data. Perform memcpy under the hood.
+  template <typename T>
+  Buffer(gsl::span<T> data);
+
+  template <typename T>
+  static T deserialize(const std::string raw_data)
+  {
+    Buffer buf(gsl::make_span(raw_data));
+    return buf.read_all<T>();
+  }
+
+  /// Serialize the given data into raw string. Use operator<< internally.
+  template <typename T>
+  static std::string serialize(const T& data)
+  {
+    Buffer buf;
+    buf << data;
+    return std::string((const char*)&buf.buf.front(), buf.buf.size());
+  }
+
+  /// Read this buffer as the given type.
+  template <typename T>
+  T read();
+
+  /// Similar to above, but throw if the read fails or the buffer is not empty
+  /// after the read is complete.
+  template <typename T>
+  T read_all();
+
+  /// Expose this data as a read-only span. Note that if this is destroyed,
+  /// the span will become invalid.
+  gsl::span<const std::byte> as_span() const { return gsl::make_span(buf); }
 
   std::byte* begin() { return &(*buf.begin()); }
 
@@ -38,14 +71,35 @@ public:
     buf.insert(buf.end(), data.buf.begin(), data.buf.end());
   }
 
-  std::string to_string() const
-  {
-    return bytes_to_hex(operator gsl::span<const std::byte>());
-  }
+  std::string to_string() const { return bytes_to_hex(as_span()); }
 
 private:
   std::vector<std::byte> buf;
 };
+
+template <typename T>
+Buffer::Buffer(gsl::span<T> data)
+{
+  buf.resize(data.size_bytes());
+  std::memcpy(&(*buf.begin()), data.data(), data.size_bytes());
+}
+
+template <typename T>
+T Buffer::read()
+{
+  T result;
+  *this >> result;
+  return result;
+}
+
+template <typename T>
+T Buffer::read_all()
+{
+  T result = read<T>();
+  if (!empty())
+    throw Error("Buffer::read_all does not fully consume the buffer");
+  return result;
+}
 
 template <typename T>
 inline Buffer& operator<<(Buffer& buf, gsl::span<T> data)
@@ -58,8 +112,7 @@ template <typename T>
 inline Buffer& operator>>(Buffer& buf, gsl::span<T> data)
 {
   if (buf.size_bytes() < data.size_bytes())
-    throw Error("Buffer is too short. {} < {}.", buf.size_bytes(),
-                data.size_bytes());
+    throw Error("Buffer parse error");
   std::memcpy(data.data(), buf.begin(), data.size_bytes());
   buf.consume(data.size_bytes());
   return buf;

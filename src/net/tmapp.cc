@@ -21,9 +21,14 @@ void TendermintApplication::do_init_chain(const RequestInitChain& req)
 void TendermintApplication::do_query(const RequestQuery& req,
                                      ResponseQuery& res)
 {
-  res.set_code(0);
   res.set_height(last_block_height);
-  res.set_value(query(req.path(), req.data()));
+  try {
+    res.set_value(query(req.path(), req.data()));
+    res.set_code(0);
+  } catch (const Error& err) {
+    res.set_info(err.what());
+    res.set_code(1);
+  }
 }
 
 void TendermintApplication::do_begin_block(const RequestBeginBlock&)
@@ -35,19 +40,13 @@ void TendermintApplication::do_check_tx(const RequestCheckTx& req,
                                         ResponseCheckTx& res)
 {
   try {
-    apply(req.tx(), DryRun::Yes);
+    check(req.tx());
     res.set_code(0);
-  } catch (const std::invalid_argument& err) {
+  } catch (const Error& err) {
     res.set_info(err.what());
     res.set_code(1);
-  } catch (const std::overflow_error& e) {
-    res.set_info("uint256 integer overflow");
-    res.set_code(1);
   } catch (const std::range_error& e) {
-    res.set_info("uint256 range error");
-    res.set_code(1);
-  } catch (const std::bad_cast& e) {
-    res.set_info("Invalid identifier");
+    res.set_info("uint256 integer range error");
     res.set_code(1);
   }
 }
@@ -56,16 +55,13 @@ void TendermintApplication::do_deliver_tx(const RequestDeliverTx& req,
                                           ResponseDeliverTx& res)
 {
   try {
-    apply(req.tx(), DryRun::No);
+    apply(req.tx());
     res.set_code(0);
-  } catch (const std::invalid_argument& err) {
+  } catch (const Error& err) {
     res.set_info(err.what());
     res.set_code(1);
-  } catch (const std::overflow_error& e) {
-    res.set_info("uint256 integer overflow");
-    res.set_code(1);
   } catch (const std::range_error& e) {
-    res.set_info("Invalid identifier");
+    res.set_info("uint256 integer range error");
     res.set_code(1);
   }
 }
@@ -134,9 +130,6 @@ bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
     default:
       throw std::runtime_error("Unexpected request type");
   }
-
-  std::cout << req.DebugString().c_str() << std::endl;
-  std::cout << res.DebugString().c_str() << std::endl;
 
   size_t write_size = res.ByteSize();
   write_integer(write_buffer, write_size);

@@ -15,7 +15,6 @@ public:
   Bytes(const Bytes& bytes) = default;
 
   static constexpr size_t Size = SIZE;
-  static constexpr size_t Bits = SIZE << 3;
 
   /// Create an n-byte structure from a raw string.
   static Bytes from_raw(const std::string& raw_string);
@@ -26,11 +25,9 @@ public:
   /// Create an arbitrary n-byte structure. Useful for testing.
   static Bytes rand();
 
-  /// Anywhere that accepts span<std::byte> can also accepts Bytes.
-  operator gsl::span<std::byte>() { return {data(), SIZE}; }
-
-  /// Similar to above, but for const variant.
-  operator gsl::span<const std::byte>() const { return {data(), SIZE}; }
+  /// Expose this data as a read-only span. Note that if this is destroyed,
+  /// the span will become invalid.
+  gsl::span<const std::byte> as_span() const { return gsl::make_span(rawdata); }
 
   /// Simple comparison operators.
   bool operator==(const Bytes& rhs) const;
@@ -69,11 +66,22 @@ public:
   /// Return a friendly hex representation of this hash value.
   std::string to_string() const;
 
+  /// Read and write from/to buffer.
+  friend Buffer& operator<<(Buffer& buf, const Bytes& data)
+  {
+    return buf << gsl::make_span(data.rawdata);
+  }
+  friend Buffer& operator>>(Buffer& buf, Bytes& data)
+  {
+    return buf >> gsl::make_span(data.rawdata);
+  }
+
 private:
-  std::array<std::byte, SIZE> rawdata = {};
+  std::array<std::byte, SIZE> rawdata{};
 } __attribute__((packed));
 
 using Address = Bytes<20>;   //< Public wallet address
+using TokenKey = Bytes<20>;  //< Public token address
 using Hash = Bytes<32>;      //< SHA-256 hash value
 using VerifyKey = Bytes<32>; //< Ed25519 verify key
 using SecretKey = Bytes<64>; //< Ed25519 secret key
@@ -90,18 +98,6 @@ struct hash<Bytes<SIZE>> {
 };
 } // namespace std
 
-template <int SIZE>
-inline Buffer& operator<<(Buffer& buf, const Bytes<SIZE>& data)
-{
-  return buf << data.operator gsl::span<const std::byte>();
-}
-
-template <int SIZE>
-inline Buffer& operator>>(Buffer& buf, Bytes<SIZE>& data)
-{
-  return buf >> data.operator gsl::span<std::byte>();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 static inline std::byte hex_to_byte(char hex_digit)
 {
@@ -112,7 +108,7 @@ static inline std::byte hex_to_byte(char hex_digit)
   } else if ('A' <= hex_digit && hex_digit <= 'F') {
     return std::byte(hex_digit - 'A' + 10);
   } else {
-    throw std::runtime_error("Invalid hex digit character");
+    throw Error("Invalid hex digit character");
   }
 }
 
@@ -120,7 +116,7 @@ template <int SIZE>
 Bytes<SIZE> Bytes<SIZE>::from_raw(const std::string& raw_string)
 {
   if (raw_string.size() != SIZE) {
-    throw std::runtime_error("Invalid hex string length");
+    throw Error("Invalid hex string length");
   }
   Bytes<SIZE> ret;
   std::memcpy(ret.data(), raw_string.c_str(), SIZE);
@@ -131,7 +127,7 @@ template <int SIZE>
 Bytes<SIZE> Bytes<SIZE>::from_hex(const std::string& hex_string)
 {
   if (hex_string.size() != 2 * SIZE) {
-    throw std::runtime_error("Invalid hex string length");
+    throw Error("Invalid hex string length");
   }
   Bytes<SIZE> ret;
   for (size_t i = 0; i < SIZE; ++i) {
@@ -145,7 +141,7 @@ template <int SIZE>
 Bytes<SIZE> Bytes<SIZE>::rand()
 {
   Bytes<SIZE> ret;
-  random_bytes(ret.operator gsl::span<std::byte>());
+  random_bytes(gsl::make_span(ret.rawdata));
   return ret;
 }
 
@@ -192,5 +188,5 @@ std::string Bytes<SIZE>::to_raw_string() const
 template <int SIZE>
 std::string Bytes<SIZE>::to_string() const
 {
-  return bytes_to_hex(this->operator gsl::span<const std::byte>());
+  return bytes_to_hex(as_span());
 }

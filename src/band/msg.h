@@ -1,45 +1,38 @@
 #pragma once
 
-#include "crypto/ed25519.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
+#include "util/endian.h"
 
-enum class MsgID : uint16_t {
-  Unset = 0,
-  Mint = 1,
-  Tx = 2,
+struct MsgID {
+  enum : uint16_t {
+    Unset = 0,
+    Mint = 1,
+    Tx = 2,
+  };
 };
 
 /// The header of ANY message that will be processed in this BAND blockchain.
 struct MsgHdr {
-  MsgID msgid{};    //< The ID from this message
+  uint16_t msgid{}; //< The ID from this message
   uint64_t ts{};    //< The timestamp at which this message is broadcasted
-  uint64_t nonce{}; //< The nonce value per account to prevent replay attack
   VerifyKey vk{};   //< The verify key of the person who broadcasts this message
-  Signature sig{};  //< The cryptographic signature of this message
 
   friend Buffer& operator<<(Buffer& buf, const MsgHdr& msg)
   {
-    return buf << msg.msgid << msg.ts << msg.nonce << msg.vk << msg.sig;
+    return buf << msg.msgid << msg.ts << msg.vk;
   }
 
   friend Buffer& operator>>(Buffer& buf, MsgHdr& msg)
   {
-    return buf >> msg.msgid >> msg.ts >> msg.nonce >> msg.vk >> msg.sig;
-  }
-
-  bool verify_signature(gsl::span<std::byte> extra) const
-  {
-    Buffer verify_buffer;
-    verify_buffer << msgid << ts << nonce << extra;
-    return ed25519_verify(sig, vk, verify_buffer);
+    return buf >> msg.msgid >> msg.ts >> msg.vk;
   }
 };
 
-template <MsgID MSG_ID>
+template <uint16_t MSG_ID>
 struct BaseMsg {
   /// Convenient static member so that the ID can be easily accessed
-  static constexpr MsgID ID = MSG_ID;
+  static constexpr uint16_t ID = MSG_ID;
 };
 
 /// MingMsg allows anyone in the world to mint token to their own account.

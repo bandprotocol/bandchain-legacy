@@ -26,6 +26,7 @@ file(GLOB source_files
      "src/msg/*.h" "src/msg/*.cc"
      "src/net/*.h" "src/net/*.cc"
      "src/state/*.h" "src/state/*.cc"
+     "src/store/*.h" "src/store/*.cc"
      "src/util/*.h" "src/util/*.cc")
 
 add_library(bandprotocol STATIC
