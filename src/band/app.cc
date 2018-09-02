@@ -7,6 +7,7 @@
 BandApplication::BandApplication()
     : ctx()
     , handler(ctx)
+    , qry(ctx)
 {
 }
 
@@ -24,8 +25,8 @@ void BandApplication::init(const std::string& init_state)
 std::string BandApplication::query(const std::string& path,
                                    const std::string& data)
 {
-  Account account(ctx, Address::from_raw(data));
-  return "{}"_format(account.get_band_balance());
+  /// Forward the request to the query instance.
+  return qry.process_query(data);
 }
 
 void BandApplication::check(const std::string& msg_raw)

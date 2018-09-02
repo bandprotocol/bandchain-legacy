@@ -2,6 +2,7 @@
 
 #include "band/handler.h"
 #include "band/msg.h"
+#include "band/query.h"
 #include "net/tmapp.h"
 #include "store/context.h"
 
@@ -33,4 +34,5 @@ public:
 private:
   Context ctx;
   Handler handler;
+  Query qry;
 };
