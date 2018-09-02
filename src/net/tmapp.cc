@@ -3,7 +3,7 @@
 void TendermintApplication::do_info(const RequestInfo& req, ResponseInfo& res)
 {
   if (req.version() != get_tm_version()) {
-    throw std::runtime_error("Invalid Version");
+    throw Failure("Invalid Version");
   }
   res.set_data(get_name());
   res.set_version(get_version());
@@ -102,7 +102,7 @@ bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
       do_info(req.info(), *res.mutable_info());
       break;
     case Request::ValueCase::kSetOption:
-      throw std::runtime_error("set_option is not supported");
+      throw Failure("set_option is not supported");
       break;
     case Request::ValueCase::kInitChain:
       res.mutable_init_chain();
@@ -128,7 +128,7 @@ bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
       do_commit(*res.mutable_commit());
       break;
     default:
-      throw std::runtime_error("Unexpected request type");
+      throw Failure("Unexpected request type");
   }
 
   size_t write_size = res.ByteSize();
