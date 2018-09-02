@@ -1,5 +1,7 @@
 #include "query.h"
 
+#include "store/account.h"
+
 Query::Query(Context& _ctx)
     : ctx(_ctx)
 {
@@ -13,27 +15,33 @@ std::string Query::process_query(const std::string& raw_data)
     if (!data.is_object())
       throw Error("Invalid query data. Must be JSON object.");
 
-    auto method = data["method"];
-    if (!method.is_string())
-      throw Error("Invalid query method. Must be JSON string.");
-
-    auto params = data["params"];
-    if (!params.is_object())
-      throw Error("Invalid query params. Must be JSON object");
+    auto method = data.at("method").get<std::string>();
+    auto params = data.at("params");
 
     if (auto it = dispatcher.find(method); it != dispatcher.end()) {
-      return it->second(*this, params);
+      return it->second(*this, params).dump();
     } else {
       throw Error("Unknown query method");
     }
 
-  } catch (const nlohmann::detail::parse_error&) {
-    throw Error("JSON parse error");
+  } catch (const json::parse_error& err) {
+    throw Error("JSON parse error: {}", err.what());
+  } catch (const json::out_of_range& err) {
+    throw Error("JSON range error: {}", err.what());
+  } catch (const json::type_error& err) {
+    throw Error("JSON type error: {}", err.what());
   }
 }
 
-std::string Query::process_balance(const json& params)
+json Query::process_balance(const json& params)
 {
-  // TODO
-  return "TODO";
+  auto address = params.at("address").get<std::string>();
+  auto token = params.at("token").get<std::string>();
+
+  Account account(ctx, Address::from_hex(address));
+  const uint256_t balance = account.get_balance(TokenKey::from_hex(token));
+
+  json response;
+  response["balance"] = "{}"_format(balance);
+  return response;
 }
