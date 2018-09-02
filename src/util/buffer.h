@@ -15,7 +15,7 @@ public:
   Buffer(gsl::span<T> data);
 
   template <typename T>
-  static T deserialize(const std::string raw_data)
+  static T deserialize(const std::string& raw_data)
   {
     Buffer buf(gsl::make_span(raw_data));
     return buf.read_all<T>();
