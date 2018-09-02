@@ -9,7 +9,7 @@
 class BandApplication : public TendermintApplication
 {
 public:
-  BandApplication();
+  BandApplication(Context& _ctx);
 
   std::string get_name() const final { return "band"; }
   std::string get_version() const final { return "latest"; }
@@ -32,7 +32,7 @@ public:
   void apply(const std::string& msg_raw) final;
 
 private:
-  Context ctx;
+  Context& ctx;
   Handler handler;
   Query qry;
 };

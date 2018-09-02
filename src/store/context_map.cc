@@ -1,27 +1,24 @@
-#include "context.h"
+#include "context_map.h"
 
-#include <rocksdb/db.h>
 
-Context::Context() {}
-
-uint64_t Context::height() const
+uint64_t ContextMap::height() const
 {
   // TODO
   return 0;
 }
 
-Hash Context::root() const
+Hash ContextMap::root() const
 {
   // TODO
   return {};
 }
 
-void Context::commit()
+void ContextMap::commit()
 {
   // TODO
 }
 
-std::pair<std::string, bool> Context::try_get(const Hash& key) const
+std::pair<std::string, bool> ContextMap::try_get(const Hash& key) const
 {
   if (auto it = data.find(key); it != data.end()) {
     return {it->second, true};
@@ -29,7 +26,7 @@ std::pair<std::string, bool> Context::try_get(const Hash& key) const
   return {{}, false};
 }
 
-std::string Context::get(const Hash& key) const
+std::string ContextMap::get(const Hash& key) const
 {
   if (auto it = data.find(key); it != data.end()) {
     return it->second;
@@ -37,19 +34,19 @@ std::string Context::get(const Hash& key) const
   throw Error("Context::get: key {} does not exist", key);
 }
 
-bool Context::check(const Hash& key) const
+bool ContextMap::check(const Hash& key) const
 {
   return data.find(key) != data.end();
 }
 
-void Context::add(const Hash& key, const std::string value)
+void ContextMap::add(const Hash& key, const std::string value)
 {
   if (!data.try_emplace(key, value).second) {
     throw Error("Context::add: key {} already exists", key);
   }
 }
 
-void Context::set(const Hash& key, const std::string value)
+void ContextMap::set(const Hash& key, const std::string value)
 {
   data[key] = value;
 }

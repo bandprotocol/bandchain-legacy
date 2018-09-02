@@ -1,35 +1,35 @@
 #pragma once
 
-#include "util/bytes.h"
+#include "store/context.h"
 
-class Context
+class ContextMap : public Context
 {
 public:
-
-  virtual ~Context() {};
   /// Get the current blockchain height.
-  virtual uint64_t height() const = 0;
+  uint64_t height() const final;
 
   /// Get the current merkle root of the blockchain.
-  virtual Hash root() const = 0;
+  Hash root() const final;
 
   /// Commit all changes to persistent data store, and increment the block 
   /// height by one.
-  virtual void commit() = 0;
+  void commit() final;
 
   /// Return the data stored at the given key, and boolean indicating the 
   /// success.
-  virtual std::pair<std::string, bool> try_get(const Hash& key) const = 0;
+  std::pair<std::string, bool> try_get(const Hash& key) const final;
 
   /// Return the data stored at the given key. Throw of the key does not exist.
-  virtual std::string get(const Hash& key) const = 0;
+  std::string get(const Hash& key) const final;
 
   /// Return true iff the key exists in the database.
-  virtual bool check(const Hash& key) const = 0;
+  bool check(const Hash& key) const final;
 
   /// Add the data stored at the given key. Throw if the key already exists.
-  virtual void add(const Hash& key, const std::string value) = 0;
+  void add(const Hash& key, const std::string value) final;
 
   /// Similar to add, but don't throw.
-  virtual void set(const Hash& key, const std::string value) = 0;
+  void set(const Hash& key, const std::string value) final;
+private:
+  std::unordered_map<Hash, std::string> data;
 };

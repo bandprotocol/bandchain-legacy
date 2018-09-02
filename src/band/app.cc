@@ -4,8 +4,8 @@
 #include "crypto/sha256.h"
 #include "store/account.h"
 
-BandApplication::BandApplication()
-    : ctx()
+BandApplication::BandApplication(Context& _ctx)
+    : ctx(_ctx)
     , handler(ctx)
     , qry(ctx)
 {
