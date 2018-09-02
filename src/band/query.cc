@@ -1,5 +1,6 @@
 #include "query.h"
 
+#include "band/txgen.h"
 #include "store/account.h"
 
 Query::Query(Context& _ctx)
@@ -17,6 +18,10 @@ std::string Query::process_query(const std::string& raw_data)
 
     auto method = data.at("method").get<std::string>();
     auto params = data.at("params");
+
+    if (method == "txgen") {
+      return txgen::process_txgen(params);
+    }
 
     if (auto it = dispatcher.find(method); it != dispatcher.end()) {
       return it->second(*this, params).dump();
