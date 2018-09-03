@@ -25,7 +25,7 @@ void TendermintApplication::do_query(const RequestQuery& req,
   try {
     res.set_value(query(req.path(), req.data()));
     res.set_code(0);
-  } catch (const Error& err) {
+  } catch (const std::exception& err) {
     res.set_info(err.what());
     res.set_code(1);
   }
@@ -48,6 +48,9 @@ void TendermintApplication::do_check_tx(const RequestCheckTx& req,
   } catch (const std::range_error& e) {
     res.set_info("uint256 integer range error");
     res.set_code(1);
+  } catch (const std::overflow_error& e) {
+    res.set_info("uint256 integer overflow error");
+    res.set_code(1);
   }
 }
 
@@ -62,6 +65,9 @@ void TendermintApplication::do_deliver_tx(const RequestDeliverTx& req,
     res.set_code(1);
   } catch (const std::range_error& e) {
     res.set_info("uint256 integer range error");
+    res.set_code(1);
+  } catch (const std::overflow_error& e) {
+    res.set_info("uint256 integer overflow error");
     res.set_code(1);
   }
 }

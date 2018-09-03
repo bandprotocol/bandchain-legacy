@@ -22,8 +22,6 @@ public:
   virtual std::string query(const std::string& path,
                             const std::string& data) = 0;
 
-  enum class DryRun : uint8_t { Yes, No };
-
   /// Apply an incoming message. Throw if the message is not valid.
   virtual void check(const std::string& msg_raw) = 0;
 
