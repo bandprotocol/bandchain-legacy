@@ -1,6 +1,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include "band/msg.h"
+#include "inc/essential.h"
 
 class MsgTest : public CxxTest::TestSuite
 {

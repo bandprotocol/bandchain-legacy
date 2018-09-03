@@ -1,5 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
+#include "inc/essential.h"
 class CryptoTest : public CxxTest::TestSuite
 {
 public:

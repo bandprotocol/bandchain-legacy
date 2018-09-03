@@ -6,8 +6,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_definitions(-include src/inc/autoinclude.h)
-
 find_package(Boost 1.65.1 COMPONENTS system serialization REQUIRED)
 find_package(Protobuf 3.0.0 REQUIRED)
 find_package(Sodium REQUIRED)

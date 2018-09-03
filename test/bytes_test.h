@@ -1,5 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
+#include "inc/essential.h"
 class BytesTest : public CxxTest::TestSuite
 {
 public:

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "inc/essential.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
 #include "util/endian.h"

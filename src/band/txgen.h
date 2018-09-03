@@ -1,5 +1,6 @@
 #pragma once
 
+#include "inc/essential.h"
 #include "util/json.h"
 
 namespace txgen

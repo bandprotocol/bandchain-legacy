@@ -1,3 +1,4 @@
+#include "inc/essential.h"
 #include "util/cli.h"
 
 CmdArg<bool> arg_bool("arg_b", "test bool");

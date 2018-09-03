@@ -3,9 +3,17 @@
 #include "inc/essential.h"
 #include "store/context.h"
 
-class ContextMap : public Context
+namespace rocksdb
+{
+class TransactionDB;
+}
+
+class ContextDB : public Context
 {
 public:
+  ContextDB();
+  ~ContextDB();
+
   /// Get the current blockchain height.
   uint64_t height() const final;
 
@@ -33,5 +41,5 @@ public:
   void set(const Hash& key, const std::string value) final;
 
 private:
-  std::unordered_map<Hash, std::string> data;
+  std::unique_ptr<rocksdb::TransactionDB> txn_db;
 };

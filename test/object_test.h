@@ -1,5 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
+#include "inc/essential.h"
 #include "state/object.h"
 #include "util/bytes.h"
 #include "util/string.h"

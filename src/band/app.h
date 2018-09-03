@@ -3,6 +3,7 @@
 #include "band/handler.h"
 #include "band/msg.h"
 #include "band/query.h"
+#include "inc/essential.h"
 #include "net/tmapp.h"
 #include "store/context.h"
 

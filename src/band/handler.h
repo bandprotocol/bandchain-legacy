@@ -1,6 +1,7 @@
 #pragma once
 
 #include "band/msg.h"
+#include "inc/essential.h"
 #include "store/context.h"
 
 class Handler

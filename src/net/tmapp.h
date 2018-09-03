@@ -1,6 +1,7 @@
 #pragma once
 
 #include "abci/abci.h"
+#include "inc/essential.h"
 #include "net/netapp.h"
 
 class TendermintApplication : public NetApplication

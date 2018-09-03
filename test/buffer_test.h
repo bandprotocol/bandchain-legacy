@@ -1,6 +1,7 @@
 #include <cxxtest/TestSuite.h>
 #include <vector>
 
+#include "inc/essential.h"
 #include "state/object.h"
 #include "util/buffer.h"
 #include "util/bytes.h"

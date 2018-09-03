@@ -1,5 +1,6 @@
 #pragma once
 
+#include "inc/essential.h"
 #include "store/context.h"
 
 class Account

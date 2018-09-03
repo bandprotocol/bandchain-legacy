@@ -3,3 +3,6 @@
 .DS_Store
 /abci/abci.pb.cc
 /abci/abci.pb.h
+/.vscode/
+/cmake-build-debug
+/.idea

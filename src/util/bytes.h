@@ -4,6 +4,7 @@
 #include <boost/functional/hash.hpp>
 
 #include "crypto/random.h"
+#include "inc/essential.h"
 #include "util/buffer.h"
 #include "util/string.h"
 

@@ -3,6 +3,7 @@
 #include <boost/endian/buffers.hpp>
 #include <type_traits>
 
+#include "inc/essential.h"
 #include "util/buffer.h"
 
 template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
@@ -23,25 +24,25 @@ inline Buffer& operator>>(Buffer& buf, T& val)
 inline Buffer& operator<<(Buffer& buf, uint8_t val)
 {
   const boost::endian::big_uint8_buf_t big_endian_val(val);
-  return buf << gsl::span(&big_endian_val, 1);
+  return buf << gsl::make_span(&big_endian_val, 1);
 }
 
 inline Buffer& operator<<(Buffer& buf, uint16_t val)
 {
   const boost::endian::big_uint16_buf_t big_endian_val(val);
-  return buf << gsl::span(&big_endian_val, 1);
+  return buf << gsl::make_span(&big_endian_val, 1);
 }
 
 inline Buffer& operator<<(Buffer& buf, uint32_t val)
 {
   const boost::endian::big_uint32_buf_t big_endian_val(val);
-  return buf << gsl::span(&big_endian_val, 1);
+  return buf << gsl::make_span(&big_endian_val, 1);
 }
 
 inline Buffer& operator<<(Buffer& buf, uint64_t val)
 {
   const boost::endian::big_uint64_buf_t big_endian_val(val);
-  return buf << gsl::span(&big_endian_val, 1);
+  return buf << gsl::make_span(&big_endian_val, 1);
 }
 
 inline Buffer& operator<<(Buffer& buf, const uint256_t& val)
@@ -54,7 +55,7 @@ inline Buffer& operator<<(Buffer& buf, const uint256_t& val)
 inline Buffer& operator>>(Buffer& buf, uint8_t& val)
 {
   boost::endian::big_uint8_buf_t big_endian_val;
-  buf >> gsl::span(&big_endian_val, 1);
+  buf >> gsl::make_span(&big_endian_val, 1);
   val = big_endian_val.value();
   return buf;
 }
@@ -62,7 +63,7 @@ inline Buffer& operator>>(Buffer& buf, uint8_t& val)
 inline Buffer& operator>>(Buffer& buf, uint16_t& val)
 {
   boost::endian::big_uint16_buf_t big_endian_val;
-  buf >> gsl::span(&big_endian_val, 1);
+  buf >> gsl::make_span(&big_endian_val, 1);
   val = big_endian_val.value();
   return buf;
 }
@@ -70,7 +71,7 @@ inline Buffer& operator>>(Buffer& buf, uint16_t& val)
 inline Buffer& operator>>(Buffer& buf, uint32_t& val)
 {
   boost::endian::big_uint32_buf_t big_endian_val;
-  buf >> gsl::span(&big_endian_val, 1);
+  buf >> gsl::make_span(&big_endian_val, 1);
   val = big_endian_val.value();
   return buf;
 }
@@ -78,7 +79,7 @@ inline Buffer& operator>>(Buffer& buf, uint32_t& val)
 inline Buffer& operator>>(Buffer& buf, uint64_t& val)
 {
   boost::endian::big_uint64_buf_t big_endian_val;
-  buf >> gsl::span(&big_endian_val, 1);
+  buf >> gsl::make_span(&big_endian_val, 1);
   val = big_endian_val.value();
   return buf;
 }

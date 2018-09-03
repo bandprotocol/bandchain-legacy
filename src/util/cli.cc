@@ -5,7 +5,7 @@
 
 Cmd::Cmd(int argc, char* argv[])
 {
-  CmdArgBase* cmd_arg;
+  CmdArgBase* cmd_arg = nullptr;
 
   for (int idx = 1; idx < argc; ++idx) {
     std::string arg = argv[idx];

@@ -1,3 +1,4 @@
+#include "inc/essential.h"
 #include "net/server.h"
 
 class PingPongApplication : public NetApplication

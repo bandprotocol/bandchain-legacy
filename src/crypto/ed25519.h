@@ -3,6 +3,7 @@
 #include <sodium/crypto_sign_ed25519.h>
 
 #include "crypto/sha256.h"
+#include "inc/essential.h"
 #include "util/bytes.h"
 
 /// Generate a random Ed25519 keypair

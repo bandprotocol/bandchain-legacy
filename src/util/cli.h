@@ -2,6 +2,8 @@
 
 #include <map>
 
+#include "inc/essential.h"
+
 class CmdArgBase;
 
 class Cmd

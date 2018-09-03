@@ -2,6 +2,7 @@
 
 #include <sodium/crypto_hash_sha256.h>
 
+#include "inc/essential.h"
 #include "util/bytes.h"
 
 template <typename T>

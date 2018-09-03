@@ -2,6 +2,7 @@
 
 #include <boost/asio.hpp>
 
+#include "inc/essential.h"
 #include "net/netapp.h"
 
 class Server
