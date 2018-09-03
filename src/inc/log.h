@@ -30,6 +30,11 @@ public:
     logger->error(std::forward<Args>(args)...);
   }
 
+  static void set_level(spdlog::level::level_enum level)
+  {
+    logger->set_level(level);
+  }
+
 private:
   inline static std::shared_ptr<spdlog::logger> logger =
       spdlog::stdout_color_mt("band");

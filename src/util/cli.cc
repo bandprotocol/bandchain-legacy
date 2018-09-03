@@ -3,6 +3,8 @@
 #include <iostream>
 #include <set>
 
+CmdArg<bool> verbose_mode("verbose", "run in verbose mode", 'v');
+
 Cmd::Cmd(int argc, char* argv[])
 {
   CmdArgBase* cmd_arg = nullptr;
@@ -19,6 +21,7 @@ Cmd::Cmd(int argc, char* argv[])
       if (cmd_arg != nullptr) {
         cmd_arg->parse("");
         cmd_arg->passed = true;
+        cmd_arg = nullptr;
       }
       cmd_arg = it->second;
     } else {
@@ -31,6 +34,15 @@ Cmd::Cmd(int argc, char* argv[])
       }
     }
   }
+
+  if (cmd_arg != nullptr) {
+    cmd_arg->parse("");
+    cmd_arg->passed = true;
+    cmd_arg = nullptr;
+  }
+
+  if (+verbose_mode)
+    log::set_level(spdlog::level::debug);
 }
 
 std::string Cmd::help() const
