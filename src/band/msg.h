@@ -39,16 +39,17 @@ struct BaseMsg {
 /// This message is primarily used for testing and will obviously not be
 /// available for use in mainnet.
 struct MintMsg : BaseMsg<MsgID::Mint> {
-  uint256_t value{}; //< The value to mint
+  TokenKey token_key{}; // The token ID to mint
+  uint256_t value{};    //< The value to mint
 
   friend Buffer& operator<<(Buffer& buf, const MintMsg& msg)
   {
-    return buf << msg.value;
+    return buf << msg.token_key << msg.value;
   }
 
   friend Buffer& operator>>(Buffer& buf, MintMsg& msg)
   {
-    return buf >> msg.value;
+    return buf >> msg.token_key >> msg.value;
   }
 };
 
@@ -56,16 +57,17 @@ struct MintMsg : BaseMsg<MsgID::Mint> {
 /// requirement is that you must have at least that amount of tokens in your
 /// blockchain account.
 struct TxMsg : BaseMsg<MsgID::Tx> {
-  Address dest{};    //< The address to send the value to
-  uint256_t value{}; //< The value of this transaction
+  TokenKey token_key{}; // The token ID to send
+  Address dest{};       //< The address to send the value to
+  uint256_t value{};    //< The value of this transaction
 
   friend Buffer& operator<<(Buffer& buf, const TxMsg& msg)
   {
-    return buf << msg.dest << msg.value;
+    return buf << msg.token_key << msg.dest << msg.value;
   }
 
   friend Buffer& operator>>(Buffer& buf, TxMsg& msg)
   {
-    return buf >> msg.dest >> msg.value;
+    return buf >> msg.token_key >> msg.dest >> msg.value;
   }
 };

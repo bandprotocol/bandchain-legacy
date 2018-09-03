@@ -46,6 +46,7 @@ int main()
   switch (msg_hdr.msgid) {
     case MintMsg::ID: {
       MintMsg mint_msg;
+      mint_msg.token_key = read_hex<TokenKey>("What's the token key?");
       mint_msg.value = read<uint256_t>("How much to mint?");
       finalize(msg_hdr, mint_msg, sk);
       break;
@@ -53,6 +54,7 @@ int main()
     case TxMsg::ID: {
       TxMsg tx_msg;
       tx_msg.dest = read_hex<Address>("What's the destination address?");
+      tx_msg.token_key = read_hex<TokenKey>("What's the token key?");
       tx_msg.value = read<uint256_t>("How much to send?");
       finalize(msg_hdr, tx_msg, sk);
       break;

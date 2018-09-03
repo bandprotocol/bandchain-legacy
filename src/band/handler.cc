@@ -32,10 +32,11 @@ void Handler::apply_mint(const Address& addr, const MintMsg& mint_msg)
   Account account(ctx, addr);
 
   /// Compute the new balance.
-  const uint256_t new_balance = account.get_band_balance() + mint_msg.value;
+  const uint256_t new_balance =
+      account.get_balance(mint_msg.token_key) + mint_msg.value;
 
   /// Update the balance.
-  account.set_band_balance(new_balance);
+  account.set_balance(mint_msg.token_key, new_balance);
 }
 
 void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg)
@@ -49,11 +50,11 @@ void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg)
 
   /// Compute the new balances.
   const uint256_t new_source_balance =
-      account_source.get_band_balance() - tx_msg.value;
+      account_source.get_balance(tx_msg.token_key) - tx_msg.value;
   const uint256_t new_dest_balance =
-      account_dest.get_band_balance() + tx_msg.value;
+      account_dest.get_balance(tx_msg.token_key) + tx_msg.value;
 
   /// Update the information.
-  account_source.set_band_balance(new_source_balance);
-  account_dest.set_band_balance(new_dest_balance);
+  account_source.set_balance(tx_msg.token_key, new_source_balance);
+  account_dest.set_balance(tx_msg.token_key, new_dest_balance);
 }
