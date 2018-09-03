@@ -61,11 +61,10 @@ CmdArgBase::CmdArgBase(std::string _name, std::string _desc, char _abbrev)
 
 std::string CmdArgBase::help() const
 {
-  std::string cmd;
+  std::string abbrev_str;
   if (abbrev != '\0')
-    cmd += "-{} "_format(abbrev);
-  cmd += "--{}"_format(name);
-  return "  {} \"{}\" [{}] : {}\n"_format(name, cmd, get_type(), desc);
+    abbrev_str = " [-{}]"_format(abbrev);
+  return "  {}{} : {} ({})\n"_format(name, abbrev_str, desc, get_type());
 }
 
 void CmdArgBase::add_to_cmd(const std::string& key)
