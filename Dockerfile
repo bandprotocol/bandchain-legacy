@@ -17,3 +17,7 @@ RUN apt-get install -y protobuf-compiler
 RUN apt-get install -y libprotobuf-dev
 RUN apt-get install -y cmake
 RUN apt-get install -y libsodium-dev
+
+RUN apt-get install -y git libgflags-dev libsnappy-dev zlib1g-dev liblz4-dev libzstd-dev
+RUN git clone https://github.com/facebook/rocksdb.git
+RUN cd rocksdb && make shared_lib && make install-shared && cd ~
