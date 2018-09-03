@@ -34,27 +34,7 @@ public:
     TS_ASSERT_EQUALS(MintMsg::ID, MsgID::Mint);
 
     MintMsg msg;
-    msg.value = 1000'000'000'000'000;
-
-    Buffer buf;
-    TS_ASSERT_EQUALS(buf.size_bytes(), 0);
-
-    buf << msg;
-    TS_ASSERT_EQUALS(buf.size_bytes(), 32);
-
-    MintMsg msg_read;
-    buf >> msg_read;
-
-    TS_ASSERT_EQUALS(buf.size_bytes(), 0);
-    TS_ASSERT_EQUALS(msg.value, msg_read.value);
-  }
-
-  void test_msg_tx()
-  {
-    TS_ASSERT_EQUALS(TxMsg::ID, MsgID::Tx);
-
-    TxMsg msg;
-    msg.dest = Address::rand();
+    msg.token_key = TokenKey::rand();
     msg.value = 1000'000'000'000'000;
 
     Buffer buf;
@@ -63,10 +43,34 @@ public:
     buf << msg;
     TS_ASSERT_EQUALS(buf.size_bytes(), 52);
 
+    MintMsg msg_read;
+    buf >> msg_read;
+
+    TS_ASSERT_EQUALS(buf.size_bytes(), 0);
+    TS_ASSERT_EQUALS(msg.token_key, msg_read.token_key);
+    TS_ASSERT_EQUALS(msg.value, msg_read.value);
+  }
+
+  void test_msg_tx()
+  {
+    TS_ASSERT_EQUALS(TxMsg::ID, MsgID::Tx);
+
+    TxMsg msg;
+    msg.token_key = TokenKey::rand();
+    msg.dest = Address::rand();
+    msg.value = 1000'000'000'000'000;
+
+    Buffer buf;
+    TS_ASSERT_EQUALS(buf.size_bytes(), 0);
+
+    buf << msg;
+    TS_ASSERT_EQUALS(buf.size_bytes(), 72);
+
     TxMsg msg_read;
     buf >> msg_read;
 
     TS_ASSERT_EQUALS(buf.size_bytes(), 0);
+    TS_ASSERT_EQUALS(msg.token_key, msg_read.token_key);
     TS_ASSERT_EQUALS(msg.dest, msg_read.dest);
     TS_ASSERT_EQUALS(msg.value, msg_read.value);
   }
