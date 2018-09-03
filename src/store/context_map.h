@@ -11,11 +11,11 @@ public:
   /// Get the current merkle root of the blockchain.
   Hash root() const final;
 
-  /// Commit all changes to persistent data store, and increment the block 
+  /// Commit all changes to persistent data store, and increment the block
   /// height by one.
   void commit() final;
 
-  /// Return the data stored at the given key, and boolean indicating the 
+  /// Return the data stored at the given key, and boolean indicating the
   /// success.
   std::pair<std::string, bool> try_get(const Hash& key) const final;
 
@@ -30,6 +30,7 @@ public:
 
   /// Similar to add, but don't throw.
   void set(const Hash& key, const std::string value) final;
+
 private:
   std::unordered_map<Hash, std::string> data;
 };

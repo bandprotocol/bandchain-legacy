@@ -5,19 +5,18 @@
 class Context
 {
 public:
-
-  virtual ~Context() {};
+  virtual ~Context(){};
   /// Get the current blockchain height.
   virtual uint64_t height() const = 0;
 
   /// Get the current merkle root of the blockchain.
   virtual Hash root() const = 0;
 
-  /// Commit all changes to persistent data store, and increment the block 
+  /// Commit all changes to persistent data store, and increment the block
   /// height by one.
   virtual void commit() = 0;
 
-  /// Return the data stored at the given key, and boolean indicating the 
+  /// Return the data stored at the given key, and boolean indicating the
   /// success.
   virtual std::pair<std::string, bool> try_get(const Hash& key) const = 0;
 

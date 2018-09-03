@@ -1,6 +1,5 @@
 #include "context_map.h"
 
-
 uint64_t ContextMap::height() const
 {
   // TODO
