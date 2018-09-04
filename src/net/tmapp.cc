@@ -26,6 +26,7 @@ bool read_ahead(Buffer& buf, int& value)
   return false;
 }
 } // namespace
+
 void TendermintApplication::do_info(const RequestInfo& req, ResponseInfo& res)
 {
   if (req.version() != get_tm_version()) {
@@ -164,20 +165,7 @@ bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
   }
 
   uint64_t write_size = res.ByteSize();
-  // write_buffer << write_size;
-
-  // TODO: Make operator<< use varint encoding by default
-  write_size <<= 1;
-  while (true) {
-    std::byte towrite = static_cast<std::byte>(write_size & 0x7F);
-    write_size >>= 7;
-    if (write_size != 0) {
-      write_buffer << (towrite | std::byte{0x80});
-    } else {
-      write_buffer << towrite;
-      break;
-    }
-  }
+  write_buffer << (write_size << 1);
 
   std::string write_data;
   res.SerializeToString(&write_data);

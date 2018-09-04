@@ -17,7 +17,7 @@ public:
     TS_ASSERT_EQUALS(buf.size_bytes(), 0);
 
     buf << hdr;
-    TS_ASSERT_EQUALS(buf.size_bytes(), 42);
+    TS_ASSERT_EQUALS(buf.size_bytes(), 39);
 
     MsgHdr hdr_read;
     buf >> hdr_read;
@@ -40,7 +40,7 @@ public:
     TS_ASSERT_EQUALS(buf.size_bytes(), 0);
 
     buf << msg;
-    TS_ASSERT_EQUALS(buf.size_bytes(), 52);
+    TS_ASSERT_EQUALS(buf.size_bytes(), 28);
 
     MintMsg msg_read;
     buf >> msg_read;
@@ -63,7 +63,7 @@ public:
     TS_ASSERT_EQUALS(buf.size_bytes(), 0);
 
     buf << msg;
-    TS_ASSERT_EQUALS(buf.size_bytes(), 72);
+    TS_ASSERT_EQUALS(buf.size_bytes(), 48);
 
     TxMsg msg_read;
     buf >> msg_read;

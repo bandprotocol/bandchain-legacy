@@ -27,6 +27,7 @@ Buffer& operator<<(Buffer& buf, const Curve& curve)
 Buffer& operator>>(Buffer& buf, Curve& curve)
 {
   curve.equation = std::move(Eq::parse(buf));
+  return buf;
 }
 
 std::unique_ptr<Eq> Eq::parse(Buffer& buf)
@@ -56,9 +57,8 @@ std::unique_ptr<Eq> Eq::parse(Buffer& buf)
       buf >> var;
       return std::make_unique<EqVar>(var);
     }
-    default:
-      throw Error("Opcode doesn't match any OpCode");
   }
+  throw Error("Opcode doesn't match any OpCode");
 }
 EqBinary::EqBinary(std::unique_ptr<Eq> _left, std::unique_ptr<Eq> _right)
     : left(std::move(_left))

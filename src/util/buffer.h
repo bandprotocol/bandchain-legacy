@@ -4,6 +4,7 @@
 
 #include "inc/essential.h"
 #include "util/string.h"
+
 class Buffer
 {
 public:
