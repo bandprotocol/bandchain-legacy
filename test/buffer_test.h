@@ -19,19 +19,16 @@ public:
   {
     Buffer buf;
     std::byte A{0x55};
-    buf.append(A);
+    buf << A;
     // Check size_bytes
     TS_ASSERT_EQUALS(1, buf.size_bytes());
 
     std::byte B{0xAB};
-    buf.append(B);
+    buf << B;
     // Check size_bytes and []
     TS_ASSERT_EQUALS(2, buf.size_bytes());
-    TS_ASSERT_EQUALS(buf[1], B);
-
-    // Check begin
-    auto it = buf.begin();
-    TS_ASSERT_EQUALS(A, *it);
+    TS_ASSERT_EQUALS(buf.as_span()[0], A);
+    TS_ASSERT_EQUALS(buf.as_span()[1], B);
   }
 
   void testConsume(void)
@@ -42,26 +39,23 @@ public:
     std::byte d{0xDD};
 
     Buffer buf;
-    buf.append(a);
-    buf.append(b);
-    buf.append(c);
+    buf << a << b << c;
 
     TS_ASSERT_EQUALS(3, buf.size_bytes());
 
     // Consume first byte
     buf.consume(1);
     TS_ASSERT_EQUALS(2, buf.size_bytes());
-    TS_ASSERT_EQUALS(*buf.begin(), b);
+    TS_ASSERT_EQUALS(buf.as_span()[0], b);
 
-    buf.append(d);
-    buf.append(a);
+    buf << d << a;
 
     // Consume first 2 bytes
     buf.consume(2);
 
     // Remain d and a in buffer
-    TS_ASSERT_EQUALS(*buf.begin(), d);
-    TS_ASSERT_EQUALS(buf[1], a);
+    TS_ASSERT_EQUALS(buf.as_span()[0], d);
+    TS_ASSERT_EQUALS(buf.as_span()[1], a);
   }
 
   void testAppendSpanType(void)
@@ -78,8 +72,8 @@ public:
     // Push span from vector to buffer
     buf << gsl::make_span(V);
     TS_ASSERT_EQUALS(2, buf.size_bytes());
-    TS_ASSERT_EQUALS(*buf.begin(), std::byte{0xDD});
-    TS_ASSERT_EQUALS(buf[1], std::byte{0xCD});
+    TS_ASSERT_EQUALS(buf.as_span()[0], std::byte{0xDD});
+    TS_ASSERT_EQUALS(buf.as_span()[1], std::byte{0xCD});
   }
 
   void testAppendOtherBuffer(void)
@@ -90,96 +84,24 @@ public:
     std::byte d{0xDD};
 
     Buffer buf;
-    buf.append(a);
-    buf.append(b);
-    buf.append(c);
+    buf << a << b << c;
 
     Buffer buf2;
-    buf2.append(buf);
-    buf2.append(d);
+    buf2 << buf.as_span() << d;
 
     TS_ASSERT_EQUALS(4, buf2.size_bytes());
-    TS_ASSERT_EQUALS(*buf2.begin(), std::byte{0xAA});
-    TS_ASSERT_EQUALS(buf2[3], std::byte{0xDD});
+    TS_ASSERT_EQUALS(buf2.as_span()[0], std::byte{0xAA});
+    TS_ASSERT_EQUALS(buf2.as_span()[3], std::byte{0xDD});
 
     buf2.consume(2);
     TS_ASSERT_EQUALS(2, buf2.size_bytes());
-    TS_ASSERT_EQUALS(*buf2.begin(), std::byte{0xCC});
-    TS_ASSERT_EQUALS(buf2[1], std::byte{0xDD});
+    TS_ASSERT_EQUALS(buf2.as_span()[0], std::byte{0xCC});
+    TS_ASSERT_EQUALS(buf2.as_span()[1], std::byte{0xDD});
 
     // test clear
     buf.clear();
     TS_ASSERT_EQUALS(2, buf2.size_bytes());
     TS_ASSERT_EQUALS(0, buf.size_bytes());
-  }
-
-  void testReserve(void)
-  {
-    std::byte a{0xAA};
-    std::byte b{0xBB};
-    std::byte c{0xCC};
-    std::byte d{0xDD};
-
-    Buffer buf;
-    buf.append(a);
-    buf.append(b);
-    buf.append(c);
-
-    TS_ASSERT_EQUALS(3, buf.size_bytes());
-    // Allocate memory 39 bytes back of buffer
-    buf.reserve(39);
-    TS_ASSERT_EQUALS(42, buf.size_bytes());
-  }
-
-  void testpush(void)
-  {
-    // // Test << and >> operation
-    // std::byte d{0xDD};
-
-    // Bytes<32> A{0xAAA};
-    // Buffer buf;
-    // uint8_t b = 0xBB;
-    // // Push A (32 bytes data) to buffer
-    // buf << A;
-    // TS_ASSERT_EQUALS(32, buf.size_bytes());
-
-    // // Push b (1 byte data) to buffer
-    // buf << b;
-    // TS_ASSERT_EQUALS(33, buf.size_bytes());
-    // log::info("Buffer now {}",buf);
-
-    // // Pop 32 first byte of buffer store in B
-    // Bytes<32> B{0x00};
-    // buf >> B;
-    // TS_ASSERT_EQUALS(1, buf.size_bytes());
-    // TS_ASSERT_EQUALS(A,B);
-    // // Show buffer now
-    // log::info("Buffer now {}",buf);
-
-    // // Add another 32 bytes data
-    // Bytes<32> A17{0x5324};
-    // buf << A17;
-    // TS_ASSERT_EQUALS(33, buf.size_bytes());
-
-    // uint16_t n16{0xB123};
-    // buf << n16;
-    // TS_ASSERT_EQUALS(35, buf.size_bytes());
-
-    // uint8_t  c;
-    // buf >> c;
-    // TS_ASSERT_EQUALS(34, buf.size_bytes());
-    // TS_ASSERT_EQUALS(c, 187);
-
-    // Bytes<32> X;
-    // buf >> X;
-    // TS_ASSERT_EQUALS(2, buf.size_bytes());
-    // TS_ASSERT_EQUALS(X, Bytes<32>{0x5324});
-
-    // uint16_t n16_new;
-    // buf >> n16_new;
-    // TS_ASSERT_EQUALS(0, buf.size_bytes());
-    // TS_ASSERT_EQUALS(n16, n16_new);
-    // // log::info("Begin {}", *buf.begin());
   }
 
   void testAddOtherSpanToBuffer(void)
@@ -196,7 +118,6 @@ public:
     // Push span of this vector to buffer
     buf << gsl::make_span(address);
     TS_ASSERT_EQUALS(51, buf.size_bytes());
-    log::info("Buffer now {}", buf);
 
     // Vector of 17 bytes data size equal 2
     std::vector<Bytes<17>> rec(2);
@@ -207,7 +128,6 @@ public:
     // Left last element in buffer
     TS_ASSERT_EQUALS(17, buf.size_bytes());
 
-    log::info("Buffer now {}", buf);
     TS_ASSERT_EQUALS(a, rec[0]);
     TS_ASSERT_EQUALS(b, rec[1]);
 

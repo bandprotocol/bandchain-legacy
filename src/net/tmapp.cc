@@ -1,5 +1,31 @@
 #include "tmapp.h"
 
+#include "util/buffer.h"
+#include "util/endian.h"
+
+namespace
+{
+bool read_ahead(Buffer& buf, int& value)
+{
+  value = 0;
+  auto buf_span = buf.as_span();
+
+  for (size_t i = 0; i < buf_span.size(); ++i) {
+    int byte = std::to_integer<int>(buf_span[i]);
+    value |= (byte & 0x7F) << (7 * i);
+    if (!(byte & 0x80)) {
+      value >>= 1;
+      if (buf.size_bytes() > i + value) {
+        buf.consume(1 + i);
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+  return false;
+}
+} // namespace
 void TendermintApplication::do_info(const RequestInfo& req, ResponseInfo& res)
 {
   if (req.version() != get_tm_version()) {
@@ -88,13 +114,13 @@ void TendermintApplication::do_commit(ResponseCommit& res)
 bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
 {
   int size = 0;
-  if (!read_integer(read_buffer, size))
+  if (!read_ahead(read_buffer, size))
     return false;
 
   Request req;
   Response res;
 
-  req.ParseFromArray(read_buffer.begin(), size);
+  req.ParseFromArray(read_buffer.as_span().data(), size);
   read_buffer.consume(size);
 
   switch (req.value_case()) {
@@ -137,44 +163,24 @@ bool TendermintApplication::process(Buffer& read_buffer, Buffer& write_buffer)
       throw Failure("Unexpected request type");
   }
 
-  size_t write_size = res.ByteSize();
-  write_integer(write_buffer, write_size);
-  std::byte* write_location = write_buffer.reserve(write_size);
-  res.SerializeToArray(write_location, write_size);
+  uint64_t write_size = res.ByteSize();
+  // write_buffer << write_size;
 
-  return true;
-}
-
-bool TendermintApplication::read_integer(Buffer& read_buffer, int& value)
-{
-  value = 0;
-  for (size_t i = 0; i < read_buffer.size_bytes(); ++i) {
-    int byte = std::to_integer<int>(read_buffer[i]);
-    value |= (byte & 0x7F) << (7 * i);
-    if (!(byte & 0x80)) {
-      value >>= 1;
-      if (read_buffer.size_bytes() > i + value) {
-        read_buffer.consume(1 + i);
-        return true;
-      } else {
-        return false;
-      }
-    }
-  }
-  return false;
-}
-
-void TendermintApplication::write_integer(Buffer& write_buffer, int value)
-{
-  value <<= 1;
+  // TODO: Make operator<< use varint encoding by default
+  write_size <<= 1;
   while (true) {
-    std::byte towrite = static_cast<std::byte>(value & 0x7F);
-    value >>= 7;
-    if (value != 0) {
-      write_buffer.append(towrite | std::byte{0x80});
+    std::byte towrite = static_cast<std::byte>(write_size & 0x7F);
+    write_size >>= 7;
+    if (write_size != 0) {
+      write_buffer << (towrite | std::byte{0x80});
     } else {
-      write_buffer.append(towrite);
+      write_buffer << towrite;
       break;
     }
   }
+
+  std::string write_data;
+  res.SerializeToString(&write_data);
+  write_buffer << gsl::make_span(write_data);
+  return true;
 }

@@ -43,32 +43,38 @@ public:
   /// the span will become invalid.
   gsl::span<const std::byte> as_span() const { return gsl::make_span(buf); }
 
-  std::byte* begin() { return &(*buf.begin()); }
-
-  std::byte* reserve(size_t reserve_size)
+  template <typename T>
+  friend Buffer& operator<<(Buffer& buf, gsl::span<T> data)
   {
-    size_t current_size = size_bytes();
-    buf.resize(current_size + reserve_size);
-    return &buf[current_size];
+    auto data_bytes = gsl::as_bytes(data);
+    buf.buf.insert(buf.buf.end(), data_bytes.begin(), data_bytes.end());
+    return buf;
   }
 
-  const std::byte& operator[](size_t idx) const { return buf[idx]; }
+  template <typename T>
+  friend Buffer& operator>>(Buffer& buf, gsl::span<T> data)
+  {
+    if (buf.size_bytes() < data.size_bytes())
+      throw Error("Buffer parse error");
+    std::memcpy(data.data(), &buf.buf.front(), data.size_bytes());
+    buf.consume(data.size_bytes());
+    return buf;
+  }
 
-  std::byte& operator[](size_t idx) { return buf[idx]; }
-
+  /// Return whether this buffer is empty
   bool empty() const { return buf.empty(); }
 
+  /// Return the size of this buffer in bytes.
   size_t size_bytes() const { return buf.size(); }
 
+  /// Clear the content in this buffer.
   void clear() { buf.clear(); }
 
-  void consume(size_t length) { buf.erase(buf.begin(), buf.begin() + length); }
-
-  void append(std::byte data) { buf.push_back(data); }
-
-  void append(const Buffer& data)
+  /// Consume the first length bytes of this buffer.
+  void consume(size_t length)
   {
-    buf.insert(buf.end(), data.buf.begin(), data.buf.end());
+    // TODO: Make this be more efficient
+    buf.erase(buf.begin(), buf.begin() + length);
   }
 
   std::string to_string() const { return bytes_to_hex(as_span()); }
@@ -99,21 +105,4 @@ T Buffer::read_all()
   if (!empty())
     throw Error("Buffer::read_all does not fully consume the buffer");
   return result;
-}
-
-template <typename T>
-inline Buffer& operator<<(Buffer& buf, gsl::span<T> data)
-{
-  std::memcpy(buf.reserve(data.size_bytes()), data.data(), data.size_bytes());
-  return buf;
-}
-
-template <typename T>
-inline Buffer& operator>>(Buffer& buf, gsl::span<T> data)
-{
-  if (buf.size_bytes() < data.size_bytes())
-    throw Error("Buffer parse error");
-  std::memcpy(data.data(), buf.begin(), data.size_bytes());
-  buf.consume(data.size_bytes());
-  return buf;
 }

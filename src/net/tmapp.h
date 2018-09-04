@@ -47,10 +47,4 @@ private:
 
   /// Process incoming message and write to the outgoing buffer.
   bool process(Buffer& read_buffer, Buffer& write_buffer) final;
-
-  /// Read a varint encoded integer from the buffer.
-  bool read_integer(Buffer& read_buffer, int& value);
-
-  /// Write a varint encoded integer to the buffer.
-  void write_integer(Buffer& write_buffer, int value);
 };

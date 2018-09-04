@@ -18,7 +18,6 @@ public:
 
     buf << hdr;
     TS_ASSERT_EQUALS(buf.size_bytes(), 42);
-    log::info("HEY {}", buf);
 
     MsgHdr hdr_read;
     buf >> hdr_read;

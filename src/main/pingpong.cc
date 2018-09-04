@@ -6,7 +6,7 @@ class PingPongApplication : public NetApplication
 private:
   bool process(Buffer& read_buffer, Buffer& write_buffer) final
   {
-    write_buffer.append(read_buffer);
+    write_buffer << read_buffer.as_span();
     read_buffer.clear();
     return false;
   }
