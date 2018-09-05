@@ -2,6 +2,7 @@
 
 #include "crypto/ed25519.h"
 #include "store/account.h"
+#include "store/ccontract.h"
 #include "util/bytes.h"
 
 Handler::Handler(Context& _ctx)
@@ -9,24 +10,28 @@ Handler::Handler(Context& _ctx)
 {
 }
 
-void Handler::apply_message(const MsgHdr& hdr, Buffer& buf)
+void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash)
 {
   // Convert the verify key into the sender's address.
   const Address addr = ed25519_vk_to_addr(hdr.vk);
 
   switch (hdr.msgid) {
     case MintMsg::ID:
-      apply_mint(addr, buf.read_all<MintMsg>());
+      apply_mint(addr, buf.read_all<MintMsg>(), tx_hash);
       break;
     case TxMsg::ID:
-      apply_tx(addr, buf.read_all<TxMsg>());
+      apply_tx(addr, buf.read_all<TxMsg>(), tx_hash);
+      break;
+    case CreateMsg::ID:
+      apply_create(addr, buf.read_all<CreateMsg>(), tx_hash);
       break;
     default:
       throw Error("Invalid MsgID {}", uint16_t(hdr.msgid));
   }
 }
 
-void Handler::apply_mint(const Address& addr, const MintMsg& mint_msg)
+void Handler::apply_mint(const Address& addr, const MintMsg& mint_msg,
+                         const Hash& tx_hash)
 {
   // Get the account view of this address.
   Account account(ctx, addr);
@@ -39,7 +44,8 @@ void Handler::apply_mint(const Address& addr, const MintMsg& mint_msg)
   account.set_balance(mint_msg.token_key, new_balance);
 }
 
-void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg)
+void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg,
+                       const Hash& tx_hash)
 {
   if (addr == tx_msg.dest)
     throw Error("Cannot send token from/to the same address");
@@ -57,4 +63,13 @@ void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg)
   // Update the information.
   account_source.set_balance(tx_msg.token_key, new_source_balance);
   account_dest.set_balance(tx_msg.token_key, new_dest_balance);
+}
+
+void Handler::apply_create(const Address& addr, const CreateMsg& create_msg,
+                           const Hash& tx_hash)
+{
+  // TODO
+  TokenKey tokenkey = tx_hash.prefix<TokenKey::Size>();
+  CommunityContract contract(ctx, tokenkey);
+  contract.set_equation(create_msg.curve);
 }

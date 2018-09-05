@@ -1,4 +1,4 @@
-#include "util/eq.h"
+#include "util/equation.h"
 
 #include "util/endian.h"
 
@@ -15,7 +15,12 @@ uint256_t pow(uint256_t l, uint256_t r)
 } // namespace
 
 Curve::~Curve() {}
-uint256_t Curve::apply(const Vars& vars) const { return equation->apply(vars); }
+uint256_t Curve::apply(const Vars& vars) const
+{
+  if (!equation)
+    throw Error("Equation hasn't been set");
+  return equation->apply(vars);
+}
 std::string Curve::to_string() const { return equation->to_string(); }
 
 Buffer& operator<<(Buffer& buf, const Curve& curve)

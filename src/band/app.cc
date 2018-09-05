@@ -79,5 +79,5 @@ void BandApplication::apply(const std::string& msg_raw)
     throw Error("Invalid Ed25519 signature");
 
   /// Pass the message to the handler.
-  handler.apply_message(msg_hdr, msg_body_buf);
+  handler.apply_message(msg_hdr, msg_body_buf, sha256(gsl::make_span(msg_raw)));
 }

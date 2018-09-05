@@ -80,6 +80,11 @@ public:
 
   std::string to_string() const { return bytes_to_hex(as_span()); }
 
+  std::string to_raw_string() const
+  {
+    return std::string((const char*)&buf.front(), buf.size());
+  }
+
 private:
   std::vector<std::byte> buf;
 };

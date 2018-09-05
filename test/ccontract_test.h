@@ -1,67 +1,47 @@
 #include <cxxtest/TestSuite.h>
 
+#include "crypto/sha256.h"
 #include "inc/essential.h"
-#include "util/buffer.h"
+#include "store/ccontract.h"
+#include "store/context_map.h"
 #include "util/equation.h"
 
 using eq_ptr = std::unique_ptr<Eq>;
 
-class TempVarseq : public Vars
+class TempVars : public Vars
 {
 public:
   uint256_t get_value(Variable var) const final
   {
     switch (var) {
       case Variable::Supply:
-        return 20;
+        return s;
       case Variable::BNDUSD:
         return 100;
       default:
         return 0;
     }
   }
+
+  uint256_t s;
 };
 
-class EqTest : public CxxTest::TestSuite
+class ComunityContractTest : public CxxTest::TestSuite
 {
 public:
-  void testEqConstant()
+  void testCreateCC()
   {
-    TempVarseq t;
-    EqConstant c(5);
-    TS_ASSERT_EQUALS(5, c.apply(t));
-  }
+    ContextMap ctx;
+    std::string tokenName = "Swit";
 
-  void testEqVar(void)
-  {
-    TempVarseq t;
-    EqVar v(Variable::Supply);
-    TS_ASSERT_EQUALS(20, v.apply(t));
-  }
+    // Generate (temp) tokenKey from hash of name
+    TokenKey key = sha256(gsl::make_span(tokenName)).prefix<TokenKey::Size>();
+    CommunityContract contract(ctx, key);
 
-  void testEqSimple()
-  {
-    TempVarseq t;
+    // Create equation
+    TempVars t;
 
-    // Create equation s + 5
-
-    // First method
-    EqAdd A(std::make_unique<EqVar>(Variable::Supply),
-            std::make_unique<EqConstant>(5));
-    TS_ASSERT_EQUALS(25, A.apply(t));
-    // Second method
-    std::unique_ptr<Eq> v = std::make_unique<EqVar>(Variable::Supply);
-    std::unique_ptr<Eq> c = std::make_unique<EqConstant>(5);
-    std::unique_ptr<Eq> a1 =
-        std::make_unique<EqAdd>(std::move(v), std::move(c));
-
-    // EqConstant c(5);
-    TS_ASSERT_EQUALS(25, a1->apply(t));
-  }
-
-  void testPolynomial()
-  {
-    TempVarseq t;
+    t.s = 20;
 
     // x^3 -3x^2 + 2x - 7
     eq_ptr x = std::make_unique<EqVar>(Variable::Supply);
@@ -83,13 +63,17 @@ public:
     c = std::make_unique<EqConstant>(7);
     x3 = std::make_unique<EqSub>(std::move(x3), std::move(c));
 
-    TS_ASSERT_EQUALS(6833, x3->apply(t));
-
-    Buffer buf;
     Curve curve(std::move(x3));
-    buf << curve;
+    contract.set_equation(curve);
 
-    Curve curve2;
-    buf >> curve2;
+    TS_ASSERT_EQUALS(6833, curve.apply(t));
+    TS_ASSERT_EQUALS(6833, contract.apply_equation(t));
+
+    t.s = 4;
+
+    TS_ASSERT_EQUALS(17, contract.apply_equation(t));
+
+    contract.set_current_supply(27);
+    TS_ASSERT_EQUALS(27, contract.get_current_supply());
   }
 };

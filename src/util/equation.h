@@ -36,6 +36,7 @@ public:
       : equation(std::move(_equation))
   {
   }
+  Curve(Curve&& curve) = default;
   ~Curve();
   friend Buffer& operator>>(Buffer& buf, Curve& curve);
   friend Buffer& operator<<(Buffer& buf, const Curve& curve);

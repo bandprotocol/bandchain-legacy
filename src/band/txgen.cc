@@ -5,6 +5,7 @@
 #include "band/msg.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
+#include "util/endian.h"
 
 using namespace std::chrono;
 
@@ -33,10 +34,14 @@ std::string txgen::process_txgen(const json& params)
     case TxMsg::ID:
       body = process_tx(params);
       break;
+    case CreateMsg::ID:
+      body = process_create(params);
+      break;
     default:
       break;
   }
 
+  // TODO add Signature
   return Buffer::serialize(msg_hdr) + body;
 }
 
@@ -53,4 +58,37 @@ std::string txgen::process_tx(const json& params)
   tx_msg.dest = Address::from_hex(params.at("dest").get<std::string>());
   tx_msg.value = uint256_t(params.at("value").get<std::string>());
   return Buffer::serialize(tx_msg);
+}
+
+std::string txgen::process_create(const json& params)
+{
+  CreateMsg create_msg;
+  std::vector<std::string> op_codes = params.at("expressions");
+
+  Buffer buf;
+  for (const auto& op : op_codes) {
+    if (op == "ADD")
+      buf << OpCode::Add;
+    else if (op == "SUB")
+      buf << OpCode::Sub;
+    else if (op == "MUL")
+      buf << OpCode::Mul;
+    else if (op == "DIV")
+      buf << OpCode::Div;
+    else if (op == "MOD")
+      buf << OpCode::Mod;
+    else if (op == "EXP")
+      buf << OpCode::Exp;
+    else if (op == "X") {
+      buf << OpCode::Variable;
+      buf << Variable::Supply;
+    } else {
+      uint256_t num = uint256_t(op);
+      buf << OpCode::Constant;
+      buf << num;
+    }
+  }
+  buf >> create_msg.curve;
+
+  return Buffer::serialize(create_msg);
 }

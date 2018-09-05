@@ -4,12 +4,14 @@
 #include "util/buffer.h"
 #include "util/bytes.h"
 #include "util/endian.h"
+#include "util/equation.h"
 
 struct MsgID {
   enum : uint16_t {
     Unset = 0,
     Mint = 1,
     Tx = 2,
+    Create = 3,
   };
 };
 
@@ -70,5 +72,21 @@ struct TxMsg : BaseMsg<MsgID::Tx> {
   friend Buffer& operator>>(Buffer& buf, TxMsg& msg)
   {
     return buf >> msg.token_key >> msg.dest >> msg.value;
+  }
+};
+
+/// CreateMsg allows anyone to create new community by initializing
+/// bonding curve equation.
+struct CreateMsg : BaseMsg<MsgID::Create> {
+  Curve curve;
+
+  friend Buffer& operator<<(Buffer& buf, const CreateMsg& msg)
+  {
+    return buf << msg.curve;
+  }
+
+  friend Buffer& operator>>(Buffer& buf, CreateMsg& msg)
+  {
+    return buf >> msg.curve;
   }
 };
