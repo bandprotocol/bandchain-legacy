@@ -30,7 +30,7 @@ uint256_t Account::get_balance(const TokenKey& token_key)
 void Account::set_balance(const TokenKey& token_key, uint256_t value)
 {
   /// Update the balance on the persistent data store.
-  log::info("Set {} balance of {} to {}", addr, token_key, value);
+  log::debug("Set {} balance of {} to {}", addr, token_key, value);
   ctx.set(get_context_key(token_key), Buffer::serialize(value));
 
   /// Update the balance cache for furthur get_balance calls.

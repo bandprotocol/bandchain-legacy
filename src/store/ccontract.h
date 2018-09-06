@@ -8,7 +8,7 @@ class CommunityContract
 {
 public:
   // Create a community contract view from blockchain context and tokenKey
-  CommunityContract(Context& _ctx, const TokenKey& _token_key);
+  CommunityContract(Context& _ctx, const ContractID& _contract_id);
 
   // Get the (readable) equation string of this community contract.
   std::string get_string_equation() const { return curve.to_string(); }
@@ -30,7 +30,7 @@ private:
   void load();
 
   Context& ctx;
-  const TokenKey& tokenKey;
+  const ContractID& contract_id;
 
   // Key to context
   const Hash key;

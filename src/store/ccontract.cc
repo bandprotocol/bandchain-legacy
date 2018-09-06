@@ -3,16 +3,19 @@
 #include "crypto/sha256.h"
 #include "util/endian.h"
 
-CommunityContract::CommunityContract(Context& _ctx, const TokenKey& _token_key)
+CommunityContract::CommunityContract(Context& _ctx,
+                                     const ContractID& _contract_id)
     : ctx(_ctx)
-    , tokenKey(_token_key)
-    , key(sha256(tokenKey))
+    , contract_id(_contract_id)
+    , key(sha256(contract_id))
 {
   load();
 }
 
 void CommunityContract::save() const
 {
+  log::debug("Set community contract ID: {} curve: {} current_supply: {}",
+             contract_id, curve, supply);
   Buffer buf;
   buf << supply << curve;
   ctx.set(key, buf.to_raw_string());
@@ -20,7 +23,7 @@ void CommunityContract::save() const
 
 void CommunityContract::load()
 {
-  auto [raw_data, ok] = ctx.try_get(sha256(tokenKey));
+  auto [raw_data, ok] = ctx.try_get(key);
   if (ok) {
     Buffer buf(gsl::make_span(raw_data));
     buf >> supply >> curve;

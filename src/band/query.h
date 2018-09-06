@@ -14,6 +14,7 @@ public:
 
 private:
   json process_balance(const json& params);
+  json process_community_info(const json& params);
 
 private:
   /// Reference to the primary blockchain context.

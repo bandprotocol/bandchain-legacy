@@ -69,7 +69,7 @@ void Handler::apply_create(const Address& addr, const CreateMsg& create_msg,
                            const Hash& tx_hash)
 {
   // TODO
-  TokenKey tokenkey = tx_hash.prefix<TokenKey::Size>();
-  CommunityContract contract(ctx, tokenkey);
+  ContractID contractID = tx_hash.prefix<ContractID::Size>();
+  CommunityContract contract(ctx, contractID);
   contract.set_equation(create_msg.curve);
 }

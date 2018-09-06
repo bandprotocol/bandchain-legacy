@@ -61,9 +61,6 @@ public:
   /// Similar to above, but for const variant.
   const std::byte* data() const { return rawdata.data(); }
 
-  /// Return a string containing this data.
-  std::string to_raw_string() const;
-
   /// Return a friendly hex representation of this hash value.
   std::string to_string() const;
 
@@ -81,12 +78,13 @@ private:
   std::array<std::byte, SIZE> rawdata{};
 } __attribute__((packed));
 
-using Address = Bytes<20>;   //< Public wallet address
-using TokenKey = Bytes<20>;  //< Public token address
-using Hash = Bytes<32>;      //< SHA-256 hash value
-using VerifyKey = Bytes<32>; //< Ed25519 verify key
-using SecretKey = Bytes<64>; //< Ed25519 secret key
-using Signature = Bytes<64>; //< Ed25519 signature
+using Address = Bytes<20>;    //< Public wallet address
+using TokenKey = Bytes<20>;   //< Public token address
+using ContractID = Bytes<20>; //< Contract ID
+using Hash = Bytes<32>;       //< SHA-256 hash value
+using VerifyKey = Bytes<32>;  //< Ed25519 verify key
+using SecretKey = Bytes<64>;  //< Ed25519 secret key
+using Signature = Bytes<64>;  //< Ed25519 signature
 
 namespace std
 {
@@ -178,12 +176,6 @@ Bytes<RET_SIZE> Bytes<SIZE>::suffix() const
   Bytes<RET_SIZE> ret;
   std::memcpy(ret.data(), data() + SIZE - RET_SIZE, RET_SIZE);
   return ret;
-}
-
-template <int SIZE>
-std::string Bytes<SIZE>::to_raw_string() const
-{
-  return std::string((const char*)data(), SIZE);
 }
 
 template <int SIZE>

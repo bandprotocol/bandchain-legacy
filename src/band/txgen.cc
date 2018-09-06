@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include "band/msg.h"
+#include "crypto/ed25519.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
 #include "util/endian.h"
@@ -41,8 +42,13 @@ std::string txgen::process_txgen(const json& params)
       break;
   }
 
-  // TODO add Signature
-  return Buffer::serialize(msg_hdr) + body;
+  std::string msg_bin = Buffer::serialize(msg_hdr) + body;
+  if (params.count("sk") == 1) {
+    SecretKey sk = SecretKey::from_hex(params.at("sk").get<std::string>());
+    Signature sig = ed25519_sign(sk, gsl::make_span(msg_bin));
+    msg_bin += Buffer::serialize(sig);
+  }
+  return msg_bin;
 }
 
 std::string txgen::process_mint(const json& params)

@@ -2,11 +2,13 @@
 
 #include "band/txgen.h"
 #include "store/account.h"
+#include "store/ccontract.h"
 
 Query::Query(Context& _ctx)
     : ctx(_ctx)
 {
   dispatcher["balance"] = &Query::process_balance;
+  dispatcher["community_info"] = &Query::process_community_info;
 }
 
 std::string Query::process_query(const std::string& raw_data)
@@ -39,5 +41,20 @@ json Query::process_balance(const json& params)
 
   json response;
   response["balance"] = "{}"_format(balance);
+  return response;
+}
+
+json Query::process_community_info(const json& params)
+{
+  const auto& contract_id = params.at("contract_id").get<std::string>();
+
+  CommunityContract contract(ctx, ContractID::from_hex(contract_id));
+  const std::string equation = contract.get_string_equation();
+  const uint256_t supply = contract.get_current_supply();
+
+  json response;
+  response["equation"] = equation;
+  response["supply"] = "{}"_format(supply);
+
   return response;
 }
