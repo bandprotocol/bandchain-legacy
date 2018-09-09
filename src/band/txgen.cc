@@ -38,6 +38,8 @@ std::string txgen::process_txgen(const json& params)
     case CreateMsg::ID:
       body = process_create(params);
       break;
+    case PurchaseCTMsg::ID:
+      body = process_purchaseCT(params);
     default:
       break;
   }
@@ -97,4 +99,15 @@ std::string txgen::process_create(const json& params)
   buf >> create_msg.curve;
 
   return Buffer::serialize(create_msg);
+}
+
+std::string txgen::process_purchaseCT(const json& params)
+{
+  PurchaseCTMsg pct_msg;
+  pct_msg.amount = uint256_t(params.at("amount").get<std::string>());
+  pct_msg.band_limit = uint256_t(params.at("band_limit").get<std::string>());
+  pct_msg.contract_id =
+      ContractID::from_hex(params.at("contract_id").get<std::string>());
+
+  return Buffer::serialize(pct_msg);
 }

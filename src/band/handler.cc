@@ -25,6 +25,9 @@ void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash)
     case CreateMsg::ID:
       apply_create(addr, buf.read_all<CreateMsg>(), tx_hash);
       break;
+    case PurchaseCTMsg::ID:
+      apply_purchaseCT(addr, buf.read_all<PurchaseCTMsg>(), tx_hash);
+      break;
     default:
       throw Error("Invalid MsgID {}", uint16_t(hdr.msgid));
   }
@@ -68,8 +71,40 @@ void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg,
 void Handler::apply_create(const Address& addr, const CreateMsg& create_msg,
                            const Hash& tx_hash)
 {
-  // TODO
   ContractID contractID = tx_hash.prefix<ContractID::Size>();
   CommunityContract contract(ctx, contractID);
   contract.set_equation(create_msg.curve);
+}
+
+void Handler::apply_purchaseCT(const Address& addr,
+                               const PurchaseCTMsg& pct_msg,
+                               const Hash& tx_hash)
+{
+  // Get the account and contract views
+  Account account(ctx, addr);
+  CommunityContract contract(ctx, pct_msg.contract_id);
+
+  // Compute price of tokens
+  const uint256_t current_supply = contract.get_current_supply();
+  const uint256_t price =
+      contract.apply_equation(current_supply + pct_msg.amount) -
+      contract.apply_equation(current_supply);
+
+  // Check price with band_limit
+  if (price <= pct_msg.band_limit) {
+    const uint256_t new_account_band_balance =
+        account.get_band_balance() - price;
+    const uint256_t new_account_ct_balance =
+        account.get_balance(pct_msg.contract_id) + pct_msg.amount;
+    const uint256_t new_current_supply = current_supply + pct_msg.amount;
+
+    // Update the information
+    account.set_band_balance(new_account_band_balance);
+    account.set_balance(pct_msg.contract_id, new_account_ct_balance);
+    contract.set_current_supply(new_current_supply);
+  } else {
+    throw Error("Price for purchase these community token ({}) is more than "
+                "band_limit ({}), so you cannot purchase this amount of tokens",
+                price, pct_msg.band_limit);
+  }
 }

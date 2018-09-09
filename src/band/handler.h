@@ -8,6 +8,8 @@
 class Handler
 {
 public:
+  friend class HandlerTest;
+
   Handler(Context& _ctx);
 
   /// Apply the given message to the blockchain.
@@ -20,6 +22,8 @@ private:
   void apply_tx(const Address& addr, const TxMsg& tx_msg, const Hash& tx_hash);
   void apply_create(const Address& addr, const CreateMsg& create_msg,
                     const Hash& tx_hash);
+  void apply_purchaseCT(const Address& addr, const PurchaseCTMsg& pct_msg,
+                        const Hash& tx_hash);
 
 private:
   Context& ctx;

@@ -21,7 +21,13 @@ uint256_t Curve::apply(const Vars& vars) const
     throw Error("Equation hasn't been set");
   return equation->apply(vars);
 }
-std::string Curve::to_string() const { return equation->to_string(); }
+std::string Curve::to_string() const
+{
+  if (equation)
+    return equation->to_string();
+  else
+    return "Null equation";
+}
 
 Buffer& operator<<(Buffer& buf, const Curve& curve)
 {

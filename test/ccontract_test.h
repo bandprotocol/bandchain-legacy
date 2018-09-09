@@ -67,11 +67,11 @@ public:
     contract.set_equation(curve);
 
     TS_ASSERT_EQUALS(6833, curve.apply(t));
-    TS_ASSERT_EQUALS(6833, contract.apply_equation(t));
+    TS_ASSERT_EQUALS(6833, contract.apply_equation(20));
 
     t.s = 4;
 
-    TS_ASSERT_EQUALS(17, contract.apply_equation(t));
+    TS_ASSERT_EQUALS(17, contract.apply_equation(4));
 
     contract.set_current_supply(27);
     TS_ASSERT_EQUALS(27, contract.get_current_supply());

@@ -28,6 +28,4 @@ private:
 
   Context& ctx;
   const Address& addr;
-
-  std::unordered_map<Address, uint256_t> balance_cache;
 };

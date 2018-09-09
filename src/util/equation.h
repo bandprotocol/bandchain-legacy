@@ -2,12 +2,7 @@
 
 #include "inc/essential.h"
 #include "util/buffer.h"
-
-enum class Variable : uint8_t {
-  Supply = 1,
-  BNDUSD = 2,
-  BNDTHB = 3,
-};
+#include "util/variable.h"
 
 enum class OpCode : uint16_t {
   Add = 1,
@@ -18,12 +13,6 @@ enum class OpCode : uint16_t {
   Exp = 6,
   Constant = 7,
   Variable = 8
-};
-class Vars
-{
-public:
-  virtual ~Vars() {}
-  virtual uint256_t get_value(Variable var) const = 0;
 };
 
 class Eq;
