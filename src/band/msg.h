@@ -13,6 +13,7 @@ struct MsgID {
     Tx = 2,
     Create = 3,
     PurchaseCT = 4,
+    SellCT = 5,
   };
 };
 
@@ -104,6 +105,23 @@ struct PurchaseCTMsg : BaseMsg<MsgID::PurchaseCT> {
   }
 
   friend Buffer& operator>>(Buffer& buf, PurchaseCTMsg& msg)
+  {
+    return buf >> msg.contract_id >> msg.amount >> msg.band_limit;
+  }
+};
+
+// SellCTMsg allows anyone to sell community token and take band back.
+struct SellCTMsg : BaseMsg<MsgID::SellCT> {
+  ContractID contract_id{};
+  uint256_t amount{};
+  uint256_t band_limit{};
+
+  friend Buffer& operator<<(Buffer& buf, const SellCTMsg& msg)
+  {
+    return buf << msg.contract_id << msg.amount << msg.band_limit;
+  }
+
+  friend Buffer& operator>>(Buffer& buf, SellCTMsg& msg)
   {
     return buf >> msg.contract_id >> msg.amount >> msg.band_limit;
   }

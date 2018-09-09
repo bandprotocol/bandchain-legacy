@@ -13,5 +13,6 @@ std::string process_mint(const json& params);
 std::string process_tx(const json& params);
 std::string process_create(const json& params);
 std::string process_purchaseCT(const json& params);
+std::string process_sellCT(const json& params);
 
 } // namespace txgen

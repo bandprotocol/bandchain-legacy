@@ -40,8 +40,12 @@ std::string txgen::process_txgen(const json& params)
       break;
     case PurchaseCTMsg::ID:
       body = process_purchaseCT(params);
-    default:
       break;
+    case SellCTMsg::ID:
+      body = process_sellCT(params);
+      break;
+    default:
+      throw Error("Message ID doesn't match any ID in system");
   }
 
   std::string msg_bin = Buffer::serialize(msg_hdr) + body;
@@ -110,4 +114,16 @@ std::string txgen::process_purchaseCT(const json& params)
       ContractID::from_hex(params.at("contract_id").get<std::string>());
 
   return Buffer::serialize(pct_msg);
+}
+
+std::string txgen::process_sellCT(const json& params)
+{
+  SellCTMsg sellct_msg;
+  sellct_msg.amount = uint256_t(params.at("amount").get<std::string>());
+  sellct_msg.band_limit =
+      uint256_t(params.at("minimum_band").get<std::string>());
+  sellct_msg.contract_id =
+      ContractID::from_hex(params.at("contract_id").get<std::string>());
+
+  return Buffer::serialize(sellct_msg);
 }

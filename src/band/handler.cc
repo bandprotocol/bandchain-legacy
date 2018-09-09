@@ -28,6 +28,9 @@ void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash)
     case PurchaseCTMsg::ID:
       apply_purchaseCT(addr, buf.read_all<PurchaseCTMsg>(), tx_hash);
       break;
+    case SellCTMsg::ID:
+      apply_sellCT(addr, buf.read_all<SellCTMsg>(), tx_hash);
+      break;
     default:
       throw Error("Invalid MsgID {}", uint16_t(hdr.msgid));
   }
@@ -106,5 +109,37 @@ void Handler::apply_purchaseCT(const Address& addr,
     throw Error("Price for purchase these community token ({}) is more than "
                 "band_limit ({}), so you cannot purchase this amount of tokens",
                 price, pct_msg.band_limit);
+  }
+}
+
+void Handler::apply_sellCT(const Address& addr, const SellCTMsg& sellct_msg,
+                           const Hash& tx_hash)
+{
+  // Get the account and contract views
+  Account account(ctx, addr);
+  CommunityContract contract(ctx, sellct_msg.contract_id);
+
+  // Compute price of tokens
+  const uint256_t current_supply = contract.get_current_supply();
+  const uint256_t price =
+      contract.apply_equation(current_supply) -
+      contract.apply_equation(current_supply - sellct_msg.amount);
+
+  // Check price with minimum band
+  if (price >= sellct_msg.band_limit) {
+    const uint256_t new_account_band_balance =
+        account.get_band_balance() + price;
+    const uint256_t new_account_ct_balance =
+        account.get_balance(sellct_msg.contract_id) - sellct_msg.amount;
+    const uint256_t new_current_supply = current_supply - sellct_msg.amount;
+
+    // Update the information
+    account.set_band_balance(new_account_band_balance);
+    account.set_balance(sellct_msg.contract_id, new_account_ct_balance);
+    contract.set_current_supply(new_current_supply);
+  } else {
+    throw Error("Now price({}) is lower than your minimum band that you want "
+                "to sell ({}), so your sell request isn't processed.",
+                price, sellct_msg.band_limit);
   }
 }

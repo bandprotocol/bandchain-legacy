@@ -24,6 +24,8 @@ private:
                     const Hash& tx_hash);
   void apply_purchaseCT(const Address& addr, const PurchaseCTMsg& pct_msg,
                         const Hash& tx_hash);
+  void apply_sellCT(const Address& addr, const SellCTMsg& sellct_msg,
+                    const Hash& tx_hash);
 
 private:
   Context& ctx;
