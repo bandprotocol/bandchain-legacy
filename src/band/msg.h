@@ -97,33 +97,33 @@ struct CreateMsg : BaseMsg<MsgID::Create> {
 // PurchaseCTMsg allows anyone to purchase community tokens from contractID
 struct PurchaseCTMsg : BaseMsg<MsgID::PurchaseCT> {
   ContractID contract_id{};
-  uint256_t amount{};
+  uint256_t value{};
   uint256_t band_limit{};
 
   friend Buffer& operator<<(Buffer& buf, const PurchaseCTMsg& msg)
   {
-    return buf << msg.contract_id << msg.amount << msg.band_limit;
+    return buf << msg.contract_id << msg.value << msg.band_limit;
   }
 
   friend Buffer& operator>>(Buffer& buf, PurchaseCTMsg& msg)
   {
-    return buf >> msg.contract_id >> msg.amount >> msg.band_limit;
+    return buf >> msg.contract_id >> msg.value >> msg.band_limit;
   }
 };
 
 // SellCTMsg allows anyone to sell community token and take band back.
 struct SellCTMsg : BaseMsg<MsgID::SellCT> {
   ContractID contract_id{};
-  uint256_t amount{};
+  uint256_t value{};
   uint256_t band_limit{};
 
   friend Buffer& operator<<(Buffer& buf, const SellCTMsg& msg)
   {
-    return buf << msg.contract_id << msg.amount << msg.band_limit;
+    return buf << msg.contract_id << msg.value << msg.band_limit;
   }
 
   friend Buffer& operator>>(Buffer& buf, SellCTMsg& msg)
   {
-    return buf >> msg.contract_id >> msg.amount >> msg.band_limit;
+    return buf >> msg.contract_id >> msg.value >> msg.band_limit;
   }
 };

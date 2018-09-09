@@ -69,7 +69,7 @@ public:
     // Create view community contract
     CommunityContract contract(ctx, contract_id);
     PurchaseCTMsg pct;
-    pct.amount = 10;
+    pct.value = 10;
     pct.contract_id = contract_id;
     pct.band_limit = 150; // enough to buy
 
@@ -91,7 +91,7 @@ public:
     mint.value = 100;
     hand.apply_mint(addr2, mint, Hash::rand());
 
-    pct.amount = 2;
+    pct.value = 2;
     pct.contract_id = contract_id;
     pct.band_limit = 10; // not enough to buy
 
@@ -112,12 +112,12 @@ public:
 
     // Buy 10 tokens exceed max_supply
 
-    pct.amount = 10;
+    pct.value = 10;
     pct.band_limit = 1000;
     TS_ASSERT_THROWS_ANYTHING(hand.apply_purchaseCT(addr, pct, Hash::rand()));
 
     // Buy just 8 tokens
-    pct.amount = 8;
+    pct.value = 8;
     pct.band_limit = 1000;
     hand.apply_purchaseCT(addr, pct, Hash::rand());
     TS_ASSERT_EQUALS(20, contract.get_current_supply());

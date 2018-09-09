@@ -109,7 +109,7 @@ std::string txgen::process_create(const json& params)
 std::string txgen::process_purchaseCT(const json& params)
 {
   PurchaseCTMsg pct_msg;
-  pct_msg.amount = uint256_t(params.at("amount").get<std::string>());
+  pct_msg.value = uint256_t(params.at("value").get<std::string>());
   pct_msg.band_limit = uint256_t(params.at("band_limit").get<std::string>());
   pct_msg.contract_id =
       ContractID::from_hex(params.at("contract_id").get<std::string>());
@@ -120,7 +120,7 @@ std::string txgen::process_purchaseCT(const json& params)
 std::string txgen::process_sellCT(const json& params)
 {
   SellCTMsg sellct_msg;
-  sellct_msg.amount = uint256_t(params.at("amount").get<std::string>());
+  sellct_msg.value = uint256_t(params.at("value").get<std::string>());
   sellct_msg.band_limit =
       uint256_t(params.at("minimum_band").get<std::string>());
   sellct_msg.contract_id =

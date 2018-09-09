@@ -91,13 +91,13 @@ void Handler::apply_purchaseCT(const Address& addr,
   const uint256_t remain_tokens =
       contract.get_max_supply() - contract.get_current_supply();
 
-  if (remain_tokens < pct_msg.amount) {
+  if (remain_tokens < pct_msg.value) {
     throw Error("There aren't tokens enough to sell");
   }
   // Compute price of tokens
   const uint256_t current_supply = contract.get_current_supply();
   const uint256_t price =
-      contract.apply_equation(current_supply + pct_msg.amount, false) -
+      contract.apply_equation(current_supply + pct_msg.value, false) -
       contract.apply_equation(current_supply, false);
 
   // Check price with band_limit
@@ -105,8 +105,8 @@ void Handler::apply_purchaseCT(const Address& addr,
     const uint256_t new_account_band_balance =
         account.get_band_balance() - price;
     const uint256_t new_account_ct_balance =
-        account.get_balance(pct_msg.contract_id) + pct_msg.amount;
-    const uint256_t new_current_supply = current_supply + pct_msg.amount;
+        account.get_balance(pct_msg.contract_id) + pct_msg.value;
+    const uint256_t new_current_supply = current_supply + pct_msg.value;
 
     // Update the information
     account.set_band_balance(new_account_band_balance);
@@ -130,15 +130,15 @@ void Handler::apply_sellCT(const Address& addr, const SellCTMsg& sellct_msg,
   const uint256_t current_supply = contract.get_current_supply();
   const uint256_t price =
       contract.apply_equation(current_supply, true) -
-      contract.apply_equation(current_supply - sellct_msg.amount, true);
+      contract.apply_equation(current_supply - sellct_msg.value, true);
 
   // Check price with minimum band
   if (price >= sellct_msg.band_limit) {
     const uint256_t new_account_band_balance =
         account.get_band_balance() + price;
     const uint256_t new_account_ct_balance =
-        account.get_balance(sellct_msg.contract_id) - sellct_msg.amount;
-    const uint256_t new_current_supply = current_supply - sellct_msg.amount;
+        account.get_balance(sellct_msg.contract_id) - sellct_msg.value;
+    const uint256_t new_current_supply = current_supply - sellct_msg.value;
 
     // Update the information
     account.set_band_balance(new_account_band_balance);
