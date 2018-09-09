@@ -23,7 +23,7 @@ std::string txgen::process_txgen(const json& params)
 {
   MsgHdr msg_hdr;
 
-  msg_hdr.msgid = params.at("msgid");
+  msg_hdr.msgid = std::stoul(params.at("msgid").get<std::string>());
   msg_hdr.ts = get_current_ts();
   msg_hdr.vk = VerifyKey::from_hex(params.at("vk").get<std::string>());
 
