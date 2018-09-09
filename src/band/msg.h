@@ -81,15 +81,16 @@ struct TxMsg : BaseMsg<MsgID::Tx> {
 /// bonding curve equation.
 struct CreateMsg : BaseMsg<MsgID::Create> {
   Curve curve;
+  uint256_t max_supply{};
 
   friend Buffer& operator<<(Buffer& buf, const CreateMsg& msg)
   {
-    return buf << msg.curve;
+    return buf << msg.curve << msg.max_supply;
   }
 
   friend Buffer& operator>>(Buffer& buf, CreateMsg& msg)
   {
-    return buf >> msg.curve;
+    return buf >> msg.curve >> msg.max_supply;
   }
 };
 

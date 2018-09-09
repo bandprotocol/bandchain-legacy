@@ -50,11 +50,13 @@ json Query::process_community_info(const json& params)
 
   CommunityContract contract(ctx, ContractID::from_hex(contract_id));
   const std::string equation = contract.get_string_equation();
-  const uint256_t supply = contract.get_current_supply();
+  const uint256_t current_supply = contract.get_current_supply();
+  const uint256_t max_supply = contract.get_max_supply();
 
   json response;
   response["equation"] = equation;
-  response["supply"] = "{}"_format(supply);
+  response["current_supply"] = "{}"_format(current_supply);
+  response["max_supply"] = "{}"_format(max_supply);
 
   return response;
 }

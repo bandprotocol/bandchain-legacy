@@ -75,6 +75,7 @@ std::string txgen::process_tx(const json& params)
 std::string txgen::process_create(const json& params)
 {
   CreateMsg create_msg;
+  create_msg.max_supply = uint256_t(params.at("max_supply").get<std::string>());
   std::vector<std::string> op_codes = params.at("expressions");
 
   Buffer buf;

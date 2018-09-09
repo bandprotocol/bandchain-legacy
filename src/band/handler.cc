@@ -76,7 +76,8 @@ void Handler::apply_create(const Address& addr, const CreateMsg& create_msg,
 {
   ContractID contractID = tx_hash.prefix<ContractID::Size>();
   CommunityContract contract(ctx, contractID);
-  contract.set_equation(create_msg.curve);
+  contract.create(create_msg.curve);
+  contract.set_max_supply(create_msg.max_supply);
 }
 
 void Handler::apply_purchaseCT(const Address& addr,
@@ -87,11 +88,17 @@ void Handler::apply_purchaseCT(const Address& addr,
   Account account(ctx, addr);
   CommunityContract contract(ctx, pct_msg.contract_id);
 
+  const uint256_t remain_tokens =
+      contract.get_max_supply() - contract.get_current_supply();
+
+  if (remain_tokens < pct_msg.amount) {
+    throw Error("There aren't tokens enough to sell");
+  }
   // Compute price of tokens
   const uint256_t current_supply = contract.get_current_supply();
   const uint256_t price =
-      contract.apply_equation(current_supply + pct_msg.amount) -
-      contract.apply_equation(current_supply);
+      contract.apply_equation(current_supply + pct_msg.amount, false) -
+      contract.apply_equation(current_supply, false);
 
   // Check price with band_limit
   if (price <= pct_msg.band_limit) {
@@ -122,8 +129,8 @@ void Handler::apply_sellCT(const Address& addr, const SellCTMsg& sellct_msg,
   // Compute price of tokens
   const uint256_t current_supply = contract.get_current_supply();
   const uint256_t price =
-      contract.apply_equation(current_supply) -
-      contract.apply_equation(current_supply - sellct_msg.amount);
+      contract.apply_equation(current_supply, true) -
+      contract.apply_equation(current_supply - sellct_msg.amount, true);
 
   // Check price with minimum band
   if (price >= sellct_msg.band_limit) {

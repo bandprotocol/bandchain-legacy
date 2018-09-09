@@ -32,11 +32,6 @@ public:
   void testCreateCC()
   {
     ContextMap ctx;
-    std::string tokenName = "Swit";
-
-    // Generate (temp) tokenKey from hash of name
-    TokenKey key = sha256(gsl::make_span(tokenName)).prefix<TokenKey::Size>();
-    CommunityContract contract(ctx, key);
 
     // Create equation
     TempVars t;
@@ -64,16 +59,28 @@ public:
     x3 = std::make_unique<EqSub>(std::move(x3), std::move(c));
 
     Curve curve(std::move(x3));
-    contract.set_equation(curve);
 
-    TS_ASSERT_EQUALS(6833, curve.apply(t));
-    TS_ASSERT_EQUALS(6833, contract.apply_equation(20));
+    // Generate random tokenKey
+    ContractID key = ContractID::rand();
+    CommunityContract contract(ctx, key);
+    contract.create(curve);
+    contract.set_max_supply(120);
+
+    TS_ASSERT_EQUALS(120, contract.get_max_supply());
+
+    TS_ASSERT_EQUALS(6833, curve.apply(t, false));
+    TS_ASSERT_EQUALS(6833, contract.apply_equation(20, false));
 
     t.s = 4;
 
-    TS_ASSERT_EQUALS(17, contract.apply_equation(4));
+    TS_ASSERT_EQUALS(17, contract.apply_equation(4, false));
 
     contract.set_current_supply(27);
     TS_ASSERT_EQUALS(27, contract.get_current_supply());
+
+    // Test with random contract_id
+    ContractID ct = ContractID::rand();
+    CommunityContract co2(ctx, ct);
+    TS_ASSERT_THROWS_ANYTHING(co2.get_max_supply());
   }
 };

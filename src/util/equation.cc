@@ -15,7 +15,9 @@ uint256_t pow(uint256_t l, uint256_t r)
 } // namespace
 
 Curve::~Curve() {}
-uint256_t Curve::apply(const Vars& vars) const
+
+// TODO
+uint256_t Curve::apply(const Vars& vars, bool is_sell) const
 {
   if (!equation)
     throw Error("Equation hasn't been set");
@@ -31,6 +33,8 @@ std::string Curve::to_string() const
 
 Buffer& operator<<(Buffer& buf, const Curve& curve)
 {
+  if (!curve.equation)
+    throw Failure("Dump on null equation");
   curve.equation->dump(buf);
   return buf;
 }

@@ -29,7 +29,7 @@ public:
   ~Curve();
   friend Buffer& operator>>(Buffer& buf, Curve& curve);
   friend Buffer& operator<<(Buffer& buf, const Curve& curve);
-  uint256_t apply(const Vars& vars) const;
+  uint256_t apply(const Vars& vars, bool is_sell) const;
   std::string to_string() const;
 
 private:
