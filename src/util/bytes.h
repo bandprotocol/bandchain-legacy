@@ -61,7 +61,7 @@ public:
   /// Similar to above, but for const variant.
   const std::byte* data() const { return rawdata.data(); }
 
-  /// Return a friendly hex representation of this hash value.
+  /// Return a friendly hex representation of this bytes value.
   std::string to_string() const;
 
   /// Read and write from/to buffer.

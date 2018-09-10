@@ -21,7 +21,7 @@ std::string Query::process_query(const std::string& raw_data)
   const auto& params = data.at("params");
 
   if (method == "txgen") {
-    return txgen::process_txgen(params);
+    return txgen::process_txgen(params).dump();
   }
 
   if (auto it = dispatcher.find(method); it != dispatcher.end()) {

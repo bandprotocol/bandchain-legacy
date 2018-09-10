@@ -19,7 +19,7 @@ uint64_t get_current_ts()
 }
 } // namespace
 
-std::string txgen::process_txgen(const json& params)
+json txgen::process_txgen(const json& params)
 {
   MsgHdr msg_hdr;
 
@@ -54,7 +54,10 @@ std::string txgen::process_txgen(const json& params)
     Signature sig = ed25519_sign(sk, gsl::make_span(msg_bin));
     msg_bin += Buffer::serialize(sig);
   }
-  return msg_bin;
+
+  json response;
+  response["tx"] = bytes_to_hex(gsl::make_span(msg_bin));
+  return response;
 }
 
 std::string txgen::process_mint(const json& params)
