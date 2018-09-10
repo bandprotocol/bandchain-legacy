@@ -7,6 +7,7 @@
 #include "util/buffer.h"
 #include "util/bytes.h"
 #include "util/endian.h"
+#include "util/iban.h"
 
 using namespace std::chrono;
 
@@ -63,6 +64,8 @@ json txgen::process_txgen(const json& params)
 std::string txgen::process_mint(const json& params)
 {
   MintMsg mint_msg;
+  mint_msg.token_key =
+      IBAN(params.at("token").get<std::string>(), IBANType::Token).as_addr();
   mint_msg.value = uint256_t(params.at("value").get<std::string>());
   return Buffer::serialize(mint_msg);
 }
@@ -70,7 +73,10 @@ std::string txgen::process_mint(const json& params)
 std::string txgen::process_tx(const json& params)
 {
   TxMsg tx_msg;
-  tx_msg.dest = Address::from_hex(params.at("dest").get<std::string>());
+  tx_msg.token_key =
+      IBAN(params.at("token").get<std::string>(), IBANType::Token).as_addr();
+  tx_msg.dest =
+      IBAN(params.at("dest").get<std::string>(), IBANType::Account).as_addr();
   tx_msg.value = uint256_t(params.at("value").get<std::string>());
   return Buffer::serialize(tx_msg);
 }
@@ -115,19 +121,20 @@ std::string txgen::process_purchaseCT(const json& params)
   pct_msg.value = uint256_t(params.at("value").get<std::string>());
   pct_msg.band_limit = uint256_t(params.at("band_limit").get<std::string>());
   pct_msg.contract_id =
-      ContractID::from_hex(params.at("contract_id").get<std::string>());
+      IBAN(params.at("contract_id").get<std::string>(), IBANType::Token)
+          .as_addr();
 
   return Buffer::serialize(pct_msg);
 }
 
 std::string txgen::process_sellCT(const json& params)
 {
-  SellCTMsg sellct_msg;
-  sellct_msg.value = uint256_t(params.at("value").get<std::string>());
-  sellct_msg.band_limit =
-      uint256_t(params.at("minimum_band").get<std::string>());
-  sellct_msg.contract_id =
-      ContractID::from_hex(params.at("contract_id").get<std::string>());
+  SellCTMsg sct_msg;
+  sct_msg.value = uint256_t(params.at("value").get<std::string>());
+  sct_msg.band_limit = uint256_t(params.at("band_limit").get<std::string>());
+  sct_msg.contract_id =
+      IBAN(params.at("contract_id").get<std::string>(), IBANType::Token)
+          .as_addr();
 
-  return Buffer::serialize(sellct_msg);
+  return Buffer::serialize(sct_msg);
 }

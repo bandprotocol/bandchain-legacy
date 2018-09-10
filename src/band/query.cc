@@ -3,6 +3,7 @@
 #include "band/txgen.h"
 #include "store/account.h"
 #include "store/ccontract.h"
+#include "util/iban.h"
 
 Query::Query(Context& _ctx)
     : ctx(_ctx)
@@ -36,8 +37,9 @@ json Query::process_balance(const json& params)
   const auto& address = params.at("address").get<std::string>();
   const auto& token = params.at("token").get<std::string>();
 
-  Account account(ctx, Address::from_hex(address));
-  const uint256_t balance = account.get_balance(TokenKey::from_hex(token));
+  Account account(ctx, IBAN(address, IBANType::Account).as_addr());
+  const uint256_t balance =
+      account.get_balance(IBAN(token, IBANType::Token).as_addr());
 
   json response;
   response["balance"] = "{}"_format(balance);
@@ -48,7 +50,7 @@ json Query::process_community_info(const json& params)
 {
   const auto& contract_id = params.at("contract_id").get<std::string>();
 
-  CommunityContract contract(ctx, ContractID::from_hex(contract_id));
+  CommunityContract contract(ctx, IBAN(contract_id, IBANType::Token).as_addr());
   const std::string equation = contract.get_string_equation();
   const uint256_t current_supply = contract.get_current_supply();
   const uint256_t max_supply = contract.get_max_supply();
