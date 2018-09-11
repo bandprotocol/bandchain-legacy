@@ -1,12 +1,12 @@
-Band Protocol
-=============
+Band Chain
+==========
 
-What is Band Protocol?
+What is Band Chain?
 ----------------------
 
-Band Protocol is a decentralized, permissionless blockchain protocol to create
-tokenized marketplace and token-curated community. For more information,
-see https://bandprotocol.com/.
+Band Chainis a decentralized, permissionless blockchain implementation based
+on Band Protocol to create tokenized marketplace and token-curated community. 
+For more information, see https://bandprotocol.com/.
 
 Build
 -----
