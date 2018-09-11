@@ -16,18 +16,25 @@ uint256_t Account::get_balance(const TokenKey& token_key)
   const uint256_t value =
       ok ? Buffer(gsl::make_span(raw_data)).read_all<uint256_t>() : 0;
 
+  DEBUG(log, "GET_BALANCE:");
+  DEBUG(log, "  Account: {}", addr.to_iban_string(IBANType::Account));
+  DEBUG(log, "  Token: {}", token_key.to_iban_string(IBANType::Token));
+  DEBUG(log, "  Value: {}", value);
+
   return value;
 }
 
 void Account::set_balance(const TokenKey& token_key, uint256_t value)
 {
-  /// Update the balance on the persistent data store.
-  log::debug("Set {} balance of {} to {}", addr, token_key, value);
+  DEBUG(log, "SET_BALANCE:");
+  DEBUG(log, "  Account: {}", addr.to_iban_string(IBANType::Account));
+  DEBUG(log, "  Token: {}", token_key.to_iban_string(IBANType::Token));
+  DEBUG(log, "  Value: {}", value);
+
   ctx.set(get_context_key(token_key), Buffer::serialize(value));
 }
 
 Hash Account::get_context_key(const TokenKey& token_key)
 {
-  log::debug("Address: {} Token_key: {}", addr, token_key);
   return sha256(addr + token_key);
 }

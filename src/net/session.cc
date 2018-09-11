@@ -32,7 +32,7 @@ void Session::async_read()
         if (!ec) {
           self->process_read(length);
         } else {
-          log::warn("Failed to read from socket. Client disconnected");
+          WARN(log, "Failed to read from socket. Client disconnected");
         }
       });
 }
@@ -50,7 +50,7 @@ void Session::async_write()
         if (!ec) {
           self->process_write(length);
         } else {
-          log::warn("Failed to write to socket. Client disconnected");
+          WARN(log, "Failed to write to socket. Client disconnected");
         }
       });
 }

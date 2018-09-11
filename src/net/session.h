@@ -28,4 +28,6 @@ private:
   Buffer write_buffer;
 
   std::byte socket_buffer[1024];
+
+  static inline auto log = logger::get("session");
 };

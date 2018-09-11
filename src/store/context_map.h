@@ -6,6 +6,8 @@
 class ContextMap : public Context
 {
 public:
+  ContextMap();
+
   /// Get the current blockchain height.
   uint64_t height() const final;
 

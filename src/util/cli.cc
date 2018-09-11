@@ -42,7 +42,7 @@ Cmd::Cmd(int argc, char* argv[])
   }
 
   if (+verbose_mode)
-    log::set_level(spdlog::level::debug);
+    spdlog::set_level(spdlog::level::debug);
 }
 
 std::string Cmd::help() const

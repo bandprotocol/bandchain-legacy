@@ -47,4 +47,6 @@ private:
 
   /// Process incoming message and write to the outgoing buffer.
   bool process(Buffer& read_buffer, Buffer& write_buffer) final;
+
+  static inline auto log = logger::get("tmapp");
 };

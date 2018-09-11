@@ -3,39 +3,29 @@
 #include <memory>
 #include <utility>
 
-class log
+class logger
 {
 public:
-  template <typename... Args>
-  static void debug(Args&&... args)
+  static std::shared_ptr<spdlog::logger> get(const std::string& ident)
   {
-    logger->debug(std::forward<Args>(args)...);
+    auto log = spdlog::get(ident);
+    if (log) {
+      return log;
+    } else {
+      return spdlog::stdout_color_mt(ident);
+    }
   }
 
-  template <typename... Args>
-  static void info(Args&&... args)
-  {
-    logger->info(std::forward<Args>(args)...);
-  }
-
-  template <typename... Args>
-  static void warn(Args&&... args)
-  {
-    logger->warn(std::forward<Args>(args)...);
-  }
-
-  template <typename... Args>
-  static void error(Args&&... args)
-  {
-    logger->error(std::forward<Args>(args)...);
-  }
-
-  static void set_level(spdlog::level::level_enum level)
-  {
-    logger->set_level(level);
-  }
-
-private:
-  inline static std::shared_ptr<spdlog::logger> logger =
+  inline static std::shared_ptr<spdlog::logger> default_logger =
       spdlog::stdout_color_mt("band");
+
+  inline static std::shared_ptr<spdlog::logger> nocommit_logger =
+      spdlog::stdout_color_mt("NOCOMMIT");
 };
+
+#define DEBUG(log, ...) log->debug(__VA_ARGS__)
+#define INFO(log, ...) log->info(__VA_ARGS__)
+#define WARN(log, ...) log->warn(__VA_ARGS__)
+
+#define LOG(...) logger::default_logger->info(__VA_ARGS__)
+#define NOCOMMIT_LOG(...) logger::nocommit_logger->critical(__VA_ARGS__)

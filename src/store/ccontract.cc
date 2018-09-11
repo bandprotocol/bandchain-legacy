@@ -29,11 +29,13 @@ void CommunityContract::create(const Curve& _curve)
 
 void CommunityContract::save(const ContractInfo& info) const
 {
-  log::debug("Set community contract ID: {} curve: {} max_supply: "
-             "{} current_supply: {}"
-             " current_profit: {}",
-             contract_id, info.curve, info.max_supply, info.current_supply,
-             info.current_profit);
+  DEBUG(log, "SAVE_CONTRACT:");
+  DEBUG(log, "  ContractID: {}", contract_id.to_iban_string(IBANType::Token));
+  DEBUG(log, "  Curve: {}", info.curve);
+  DEBUG(log, "  MaxSupply: {}", info.max_supply);
+  DEBUG(log, "  CurrentSupply: {}", info.current_supply);
+  DEBUG(log, "  CurrentProfit: {}", info.current_profit);
+
   Buffer buf;
   buf << info.curve << info.max_supply << info.current_supply
       << info.current_profit;
@@ -48,6 +50,14 @@ CommunityContract::ContractInfo CommunityContract::load() const
     Buffer buf(gsl::make_span(raw_data));
     buf >> info.curve >> info.max_supply >> info.current_supply >>
         info.current_profit;
+
+    DEBUG(log, "LOAD_CONTRACT:");
+    DEBUG(log, "  ContractID: {}", contract_id.to_iban_string(IBANType::Token));
+    DEBUG(log, "  Curve: {}", info.curve);
+    DEBUG(log, "  MaxSupply: {}", info.max_supply);
+    DEBUG(log, "  CurrentSupply: {}", info.current_supply);
+    DEBUG(log, "  CurrentProfit: {}", info.current_profit);
+
     return info;
   } else {
     throw Error("Not found any contract to match this key.");

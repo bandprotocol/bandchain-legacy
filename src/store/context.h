@@ -7,6 +7,7 @@ class Context
 {
 public:
   virtual ~Context(){};
+
   /// Get the current blockchain height.
   virtual uint64_t height() const = 0;
 
@@ -32,4 +33,7 @@ public:
 
   /// Similar to add, but don't throw.
   virtual void set(const Hash& key, const std::string value) = 0;
+
+protected:
+  static inline auto log = logger::get("context");
 };

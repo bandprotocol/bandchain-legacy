@@ -6,6 +6,7 @@
 #include "crypto/random.h"
 #include "inc/essential.h"
 #include "util/buffer.h"
+#include "util/iban.h"
 #include "util/string.h"
 
 template <int SIZE>
@@ -63,6 +64,9 @@ public:
 
   /// Return a friendly hex representation of this bytes value.
   std::string to_string() const;
+
+  /// Return a the IBAN string of this address.
+  std::string to_iban_string(IBANType iban_type) const;
 
   /// Read and write from/to buffer.
   friend Buffer& operator<<(Buffer& buf, const Bytes& data)
@@ -182,4 +186,11 @@ template <int SIZE>
 std::string Bytes<SIZE>::to_string() const
 {
   return bytes_to_hex(as_span());
+}
+
+template <int SIZE>
+std::string Bytes<SIZE>::to_iban_string(IBANType iban_type) const
+{
+  static_assert(SIZE == 20);
+  return IBAN(*this, iban_type).to_string();
 }

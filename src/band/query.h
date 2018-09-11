@@ -23,4 +23,6 @@ private:
   /// Dispatch from method name to the corresponding processing function.
   std::unordered_map<std::string, std::function<json(Query&, const json&)>>
       dispatcher;
+
+  static inline auto log = logger::get("query");
 };

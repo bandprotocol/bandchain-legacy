@@ -28,4 +28,6 @@ private:
 
   Context& ctx;
   const Address& addr;
+
+  static inline auto log = logger::get("store/account");
 };

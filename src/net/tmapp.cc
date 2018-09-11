@@ -53,6 +53,12 @@ void TendermintApplication::do_query(const RequestQuery& req,
     res.set_value(query(req.path(), req.data()));
     res.set_code(0);
   } catch (const std::exception& err) {
+
+    DEBUG(log, "DO_QUERY");
+    DEBUG(log, "  RequestPath: {}", req.path());
+    DEBUG(log, "  RequestData: {}", req.data());
+    DEBUG(log, "  Error: {}", err.what());
+
     res.set_info(err.what());
     res.set_code(1);
   }

@@ -1,5 +1,7 @@
 #include "context_map.h"
 
+ContextMap::ContextMap() { DEBUG(log, "CONTEXT_MAP_INIT"); }
+
 uint64_t ContextMap::height() const
 {
   // TODO

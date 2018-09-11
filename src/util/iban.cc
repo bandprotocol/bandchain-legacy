@@ -1,5 +1,7 @@
 #include "iban.h"
 
+#include "util/bytes.h"
+
 namespace
 {
 std::string char_to_int_str(char c)

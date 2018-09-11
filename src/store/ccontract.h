@@ -59,4 +59,6 @@ private:
 
   // Key to context
   const Hash key;
+
+  static inline auto log = logger::get("store/ccontract");
 };

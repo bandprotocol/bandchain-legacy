@@ -5,6 +5,30 @@
 #include "store/ccontract.h"
 #include "util/iban.h"
 
+namespace
+{
+void log_debug_json_pretty(std::shared_ptr<spdlog::logger> log,
+                           const json& data, const std::string& indent)
+{
+  std::stringstream stream(data.dump(2));
+  while (!stream.eof()) {
+    std::string line;
+    std::getline(stream, line);
+    DEBUG(log, "{}{}", indent, line);
+  }
+}
+void log_debug_query(std::shared_ptr<spdlog::logger> log,
+                     const std::string& method, const json& req,
+                     const json& res)
+{
+  DEBUG(log, "QUERY {}", method);
+  DEBUG(log, "  Request:");
+  log_debug_json_pretty(log, req, "    ");
+  DEBUG(log, "  Response:");
+  log_debug_json_pretty(log, res, "    ");
+}
+} // namespace
+
 Query::Query(Context& _ctx)
     : ctx(_ctx)
 {
@@ -22,11 +46,15 @@ std::string Query::process_query(const std::string& raw_data)
   const auto& params = data.at("params");
 
   if (method == "txgen") {
-    return txgen::process_txgen(params).dump();
+    auto res = txgen::process_txgen(params);
+    log_debug_query(log, method, params, res);
+    return res.dump();
   }
 
   if (auto it = dispatcher.find(method); it != dispatcher.end()) {
-    return it->second(*this, params).dump();
+    auto res = it->second(*this, params);
+    log_debug_query(log, method, params, res);
+    return res.dump();
   } else {
     throw Error("Unknown query method");
   }
@@ -42,10 +70,6 @@ json Query::process_balance(const json& params)
 
   Account account(ctx, address);
   const uint256_t balance = account.get_balance(token);
-
-  log::debug("addr: {}", IBAN(address, IBANType::Account).as_addr());
-  log::debug("token: {}", IBAN(token, IBANType::Token).as_addr());
-  log::debug("balance: {}", balance);
 
   json response;
   response["balance"] = "{}"_format(balance);

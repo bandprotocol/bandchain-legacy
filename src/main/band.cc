@@ -10,14 +10,12 @@ CmdArg<bool> use_db("use-db", "set this flag to use rocksdb");
 int main(int argc, char* argv[])
 {
   Cmd cmd(argc, argv);
-  log::info("BAND blockchain appliation starting...");
+  LOG("BAND blockchain appliation starting...");
 
   std::unique_ptr<Context> ctx;
   if (+use_db) {
-    log::debug("Using rocksDB context");
     ctx = std::make_unique<ContextDB>();
   } else {
-    log::debug("Using std::unordered_map context");
     ctx = std::make_unique<ContextMap>();
   }
 

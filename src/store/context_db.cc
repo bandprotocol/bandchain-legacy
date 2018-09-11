@@ -20,6 +20,8 @@ CmdArg<std::string> db_path("db-path", "rocksdb path");
 
 ContextDB::ContextDB()
 {
+  DEBUG(log, "CONTEXT_DB_INIT");
+
   rocksdb::Options options;
   rocksdb::TransactionDBOptions txn_db_options;
   options.create_if_missing = true;

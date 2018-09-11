@@ -7,7 +7,7 @@ CmdArg<std::string> arg_str("arg_s", "test string", 's');
 int main(int argc, char* argv[])
 {
   Cmd cmd(argc, argv);
-  log::info("{} {}", arg_bool.given(), +arg_bool);
-  log::info("{} {}", arg_str.given(), +arg_str);
+  LOG("{} {}", arg_bool.given(), +arg_bool);
+  LOG("{} {}", arg_str.given(), +arg_str);
   return 0;
 }
