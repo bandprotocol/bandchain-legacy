@@ -12,17 +12,30 @@ uint256_t pow(uint256_t l, uint256_t r)
   }
   return v;
 }
+
 } // namespace
 
 Curve::~Curve() {}
 
-// TODO
-uint256_t Curve::apply(const Vars& vars, bool is_sell) const
+uint256_t Curve::apply_buy(const Vars& vars) const
 {
   if (!equation)
     throw Error("Equation hasn't been set");
   return equation->apply(vars);
 }
+
+uint256_t Curve::apply_sell(const Vars& vars) const
+{
+  if (!equation)
+    throw Error("Equation hasn't been set");
+
+  uint256_t price_buy = apply_buy(vars);
+  return price_spread.get_sell_price(price_buy,
+                                     vars.get_value(Variable::Supply));
+}
+
+PriceSpread Curve::get_price_spread() const { return price_spread; }
+
 std::string Curve::to_string() const
 {
   if (equation)
@@ -36,12 +49,45 @@ Buffer& operator<<(Buffer& buf, const Curve& curve)
   if (!curve.equation)
     throw Failure("Dump on null equation");
   curve.equation->dump(buf);
+  buf << curve.price_spread;
   return buf;
 }
 
 Buffer& operator>>(Buffer& buf, Curve& curve)
 {
   curve.equation = std::move(Eq::parse(buf));
+  buf >> curve.price_spread;
+  return buf;
+}
+
+uint256_t PriceSpread::get_sell_price(uint256_t price, uint256_t supply) const
+{
+  // Check type constant
+  switch (spread_type) {
+    case SpreadType::Constant: {
+      uint256_t dif = spread_value * supply;
+      if (price > dif)
+        return price - dif;
+      else
+        return 0;
+    }
+    case SpreadType::Rational:
+      return spread_value * price / PriceSpread::ratio;
+    default:
+      throw Error("This price spread type {} doesn't match any type in system",
+                  (uint8_t)spread_type);
+  }
+}
+
+Buffer& operator<<(Buffer& buf, const PriceSpread& price_spread)
+{
+  buf << price_spread.spread_type << price_spread.spread_value;
+  return buf;
+}
+
+Buffer& operator>>(Buffer& buf, PriceSpread& price_spread)
+{
+  buf >> price_spread.spread_type >> price_spread.spread_value;
   return buf;
 }
 

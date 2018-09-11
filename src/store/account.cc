@@ -28,5 +28,6 @@ void Account::set_balance(const TokenKey& token_key, uint256_t value)
 
 Hash Account::get_context_key(const TokenKey& token_key)
 {
+  log::debug("Address: {} Token_key: {}", addr, token_key);
   return sha256(addr + token_key);
 }

@@ -7,6 +7,7 @@
 #include "util/buffer.h"
 #include "util/bytes.h"
 #include "util/endian.h"
+#include "util/equation.h"
 #include "util/iban.h"
 
 using namespace std::chrono;
@@ -18,6 +19,7 @@ uint64_t get_current_ts()
   return duration_cast<milliseconds>(system_clock::now().time_since_epoch())
       .count();
 }
+
 } // namespace
 
 json txgen::process_txgen(const json& params)
@@ -110,6 +112,13 @@ std::string txgen::process_create(const json& params)
       buf << num;
     }
   }
+
+  SpreadType t = SpreadType(
+      uint8_t(std::stoul(params.at("spread_type").get<std::string>())));
+  uint256_t value = uint256_t(params.at("spread_value").get<std::string>());
+
+  PriceSpread price_spread(t, value);
+  buf << price_spread;
   buf >> create_msg.curve;
 
   return Buffer::serialize(create_msg);

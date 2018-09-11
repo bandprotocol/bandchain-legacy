@@ -96,57 +96,64 @@ void Handler::apply_purchaseCT(const Address& addr,
   }
   // Compute price of tokens
   const uint256_t current_supply = contract.get_current_supply();
-  const uint256_t price =
-      contract.apply_equation(current_supply + pct_msg.value, false) -
-      contract.apply_equation(current_supply, false);
+  const uint256_t buy_price =
+      contract.get_buy_price(current_supply + pct_msg.value) -
+      contract.get_buy_price(current_supply);
 
   // Check price with band_limit
-  if (price <= pct_msg.band_limit) {
-    const uint256_t new_account_band_balance =
-        account.get_band_balance() - price;
-    const uint256_t new_account_ct_balance =
-        account.get_balance(pct_msg.contract_id) + pct_msg.value;
-    const uint256_t new_current_supply = current_supply + pct_msg.value;
-
-    // Update the information
-    account.set_band_balance(new_account_band_balance);
-    account.set_balance(pct_msg.contract_id, new_account_ct_balance);
-    contract.set_current_supply(new_current_supply);
-  } else {
-    throw Error("Price for purchase these community token ({}) is more than "
-                "band_limit ({}), so you cannot purchase this amount of tokens",
-                price, pct_msg.band_limit);
+  if (buy_price > pct_msg.band_limit) {
+    throw Error("Price for purchasing these community token ({}) is more than "
+                "band_limit ({}), so you cannot purchase this number of tokens",
+                buy_price, pct_msg.band_limit);
   }
+
+  const uint256_t new_account_band_balance =
+      account.get_band_balance() - buy_price;
+  const uint256_t new_account_ct_balance =
+      account.get_balance(pct_msg.contract_id) + pct_msg.value;
+  const uint256_t new_current_supply = current_supply + pct_msg.value;
+
+  const uint256_t sell_price = contract.get_sell_price(new_current_supply) -
+                               contract.get_sell_price(current_supply);
+  const uint256_t profit_from_this = buy_price - sell_price;
+
+  const uint256_t new_current_profit =
+      contract.get_current_profit() + profit_from_this;
+
+  // Update the information
+  account.set_band_balance(new_account_band_balance);
+  account.set_balance(pct_msg.contract_id, new_account_ct_balance);
+  contract.set_current_supply(new_current_supply);
+  contract.set_current_profit(new_current_profit);
 }
 
-void Handler::apply_sellCT(const Address& addr, const SellCTMsg& sellct_msg,
+void Handler::apply_sellCT(const Address& addr, const SellCTMsg& sct_msg,
                            const Hash& tx_hash)
 {
   // Get the account and contract views
   Account account(ctx, addr);
-  CommunityContract contract(ctx, sellct_msg.contract_id);
+  CommunityContract contract(ctx, sct_msg.contract_id);
 
   // Compute price of tokens
   const uint256_t current_supply = contract.get_current_supply();
-  const uint256_t price =
-      contract.apply_equation(current_supply, true) -
-      contract.apply_equation(current_supply - sellct_msg.value, true);
+  const uint256_t sell_price =
+      contract.get_sell_price(current_supply) -
+      contract.get_sell_price(current_supply - sct_msg.value);
 
   // Check price with minimum band
-  if (price >= sellct_msg.band_limit) {
-    const uint256_t new_account_band_balance =
-        account.get_band_balance() + price;
-    const uint256_t new_account_ct_balance =
-        account.get_balance(sellct_msg.contract_id) - sellct_msg.value;
-    const uint256_t new_current_supply = current_supply - sellct_msg.value;
-
-    // Update the information
-    account.set_band_balance(new_account_band_balance);
-    account.set_balance(sellct_msg.contract_id, new_account_ct_balance);
-    contract.set_current_supply(new_current_supply);
-  } else {
+  if (sell_price < sct_msg.band_limit) {
     throw Error("Now price({}) is lower than your minimum band that you want "
                 "to sell ({}), so your sell request isn't processed.",
-                price, sellct_msg.band_limit);
+                sell_price, sct_msg.band_limit);
   }
+  const uint256_t new_account_band_balance =
+      account.get_band_balance() + sell_price;
+  const uint256_t new_account_ct_balance =
+      account.get_balance(sct_msg.contract_id) - sct_msg.value;
+  const uint256_t new_current_supply = current_supply - sct_msg.value;
+
+  // Update the information
+  account.set_band_balance(new_account_band_balance);
+  account.set_balance(sct_msg.contract_id, new_account_ct_balance);
+  contract.set_current_supply(new_current_supply);
 }

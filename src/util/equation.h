@@ -2,6 +2,7 @@
 
 #include "inc/essential.h"
 #include "util/buffer.h"
+#include "util/endian.h"
 #include "util/variable.h"
 
 enum class OpCode : uint16_t {
@@ -15,7 +16,36 @@ enum class OpCode : uint16_t {
   Variable = 8
 };
 
+enum class SpreadType : uint8_t {
+  Constant = 1,
+  Rational = 2,
+};
+
 class Eq;
+
+class PriceSpread
+{
+public:
+  PriceSpread() {}
+  PriceSpread(SpreadType _spread_type, uint256_t _spread_value)
+      : spread_type(_spread_type)
+      , spread_value(_spread_value)
+  {
+  }
+
+  SpreadType get_spread_type() { return spread_type; }
+  uint256_t get_spread_value() { return spread_value; }
+
+  friend Buffer& operator>>(Buffer& buf, PriceSpread& price_spread);
+  friend Buffer& operator<<(Buffer& buf, const PriceSpread& price_spread);
+
+  uint256_t get_sell_price(uint256_t price, uint256_t value) const;
+
+private:
+  SpreadType spread_type;
+  uint256_t spread_value;
+  inline static const uint256_t ratio = 1'000'000;
+};
 
 class Curve
 {
@@ -23,17 +53,31 @@ public:
   Curve() {}
   Curve(std::unique_ptr<Eq> _equation)
       : equation(std::move(_equation))
+      , price_spread(PriceSpread(SpreadType::Constant, 0))
   {
   }
+  Curve(std::unique_ptr<Eq> _equation, const PriceSpread& _price_spread)
+      : equation(std::move(_equation))
+      , price_spread(_price_spread)
+  {
+  }
+
   Curve(Curve&& curve) = default;
+
   ~Curve();
+
   friend Buffer& operator>>(Buffer& buf, Curve& curve);
   friend Buffer& operator<<(Buffer& buf, const Curve& curve);
-  uint256_t apply(const Vars& vars, bool is_sell) const;
+
+  uint256_t apply_buy(const Vars& vars) const;
+  uint256_t apply_sell(const Vars& vars) const;
+
+  PriceSpread get_price_spread() const;
   std::string to_string() const;
 
 private:
   std::unique_ptr<Eq> equation;
+  PriceSpread price_spread;
 };
 
 class Eq

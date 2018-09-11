@@ -32,7 +32,7 @@ public:
     TS_ASSERT_EQUALS(10000, account.get_balance(mint.token_key));
   }
 
-  void testPurchaseCT()
+  void testPurchaseCTAndSellCT()
   {
     ContextMap ctx;
     Handler hand(ctx);
@@ -50,7 +50,10 @@ public:
     CreateMsg create;
     std::string m =
         R"foo({"expressions": ["ADD", "ADD", "MUL", "1", "EXP", "X", "2", "MUL", "2", "X", "0"],
-                "max_supply": "20"})foo";
+                "max_supply": "20",
+                "spread_type": "1",
+                "spread_value": "4"})foo";
+
     json j = json::parse(m);
 
     // Create body msg of create_msg from  param "expression"
@@ -81,6 +84,7 @@ public:
     TS_ASSERT_EQUALS(10, account.get_balance(contract_id));
 
     TS_ASSERT_EQUALS(10, contract.get_current_supply());
+    TS_ASSERT_EQUALS(40, contract.get_current_profit());
 
     // Another tester
     Address addr2 = Address::rand();
@@ -96,6 +100,7 @@ public:
     pct.band_limit = 10; // not enough to buy
 
     TS_ASSERT_THROWS_ANYTHING(hand.apply_purchaseCT(addr2, pct, Hash::rand()));
+    TS_ASSERT_EQUALS(40, contract.get_current_profit());
 
     Account account2(ctx, addr2);
     TS_ASSERT_EQUALS(100, account2.get_band_balance());
@@ -109,17 +114,57 @@ public:
     TS_ASSERT_EQUALS(52, account2.get_band_balance());
     TS_ASSERT_EQUALS(2, account2.get_balance(contract_id));
     TS_ASSERT_EQUALS(12, contract.get_current_supply());
+    TS_ASSERT_EQUALS(48, contract.get_current_profit());
 
     // Buy 10 tokens exceed max_supply
 
     pct.value = 10;
     pct.band_limit = 1000;
     TS_ASSERT_THROWS_ANYTHING(hand.apply_purchaseCT(addr, pct, Hash::rand()));
+    TS_ASSERT_EQUALS(48, contract.get_current_profit());
 
     // Buy just 8 tokens
     pct.value = 8;
     pct.band_limit = 1000;
     hand.apply_purchaseCT(addr, pct, Hash::rand());
+    TS_ASSERT_EQUALS(9608, account.get_band_balance());
     TS_ASSERT_EQUALS(20, contract.get_current_supply());
+    TS_ASSERT_EQUALS(80, contract.get_current_profit());
+
+    // Tester 1 sell token
+    SellCTMsg sct;
+    sct.band_limit = 1000;
+    sct.value = 10;
+    sct.contract_id = contract_id;
+    TS_ASSERT_THROWS_ANYTHING(hand.apply_sellCT(addr, sct, Hash::rand()));
+
+    sct.band_limit = 200;
+    hand.apply_sellCT(addr, sct, Hash::rand());
+
+    // Check balance
+    TS_ASSERT_EQUALS(9888, account.get_band_balance());
+    TS_ASSERT_EQUALS(10, contract.get_current_supply());
+    TS_ASSERT_EQUALS(80, contract.get_current_profit());
+
+    TS_ASSERT_THROWS_ANYTHING(hand.apply_sellCT(addr, sct, Hash::rand()));
+
+    sct.band_limit = 0;
+
+    TS_ASSERT_THROWS_ANYTHING(hand.apply_sellCT(addr, sct, Hash::rand()));
+
+    sct.value = 8;
+    hand.apply_sellCT(addr, sct, Hash::rand());
+    TS_ASSERT_EQUALS(9968, account.get_band_balance());
+    TS_ASSERT_EQUALS(2, contract.get_current_supply());
+    TS_ASSERT_EQUALS(80, contract.get_current_profit());
+
+    pct.band_limit = 20;
+    pct.value = 2;
+
+    hand.apply_purchaseCT(addr2, pct, Hash::rand());
+    TS_ASSERT_EQUALS(36, account2.get_band_balance());
+    TS_ASSERT_EQUALS(4, account2.get_balance(contract_id));
+    TS_ASSERT_EQUALS(4, contract.get_current_supply());
+    TS_ASSERT_EQUALS(88, contract.get_current_profit());
   }
 };

@@ -81,7 +81,9 @@ public:
   {
     std::string m =
         R"foo({"expressions": ["ADD", "SUB", "MUL", "2", "EXP", "X", "2", "MUL", "115", "X", "79"],
-                "max_supply": "20"})foo";
+                "max_supply": "20",
+                "spread_type": "1",
+                "spread_value": "4"})foo";
     json j = json::parse(m);
 
     // Create body msg of create_msg from  param "expression"
@@ -100,13 +102,13 @@ public:
     Buffer tmp_buf;
     ptr->dump(tmp_buf);
 
-    std::string eq_bin = "010203070206080107020307730801074f14";
+    std::string eq_bin = "010203070206080107020307730801074f010414";
 
     // Hex represent equation
     TS_ASSERT_EQUALS(eq_bin, x);
 
     // make Bytes from hex representation
-    auto raw = Bytes<18>::from_hex(eq_bin);
+    auto raw = Bytes<20>::from_hex(eq_bin);
 
     buf << raw.as_span();
     Buffer tmp_buf2;
