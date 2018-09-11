@@ -2,9 +2,9 @@
 #include <vector>
 
 #include "inc/essential.h"
-#include "state/object.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
+#include "util/endian.h"
 
 class BufferTest : public CxxTest::TestSuite
 {
