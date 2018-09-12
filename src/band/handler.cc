@@ -3,6 +3,7 @@
 #include "crypto/ed25519.h"
 #include "store/account.h"
 #include "store/ccontract.h"
+#include "store/pcontract.h"
 #include "util/bytes.h"
 
 Handler::Handler(Context& _ctx)
@@ -22,14 +23,17 @@ void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash)
     case TxMsg::ID:
       apply_tx(addr, buf.read_all<TxMsg>(), tx_hash);
       break;
-    case CreateMsg::ID:
-      apply_create(addr, buf.read_all<CreateMsg>(), tx_hash);
+    case CreateCCMsg::ID:
+      apply_createCC(addr, buf.read_all<CreateCCMsg>(), tx_hash);
       break;
     case PurchaseCTMsg::ID:
       apply_purchaseCT(addr, buf.read_all<PurchaseCTMsg>(), tx_hash);
       break;
     case SellCTMsg::ID:
       apply_sellCT(addr, buf.read_all<SellCTMsg>(), tx_hash);
+      break;
+    case CreatePCMsg::ID:
+      apply_createPC(addr, buf.read_all<CreatePCMsg>(), tx_hash);
       break;
     default:
       throw Error("Invalid MsgID {}", uint16_t(hdr.msgid));
@@ -71,13 +75,14 @@ void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg,
   account_dest.set_balance(tx_msg.token_key, new_dest_balance);
 }
 
-void Handler::apply_create(const Address& addr, const CreateMsg& create_msg,
-                           const Hash& tx_hash)
+void Handler::apply_createCC(const Address& addr,
+                             const CreateCCMsg& create_cc_msg,
+                             const Hash& tx_hash)
 {
   ContractID contractID = tx_hash.prefix<ContractID::Size>();
   CommunityContract contract(ctx, contractID);
-  contract.create(create_msg.curve);
-  contract.set_max_supply(create_msg.max_supply);
+  contract.create(create_cc_msg.curve);
+  contract.set_max_supply(create_cc_msg.max_supply);
 }
 
 void Handler::apply_purchaseCT(const Address& addr,
@@ -156,4 +161,16 @@ void Handler::apply_sellCT(const Address& addr, const SellCTMsg& sct_msg,
   account.set_band_balance(new_account_band_balance);
   account.set_balance(sct_msg.contract_id, new_account_ct_balance);
   contract.set_current_supply(new_current_supply);
+}
+
+void Handler::apply_createPC(const Address& addr,
+                             const CreatePCMsg& create_pc_msg,
+                             const Hash& tx_hash)
+{
+  ContractID contractID = tx_hash.prefix<ContractID::Size>();
+  ProductContract contract(ctx, contractID);
+  contract.create(create_pc_msg.curve, create_pc_msg.community_contract_id);
+  contract.set_max_supply(create_pc_msg.max_supply);
+
+  // TODO: other options
 }

@@ -6,8 +6,10 @@
 #include "crypto/ed25519.h"
 #include "store/account.h"
 #include "store/context_map.h"
+#include "store/pcontract.h"
 #include "util/buffer.h"
 #include "util/equation.h"
+#include "util/iban.h"
 #include "util/json.h"
 
 class HandlerTest : public CxxTest::TestSuite
@@ -47,9 +49,9 @@ public:
     hand.apply_mint(addr, mint, Hash::rand());
 
     // Create new community contract
-    CreateMsg create;
+    CreateCCMsg create;
     std::string m =
-        R"foo({"expressions": ["ADD", "ADD", "MUL", "1", "EXP", "X", "2", "MUL", "2", "X", "0"],
+        R"foo({"expressions": ["ADD", "ADD", "MUL", "1", "EXP", "Supply", "2", "MUL", "2", "Supply", "0"],
                 "max_supply": "20",
                 "spread_type": "1",
                 "spread_value": "4"})foo";
@@ -57,7 +59,7 @@ public:
     json j = json::parse(m);
 
     // Create body msg of create_msg from  param "expression"
-    std::string pa = txgen::process_create(j);
+    std::string pa = txgen::process_createCC(j);
 
     // pa store real 00010002.... cannot read
     Buffer buf;
@@ -66,7 +68,7 @@ public:
     buf >> create;
     Hash tx_hash = Hash::rand();
     ContractID contract_id = tx_hash.prefix<ContractID::Size>();
-    hand.apply_create(addr, create, tx_hash);
+    hand.apply_createCC(addr, create, tx_hash);
 
     // Purchase token
     // Create view community contract
@@ -166,5 +168,50 @@ public:
     TS_ASSERT_EQUALS(4, account2.get_balance(contract_id));
     TS_ASSERT_EQUALS(4, contract.get_current_supply());
     TS_ASSERT_EQUALS(88, contract.get_current_profit());
+  }
+
+  void testCreatePC()
+  {
+    ContextMap ctx;
+    Handler hand(ctx);
+
+    Address addr = Address::rand();
+    Account account(ctx, addr);
+
+    // create_pc.community_contract_id = token_key;
+
+    CreatePCMsg create_pc;
+    std::string m =
+        R"foo({"expressions": ["ADD", "ADD", "MUL", "1", "EXP", "Supply",
+        "2", "MUL", "2", "Supply", "0"],
+                "max_supply": "20",
+                "spread_type": "1",
+                "spread_value": "4",
+                "community_contract_id": "BX56 DCF2 D2NN MAJ4 N75J PK48 FLTX S9UJ JG6S"})foo";
+
+    json j = json::parse(m);
+
+    // Create body msg of createPC_msg from  param "expression"
+    std::string pa = txgen::process_createPC(j);
+
+    // pa store real 00010002.... cannot read
+    Buffer buf;
+    buf << gsl::make_span(pa);
+    buf >> create_pc;
+
+    Hash tx_hash = Hash::rand();
+    ContractID contract_id = tx_hash.prefix<ContractID::Size>();
+    hand.apply_createPC(addr, create_pc, tx_hash);
+
+    ProductContract contract(ctx, contract_id);
+
+    TS_ASSERT_EQUALS(
+        IBAN("BX56 DCF2 D2NN MAJ4 N75J PK48 FLTX S9UJ JG6S", IBANType::Token)
+            .as_addr(),
+        contract.get_community_contract());
+
+    // Create another view
+    ProductContract contract2(ctx, contract_id);
+    TS_ASSERT_EQUALS(20, contract.get_max_supply());
   }
 };

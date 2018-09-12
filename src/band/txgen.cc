@@ -19,7 +19,37 @@ uint64_t get_current_ts()
   return duration_cast<milliseconds>(system_clock::now().time_since_epoch())
       .count();
 }
-
+void parse_equation(Buffer& buf, const std::vector<std::string>& op_codes)
+{
+  for (const auto& op : op_codes) {
+    if (op == "ADD")
+      buf << OpCode::Add;
+    else if (op == "SUB")
+      buf << OpCode::Sub;
+    else if (op == "MUL")
+      buf << OpCode::Mul;
+    else if (op == "DIV")
+      buf << OpCode::Div;
+    else if (op == "MOD")
+      buf << OpCode::Mod;
+    else if (op == "EXP")
+      buf << OpCode::Exp;
+    else if (op == "Supply") {
+      buf << OpCode::Variable;
+      buf << Variable::Supply;
+    } else if (op == "CTPrice") {
+      buf << OpCode::Variable;
+      buf << Variable::CTPrice;
+    } else if (op == "BNDUSD") {
+      buf << OpCode::Variable;
+      buf << Variable::BNDUSD;
+    } else {
+      uint256_t num = uint256_t(op);
+      buf << OpCode::Constant;
+      buf << num;
+    }
+  }
+}
 } // namespace
 
 json txgen::process_txgen(const json& params)
@@ -38,14 +68,17 @@ json txgen::process_txgen(const json& params)
     case TxMsg::ID:
       body = process_tx(params);
       break;
-    case CreateMsg::ID:
-      body = process_create(params);
+    case CreateCCMsg::ID:
+      body = process_createCC(params);
       break;
     case PurchaseCTMsg::ID:
       body = process_purchaseCT(params);
       break;
     case SellCTMsg::ID:
       body = process_sellCT(params);
+      break;
+    case CreatePCMsg::ID:
+      body = process_createPC(params);
       break;
     default:
       throw Error("Message ID doesn't match any ID in system");
@@ -83,35 +116,14 @@ std::string txgen::process_tx(const json& params)
   return Buffer::serialize(tx_msg);
 }
 
-std::string txgen::process_create(const json& params)
+std::string txgen::process_createCC(const json& params)
 {
-  CreateMsg create_msg;
+  CreateCCMsg create_msg;
   create_msg.max_supply = uint256_t(params.at("max_supply").get<std::string>());
   std::vector<std::string> op_codes = params.at("expressions");
 
   Buffer buf;
-  for (const auto& op : op_codes) {
-    if (op == "ADD")
-      buf << OpCode::Add;
-    else if (op == "SUB")
-      buf << OpCode::Sub;
-    else if (op == "MUL")
-      buf << OpCode::Mul;
-    else if (op == "DIV")
-      buf << OpCode::Div;
-    else if (op == "MOD")
-      buf << OpCode::Mod;
-    else if (op == "EXP")
-      buf << OpCode::Exp;
-    else if (op == "X") {
-      buf << OpCode::Variable;
-      buf << Variable::Supply;
-    } else {
-      uint256_t num = uint256_t(op);
-      buf << OpCode::Constant;
-      buf << num;
-    }
-  }
+  parse_equation(buf, op_codes);
 
   SpreadType t = SpreadType(
       uint8_t(std::stoul(params.at("spread_type").get<std::string>())));
@@ -146,4 +158,30 @@ std::string txgen::process_sellCT(const json& params)
           .as_addr();
 
   return Buffer::serialize(sct_msg);
+}
+
+std::string txgen::process_createPC(const json& params)
+{
+  CreatePCMsg create_pc_msg;
+  create_pc_msg.max_supply =
+      uint256_t(params.at("max_supply").get<std::string>());
+  std::vector<std::string> op_codes = params.at("expressions");
+
+  Buffer buf;
+  parse_equation(buf, op_codes);
+
+  SpreadType t = SpreadType(
+      uint8_t(std::stoul(params.at("spread_type").get<std::string>())));
+  uint256_t value = uint256_t(params.at("spread_value").get<std::string>());
+
+  PriceSpread price_spread(t, value);
+  buf << price_spread;
+  buf >> create_pc_msg.curve;
+
+  create_pc_msg.community_contract_id =
+      IBAN(params.at("community_contract_id").get<std::string>(),
+           IBANType::Token)
+          .as_addr();
+
+  return Buffer::serialize(create_pc_msg);
 }

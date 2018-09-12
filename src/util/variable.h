@@ -6,6 +6,7 @@ enum class Variable : uint8_t {
   Supply = 1,
   BNDUSD = 2,
   BNDTHB = 3,
+  CTPrice = 4,
 };
 
 class Vars

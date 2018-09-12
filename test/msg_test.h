@@ -80,14 +80,14 @@ public:
   void test_msg_create()
   {
     std::string m =
-        R"foo({"expressions": ["ADD", "SUB", "MUL", "2", "EXP", "X", "2", "MUL", "115", "X", "79"],
+        R"foo({"expressions": ["ADD", "SUB", "MUL", "2", "EXP", "Supply", "2", "MUL", "115", "Supply", "79"],
                 "max_supply": "20",
                 "spread_type": "1",
                 "spread_value": "4"})foo";
     json j = json::parse(m);
 
     // Create body msg of create_msg from  param "expression"
-    std::string pa = txgen::process_create(j);
+    std::string pa = txgen::process_createCC(j);
 
     // pa store real 00010002.... cannot read
     Buffer buf;

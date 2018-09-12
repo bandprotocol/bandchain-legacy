@@ -20,12 +20,14 @@ private:
   void apply_mint(const Address& addr, const MintMsg& mint_msg,
                   const Hash& tx_hash);
   void apply_tx(const Address& addr, const TxMsg& tx_msg, const Hash& tx_hash);
-  void apply_create(const Address& addr, const CreateMsg& create_msg,
-                    const Hash& tx_hash);
+  void apply_createCC(const Address& addr, const CreateCCMsg& create_cc_msg,
+                      const Hash& tx_hash);
   void apply_purchaseCT(const Address& addr, const PurchaseCTMsg& pct_msg,
                         const Hash& tx_hash);
   void apply_sellCT(const Address& addr, const SellCTMsg& sellct_msg,
                     const Hash& tx_hash);
+  void apply_createPC(const Address& addr, const CreatePCMsg& create_pc_msg,
+                      const Hash& tx_hash);
 
 private:
   Context& ctx;
