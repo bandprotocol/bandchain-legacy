@@ -43,8 +43,7 @@ void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash)
 void Handler::apply_mint(const Address& addr, const MintMsg& mint_msg,
                          const Hash& tx_hash)
 {
-  // Get the account view of this address.
-  Account account(ctx, addr);
+  auto account = ctx.get_or_create<Account>(addr);
 
   // Compute the new balance.
   const uint256_t new_balance =
@@ -60,9 +59,8 @@ void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg,
   if (addr == tx_msg.dest)
     throw Error("Cannot send token from/to the same address");
 
-  // Get the account views of the source and destination addresses.
-  Account account_source(ctx, addr);
-  Account account_dest(ctx, tx_msg.dest);
+  auto account_source = ctx.get_as<Account>(addr);
+  auto account_dest = ctx.get_or_create<Account>(tx_msg.dest);
 
   // Compute the new balances.
   const uint256_t new_source_balance =
@@ -89,8 +87,7 @@ void Handler::apply_purchaseCT(const Address& addr,
                                const PurchaseCTMsg& pct_msg,
                                const Hash& tx_hash)
 {
-  // Get the account and contract views
-  Account account(ctx, addr);
+  auto account = ctx.get_as<Account>(addr);
   CommunityContract contract(ctx, pct_msg.contract_id);
 
   const uint256_t remain_tokens =
@@ -135,8 +132,7 @@ void Handler::apply_purchaseCT(const Address& addr,
 void Handler::apply_sellCT(const Address& addr, const SellCTMsg& sct_msg,
                            const Hash& tx_hash)
 {
-  // Get the account and contract views
-  Account account(ctx, addr);
+  auto account = ctx.get_as<Account>(addr);
   CommunityContract contract(ctx, sct_msg.contract_id);
 
   // Compute price of tokens

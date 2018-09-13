@@ -8,12 +8,12 @@ class ContextMap : public Context
 public:
   ContextMap();
 
-  Object* get(const Hash& key) const final;
+  Object* get(const ContextKey& key) const final;
 
-  bool check(const Hash& key) const final;
+  bool check(const ContextKey& key) const final;
 
-  void add(const Hash& key, std::unique_ptr<Object> obj) final;
+  void add(const ContextKey& key, std::unique_ptr<Object> obj) final;
 
 private:
-  std::unordered_map<Hash, std::unique_ptr<Object>> data;
+  std::unordered_map<ContextKey, std::unique_ptr<Object>> data;
 };

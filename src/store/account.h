@@ -1,13 +1,15 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "inc/essential.h"
 #include "store/context.h"
 
-class Account
+class Account : public Object
 {
 public:
   /// Create an account view from the blockchain context and account address.
-  Account(Context& _ctx, const Address& _addr);
+  Account(const Address& _addr);
 
   /// Get the balance of this account for the given token.
   uint256_t get_balance(const TokenKey& token_key);
@@ -22,12 +24,8 @@ public:
   void set_band_balance(uint256_t value) { return set_balance({}, value); }
 
 private:
-  /// Return the key in the database that stores the balance information of
-  /// the given token key.
-  Hash get_context_key(const TokenKey& token_key);
-
-  Context& ctx;
-  const Address& addr;
+  std::unordered_map<TokenKey, uint256_t> balances;
+  Address addr;
 
   static inline auto log = logger::get("store/account");
 };

@@ -84,6 +84,7 @@ private:
 
 using Address = Bytes<20>;    //< Public wallet address
 using TokenKey = Bytes<20>;   //< Public token address
+using ContextKey = Bytes<20>; //< Unique ID for on-chain data structures
 using ContractID = Bytes<20>; //< Contract ID
 using Hash = Bytes<32>;       //< SHA-256 hash value
 using VerifyKey = Bytes<32>;  //< Ed25519 verify key

@@ -2,7 +2,7 @@
 
 ContextMap::ContextMap() { DEBUG(log, "CONTEXT_MAP_INIT"); }
 
-Object* ContextMap::get(const Hash& key) const
+Object* ContextMap::get(const ContextKey& key) const
 {
   if (auto it = data.find(key); it != data.end()) {
     return it->second.get();
@@ -10,14 +10,15 @@ Object* ContextMap::get(const Hash& key) const
   return nullptr;
 }
 
-bool ContextMap::check(const Hash& key) const
+bool ContextMap::check(const ContextKey& key) const
 {
   return data.find(key) != data.end();
 }
 
-void ContextMap::add(const Hash& key, std::unique_ptr<Object> obj)
+void ContextMap::add(const ContextKey& key, std::unique_ptr<Object> obj)
 {
-  if (!data.try_emplace(key, std::move(obj)).second) {
+  auto [it, ok] = data.try_emplace(key, std::move(obj));
+  if (!ok) {
     throw Error("Context::add: key {} already exists", key);
   }
 }

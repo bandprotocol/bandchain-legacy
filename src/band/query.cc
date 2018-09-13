@@ -68,7 +68,7 @@ json Query::process_balance(const json& params)
   auto address = IBAN(address_iban, IBANType::Account).as_addr();
   auto token = IBAN(token_iban, IBANType::Token).as_addr();
 
-  Account account(ctx, address);
+  auto account = ctx.get_as<Account>(address);
   const uint256_t balance = account.get_balance(token);
 
   json response;
