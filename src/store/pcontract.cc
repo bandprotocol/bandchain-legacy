@@ -13,7 +13,9 @@ ProductContract::ProductContract(Context& _ctx, const ContractID& _contract_id)
 void ProductContract::create(const Curve& _curve,
                              const ContractID& _contract_id)
 {
-  if (ctx.check(key))
+  // TODO
+  // if (ctx.check(key))
+  if (true)
     throw Error("This key already have contract cannot create new contract at "
                 "this key");
   // Create empty contract to context at this key.
@@ -39,13 +41,19 @@ void ProductContract::save(const ContractInfo& info) const
   Buffer buf;
   buf << info.curve << info.max_supply << info.current_supply
       << info.community_contract;
-  ctx.set(key, buf.to_raw_string());
+
+  // TODO
+  // ctx.set(key, buf.to_raw_string());
 }
 
 ProductContract::ContractInfo ProductContract::load() const
 {
   ContractInfo info;
-  auto [raw_data, ok] = ctx.try_get(key);
+  // TODO
+  // auto [raw_data, ok] = ctx.try_get(key);
+  std::string raw_data = "TODO";
+  bool ok = false;
+
   if (ok) {
     Buffer buf(gsl::make_span(raw_data));
     buf >> info.curve >> info.max_supply >> info.current_supply >>

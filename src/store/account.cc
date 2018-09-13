@@ -12,7 +12,11 @@ Account::Account(Context& _ctx, const Address& _addr)
 
 uint256_t Account::get_balance(const TokenKey& token_key)
 {
-  auto [raw_data, ok] = ctx.try_get(get_context_key(token_key));
+  // TODO
+  // auto [raw_data, ok] = ctx.try_get(get_context_key(token_key));
+  std::string raw_data = "TODO";
+  bool ok = false;
+
   const uint256_t value =
       ok ? Buffer(gsl::make_span(raw_data)).read_all<uint256_t>() : 0;
 
@@ -31,7 +35,8 @@ void Account::set_balance(const TokenKey& token_key, uint256_t value)
   DEBUG(log, "  Token: {}", token_key.to_iban_string(IBANType::Token));
   DEBUG(log, "  Value: {}", value);
 
-  ctx.set(get_context_key(token_key), Buffer::serialize(value));
+  // TODO
+  // ctx.set(get_context_key(token_key), Buffer::serialize(value));
 }
 
 Hash Account::get_context_key(const TokenKey& token_key)

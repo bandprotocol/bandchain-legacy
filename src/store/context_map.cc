@@ -2,37 +2,12 @@
 
 ContextMap::ContextMap() { DEBUG(log, "CONTEXT_MAP_INIT"); }
 
-uint64_t ContextMap::height() const
-{
-  // TODO
-  return 0;
-}
-
-Hash ContextMap::root() const
-{
-  // TODO
-  return {};
-}
-
-void ContextMap::commit()
-{
-  // TODO
-}
-
-std::pair<std::string, bool> ContextMap::try_get(const Hash& key) const
+Object* ContextMap::get(const Hash& key) const
 {
   if (auto it = data.find(key); it != data.end()) {
-    return {it->second, true};
+    return it->second.get();
   }
-  return {{}, false};
-}
-
-std::string ContextMap::get(const Hash& key) const
-{
-  if (auto it = data.find(key); it != data.end()) {
-    return it->second;
-  }
-  throw Error("Context::get: key {} does not exist", key);
+  return nullptr;
 }
 
 bool ContextMap::check(const Hash& key) const
@@ -40,14 +15,9 @@ bool ContextMap::check(const Hash& key) const
   return data.find(key) != data.end();
 }
 
-void ContextMap::add(const Hash& key, const std::string value)
+void ContextMap::add(const Hash& key, std::unique_ptr<Object> obj)
 {
-  if (!data.try_emplace(key, value).second) {
+  if (!data.try_emplace(key, std::move(obj)).second) {
     throw Error("Context::add: key {} already exists", key);
   }
-}
-
-void ContextMap::set(const Hash& key, const std::string value)
-{
-  data[key] = value;
 }

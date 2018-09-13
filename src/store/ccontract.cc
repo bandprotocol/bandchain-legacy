@@ -13,7 +13,9 @@ CommunityContract::CommunityContract(Context& _ctx,
 
 void CommunityContract::create(const Curve& _curve)
 {
-  if (ctx.check(key))
+  // TODO
+  // if (ctx.check(key))
+  if (true)
     throw Error("This key already have contract cannot create new contract at "
                 "this key");
   // Create empty contract to context at this key.
@@ -39,13 +41,20 @@ void CommunityContract::save(const ContractInfo& info) const
   Buffer buf;
   buf << info.curve << info.max_supply << info.current_supply
       << info.current_profit;
-  ctx.set(key, buf.to_raw_string());
+
+  // TODO
+  // ctx.set(key, buf.to_raw_string());
 }
 
 CommunityContract::ContractInfo CommunityContract::load() const
 {
   ContractInfo info;
-  auto [raw_data, ok] = ctx.try_get(key);
+
+  // TODO
+  // auto [raw_data, ok] = ctx.try_get(key);
+  std::string raw_data = "TODO";
+  bool ok = false;
+
   if (ok) {
     Buffer buf(gsl::make_span(raw_data));
     buf >> info.curve >> info.max_supply >> info.current_supply >>

@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 
   std::unique_ptr<Context> ctx;
   if (+use_db) {
-    ctx = std::make_unique<ContextDB>();
+    throw Failure("ContextDB not supported yet");
   } else {
     ctx = std::make_unique<ContextMap>();
   }
