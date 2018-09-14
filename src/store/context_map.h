@@ -12,7 +12,7 @@ public:
 
   bool check(const ContextKey& key) const final;
 
-  void add(const ContextKey& key, std::unique_ptr<Object> obj) final;
+  void add(std::unique_ptr<Object> obj) final;
 
 private:
   std::unordered_map<ContextKey, std::unique_ptr<Object>> data;

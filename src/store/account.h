@@ -9,7 +9,7 @@ class Account : public Object
 {
 public:
   /// Create an account view from the blockchain context and account address.
-  Account(const Address& _addr);
+  Account(const Address& addr);
 
   /// Get the balance of this account for the given token.
   uint256_t get_balance(const TokenKey& token_key);

@@ -6,6 +6,11 @@
 class Object
 {
 public:
+  Object(const ContextKey& _key)
+      : key(_key)
+  {
+  }
+
   virtual ~Object() {}
 
   template <typename T>
@@ -16,6 +21,8 @@ public:
       throw Error("Invalid object cast");
     return *result;
   }
+
+  const ContextKey key;
 };
 
 class Context
@@ -37,7 +44,7 @@ public:
 
   virtual bool check(const ContextKey& key) const = 0;
 
-  virtual void add(const ContextKey& key, std::unique_ptr<Object> obj) = 0;
+  virtual void add(std::unique_ptr<Object> obj) = 0;
 
   template <typename T>
   T& get_as(const ContextKey& key)
@@ -50,7 +57,7 @@ public:
   {
     auto uniq = std::make_unique<T>(key, std::forward<Args>(args)...);
     auto raw = uniq.get();
-    add(key, std::move(uniq));
+    add(std::move(uniq));
     return *raw;
   }
 

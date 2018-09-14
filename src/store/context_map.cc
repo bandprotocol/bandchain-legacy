@@ -15,10 +15,10 @@ bool ContextMap::check(const ContextKey& key) const
   return data.find(key) != data.end();
 }
 
-void ContextMap::add(const ContextKey& key, std::unique_ptr<Object> obj)
+void ContextMap::add(std::unique_ptr<Object> obj)
 {
-  auto [it, ok] = data.try_emplace(key, std::move(obj));
+  auto [it, ok] = data.try_emplace(obj->key, std::move(obj));
   if (!ok) {
-    throw Error("Context::add: key {} already exists", key);
+    throw Error("Context::add: duplicate key exists");
   }
 }
