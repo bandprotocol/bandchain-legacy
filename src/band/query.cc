@@ -2,7 +2,7 @@
 
 #include "band/txgen.h"
 #include "store/account.h"
-#include "store/ccontract.h"
+#include "store/contract.h"
 #include "util/iban.h"
 
 namespace
@@ -66,9 +66,9 @@ json Query::process_balance(const json& params)
   const auto& token_iban = params.at("token").get<std::string>();
 
   auto address = IBAN(address_iban, IBANType::Account).as_addr();
-  auto token = IBAN(token_iban, IBANType::Token).as_addr();
+  auto token = IBAN(token_iban, IBANType::Contract).as_addr();
 
-  auto account = ctx.get_as<Account>(address);
+  auto& account = ctx.get_as<Account>(address);
   const uint256_t balance = account.get_balance(token);
 
   json response;
@@ -80,21 +80,29 @@ json Query::process_community_info(const json& params)
 {
   const auto& contract_id_iban = params.at("contract_id").get<std::string>();
 
-  auto contract_id = IBAN(contract_id_iban, IBANType::Token).as_addr();
+  auto contract_id = IBAN(contract_id_iban, IBANType::Contract).as_addr();
 
-  CommunityContract contract(ctx, contract_id);
+  auto& contract = ctx.get_as<Contract>(contract_id);
   const std::string equation = contract.get_string_equation();
-  const uint256_t current_supply = contract.get_current_supply();
+  const uint256_t circulating_supply = contract.get_circulating_supply();
+  const uint256_t total_supply = contract.get_total_supply();
   const uint256_t max_supply = contract.get_max_supply();
   PriceSpread ps = contract.get_price_spread();
-  const uint256_t current_profit = contract.get_current_profit();
+  const ContextKey revenue_id = contract.get_revenue_id();
+
+  const uint8_t is_transferable = contract.get_is_transferable();
+  const uint8_t is_discountable = contract.get_is_discountable();
 
   json response;
   response["equation"] = equation;
-  response["current_supply"] = "{}"_format(current_supply);
+  response["circulating_supply"] = "{}"_format(circulating_supply);
+  response["total_supply"] = "{}"_format(total_supply);
   response["max_supply"] = "{}"_format(max_supply);
   response["spread_type"] = "{}"_format((uint8_t)ps.get_spread_type());
   response["spread_value"] = "{}"_format(ps.get_spread_value());
-  response["current_profit"] = "{}"_format(current_profit);
+  response["revenue_id"] = revenue_id.to_iban_string(IBANType::Revenue);
+
+  response["is_transferable"] = (bool)is_transferable;
+  response["is_discountable"] = (bool)is_discountable;
   return response;
 }

@@ -36,13 +36,12 @@ void parse_equation(Buffer& buf, const std::vector<std::string>& op_codes)
       buf << OpCode::Exp;
     else if (op == "Supply") {
       buf << OpCode::Variable;
-      buf << Variable::Supply;
-    } else if (op == "CTPrice") {
-      buf << OpCode::Variable;
-      buf << Variable::CTPrice;
-    } else if (op == "BNDUSD") {
-      buf << OpCode::Variable;
-      buf << Variable::BNDUSD;
+    } else if (op.size() >= 36 and op.substr(0, 2) == "CX") {
+      buf << OpCode::Contract;
+      buf << IBAN(op, IBANType::Contract).as_addr();
+    } else if (op.size() >= 36 and op.substr(0, 2) == "PX") {
+      buf << OpCode::Price;
+      buf << IBAN(op, IBANType::Price).as_addr();
     } else {
       uint256_t num = uint256_t(op);
       buf << OpCode::Constant;
@@ -68,18 +67,18 @@ json txgen::process_txgen(const json& params)
     case TxMsg::ID:
       body = process_tx(params);
       break;
-    case CreateCCMsg::ID:
-      body = process_createCC(params);
+    case CreateContractMsg::ID:
+      body = process_create_contract(params);
       break;
-    case PurchaseCTMsg::ID:
-      body = process_purchaseCT(params);
+    case PurchaseContractMsg::ID:
+      body = process_purchase_contract(params);
       break;
-    case SellCTMsg::ID:
-      body = process_sellCT(params);
+    case SellContractMsg::ID:
+      body = process_sell_contract(params);
       break;
-    case CreatePCMsg::ID:
-      body = process_createPC(params);
-      break;
+    // case CreatePCMsg::ID:
+    //   body = process_createPC(params);
+    //   break;
     default:
       throw Error("Message ID doesn't match any ID in system");
   }
@@ -100,7 +99,7 @@ std::string txgen::process_mint(const json& params)
 {
   MintMsg mint_msg;
   mint_msg.token_key =
-      IBAN(params.at("token").get<std::string>(), IBANType::Token).as_addr();
+      IBAN(params.at("token").get<std::string>(), IBANType::Contract).as_addr();
   mint_msg.value = uint256_t(params.at("value").get<std::string>());
   return Buffer::serialize(mint_msg);
 }
@@ -109,19 +108,22 @@ std::string txgen::process_tx(const json& params)
 {
   TxMsg tx_msg;
   tx_msg.token_key =
-      IBAN(params.at("token").get<std::string>(), IBANType::Token).as_addr();
+      IBAN(params.at("token").get<std::string>(), IBANType::Contract).as_addr();
   tx_msg.dest =
       IBAN(params.at("dest").get<std::string>(), IBANType::Account).as_addr();
   tx_msg.value = uint256_t(params.at("value").get<std::string>());
   return Buffer::serialize(tx_msg);
 }
 
-std::string txgen::process_createCC(const json& params)
+std::string txgen::process_create_contract(const json& params)
 {
-  CreateCCMsg create_msg;
-  create_msg.max_supply = uint256_t(params.at("max_supply").get<std::string>());
-  std::vector<std::string> op_codes = params.at("expressions");
+  CreateContractMsg create_msg;
 
+  create_msg.revenue_id =
+      IBAN(params.at("revenue_id").get<std::string>(), IBANType::Revenue)
+          .as_addr();
+
+  std::vector<std::string> op_codes = params.at("expressions");
   Buffer buf;
   parse_equation(buf, op_codes);
 
@@ -133,55 +135,37 @@ std::string txgen::process_createCC(const json& params)
   buf << price_spread;
   buf >> create_msg.curve;
 
+  create_msg.max_supply = uint256_t(params.at("max_supply").get<std::string>());
+  create_msg.is_transferable =
+      uint8_t(std::stoul(params.at("is_transferable").get<std::string>()));
+  create_msg.is_discountable =
+      uint8_t(std::stoul(params.at("is_discountable").get<std::string>()));
+  create_msg.beneficiary =
+      IBAN(params.at("beneficiary").get<std::string>(), IBANType::Account)
+          .as_addr();
   return Buffer::serialize(create_msg);
 }
 
-std::string txgen::process_purchaseCT(const json& params)
+std::string txgen::process_purchase_contract(const json& params)
 {
-  PurchaseCTMsg pct_msg;
+  PurchaseContractMsg pct_msg;
   pct_msg.value = uint256_t(params.at("value").get<std::string>());
-  pct_msg.band_limit = uint256_t(params.at("band_limit").get<std::string>());
+  pct_msg.price_limit = uint256_t(params.at("price_limit").get<std::string>());
   pct_msg.contract_id =
-      IBAN(params.at("contract_id").get<std::string>(), IBANType::Token)
+      IBAN(params.at("contract_id").get<std::string>(), IBANType::Contract)
           .as_addr();
 
   return Buffer::serialize(pct_msg);
 }
 
-std::string txgen::process_sellCT(const json& params)
+std::string txgen::process_sell_contract(const json& params)
 {
-  SellCTMsg sct_msg;
+  SellContractMsg sct_msg;
   sct_msg.value = uint256_t(params.at("value").get<std::string>());
-  sct_msg.band_limit = uint256_t(params.at("band_limit").get<std::string>());
+  sct_msg.price_limit = uint256_t(params.at("price_limit").get<std::string>());
   sct_msg.contract_id =
-      IBAN(params.at("contract_id").get<std::string>(), IBANType::Token)
+      IBAN(params.at("contract_id").get<std::string>(), IBANType::Contract)
           .as_addr();
 
   return Buffer::serialize(sct_msg);
-}
-
-std::string txgen::process_createPC(const json& params)
-{
-  CreatePCMsg create_pc_msg;
-  create_pc_msg.max_supply =
-      uint256_t(params.at("max_supply").get<std::string>());
-  std::vector<std::string> op_codes = params.at("expressions");
-
-  Buffer buf;
-  parse_equation(buf, op_codes);
-
-  SpreadType t = SpreadType(
-      uint8_t(std::stoul(params.at("spread_type").get<std::string>())));
-  uint256_t value = uint256_t(params.at("spread_value").get<std::string>());
-
-  PriceSpread price_spread(t, value);
-  buf << price_spread;
-  buf >> create_pc_msg.curve;
-
-  create_pc_msg.community_contract_id =
-      IBAN(params.at("community_contract_id").get<std::string>(),
-           IBANType::Token)
-          .as_addr();
-
-  return Buffer::serialize(create_pc_msg);
 }

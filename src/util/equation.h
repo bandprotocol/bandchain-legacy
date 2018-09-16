@@ -2,6 +2,7 @@
 
 #include "inc/essential.h"
 #include "util/buffer.h"
+#include "util/bytes.h"
 #include "util/endian.h"
 #include "util/variable.h"
 
@@ -13,7 +14,9 @@ enum class OpCode : uint16_t {
   Mod = 5,
   Exp = 6,
   Constant = 7,
-  Variable = 8
+  Variable = 8,
+  Price = 9,
+  Contract = 10,
 };
 
 enum class SpreadType : uint8_t {
@@ -51,6 +54,7 @@ class Curve
 {
 public:
   Curve() {}
+  Curve(const Curve& _curve);
   Curve(std::unique_ptr<Eq> _equation)
       : equation(std::move(_equation))
       , price_spread(PriceSpread(SpreadType::Constant, 0))
@@ -87,72 +91,88 @@ public:
   virtual uint256_t apply(const Vars& vars) const = 0;
   virtual std::string to_string() const = 0;
   virtual void dump(Buffer& buf) const = 0;
+  virtual std::unique_ptr<Eq> clone() const = 0;
   static std::unique_ptr<Eq> parse(Buffer& buf);
 };
 
+template <typename T, OpCode op, char op_char>
 class EqBinary : public Eq
 {
 public:
-  EqBinary(std::unique_ptr<Eq> _left, std::unique_ptr<Eq> _right);
-  EqBinary(Buffer& buf);
+  EqBinary(std::unique_ptr<Eq> _left, std::unique_ptr<Eq> _right)
+      : left(std::move(_left))
+      , right(std::move(_right))
+  {
+  }
+  EqBinary(Buffer& buf)
+      : left(std::move(Eq::parse(buf)))
+      , right(std::move(Eq::parse(buf)))
+  {
+  }
+
+  std::unique_ptr<Eq> clone() const final
+  {
+    return std::make_unique<T>(left->clone(), right->clone());
+  }
+
+  std::string to_string() const final
+  {
+    return "({} {} {})"_format(*left, op_char, *right);
+  }
+
+  void dump(Buffer& buf) const final
+  {
+    buf << op;
+    left->dump(buf);
+    right->dump(buf);
+  }
 
 protected:
   std::unique_ptr<Eq> left;
   std::unique_ptr<Eq> right;
 };
 
-class EqAdd : public EqBinary
+class EqAdd : public EqBinary<EqAdd, OpCode::Add, '+'>
 {
 public:
-  using EqBinary::EqBinary;
+  using EqBinary<EqAdd, OpCode::Add, '+'>::EqBinary;
+
   uint256_t apply(const Vars& vars) const final;
-  std::string to_string() const final;
-  void dump(Buffer& buf) const final;
 };
 
-class EqSub : public EqBinary
+class EqSub : public EqBinary<EqSub, OpCode::Sub, '-'>
 {
 public:
-  using EqBinary::EqBinary;
+  using EqBinary<EqSub, OpCode::Sub, '-'>::EqBinary;
   uint256_t apply(const Vars& vars) const final;
-  std::string to_string() const final;
-  void dump(Buffer& buf) const final;
 };
 
-class EqMul : public EqBinary
+class EqMul : public EqBinary<EqMul, OpCode::Mul, '*'>
 {
 public:
-  using EqBinary::EqBinary;
+  using EqBinary<EqMul, OpCode::Mul, '*'>::EqBinary;
   uint256_t apply(const Vars& vars) const final;
-  std::string to_string() const final;
-  void dump(Buffer& buf) const final;
 };
 
-class EqDiv : public EqBinary
+class EqDiv : public EqBinary<EqDiv, OpCode::Div, '/'>
 {
 public:
-  using EqBinary::EqBinary;
+  using EqBinary<EqDiv, OpCode::Div, '/'>::EqBinary;
   uint256_t apply(const Vars& vars) const final;
-  std::string to_string() const final;
-  void dump(Buffer& buf) const final;
 };
 
-class EqMod : public EqBinary
+class EqMod : public EqBinary<EqMod, OpCode::Mod, '%'>
 {
 public:
-  using EqBinary::EqBinary;
+  using EqBinary<EqMod, OpCode::Mod, '%'>::EqBinary;
   uint256_t apply(const Vars& vars) const final;
-  std::string to_string() const final;
-  void dump(Buffer& buf) const final;
 };
 
-class EqExp : public EqBinary
+class EqExp : public EqBinary<EqExp, OpCode::Exp, '^'>
 {
 public:
-  using EqBinary::EqBinary;
+  using EqBinary<EqExp, OpCode::Exp, '^'>::EqBinary;
   uint256_t apply(const Vars& vars) const final;
-  std::string to_string() const final;
-  void dump(Buffer& buf) const final;
 };
 
 class EqConstant : public Eq
@@ -165,6 +185,7 @@ public:
   uint256_t apply(const Vars& vars) const final;
   std::string to_string() const final;
   void dump(Buffer& buf) const final;
+  std::unique_ptr<Eq> clone() const final;
 
 private:
   uint256_t constant;
@@ -173,14 +194,41 @@ private:
 class EqVar : public Eq
 {
 public:
-  EqVar(Variable _var)
-      : var(_var)
+  EqVar() {}
+  uint256_t apply(const Vars& vars) const final;
+  std::string to_string() const final;
+  void dump(Buffer& buf) const final;
+  std::unique_ptr<Eq> clone() const final;
+};
+
+class EqPrice : public Eq
+{
+public:
+  EqPrice() {}
+  EqPrice(const ContextKey& _address)
+      : address(_address)
   {
   }
   uint256_t apply(const Vars& vars) const final;
   std::string to_string() const final;
   void dump(Buffer& buf) const final;
+  std::unique_ptr<Eq> clone() const final;
 
-private:
-  Variable var;
+  ContextKey address;
+};
+
+class EqContract : public Eq
+{
+public:
+  EqContract() {}
+  EqContract(const ContextKey& _address)
+      : address(_address)
+  {
+  }
+  uint256_t apply(const Vars& vars) const final;
+  std::string to_string() const final;
+  void dump(Buffer& buf) const final;
+  std::unique_ptr<Eq> clone() const final;
+
+  ContextKey address;
 };

@@ -114,3 +114,21 @@ inline Buffer& operator>>(Buffer& buf, uint256_t& val)
   varint_decode(buf, val);
   return buf;
 }
+
+inline Buffer& operator<<(Buffer& buf, const bool val)
+{
+  uint8_t v = val ? 1 : 0;
+  return buf << v;
+}
+
+inline Buffer& operator>>(Buffer& buf, bool& val)
+{
+  uint8_t tmp_val;
+  buf >> tmp_val;
+
+  if (tmp_val > 1)
+    throw Error("Boolean variable value must be 0 or 1");
+
+  val = (bool)tmp_val;
+  return buf;
+}

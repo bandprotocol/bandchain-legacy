@@ -2,8 +2,7 @@
 
 #include "crypto/ed25519.h"
 #include "store/account.h"
-#include "store/ccontract.h"
-#include "store/pcontract.h"
+#include "store/contract.h"
 #include "util/bytes.h"
 
 Handler::Handler(Context& _ctx)
@@ -23,17 +22,15 @@ void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash)
     case TxMsg::ID:
       apply_tx(addr, buf.read_all<TxMsg>(), tx_hash);
       break;
-    case CreateCCMsg::ID:
-      apply_createCC(addr, buf.read_all<CreateCCMsg>(), tx_hash);
+    case CreateContractMsg::ID:
+      apply_create_contract(addr, buf.read_all<CreateContractMsg>(), tx_hash);
       break;
-    case PurchaseCTMsg::ID:
-      apply_purchaseCT(addr, buf.read_all<PurchaseCTMsg>(), tx_hash);
+    case PurchaseContractMsg::ID:
+      apply_purchase_contract(addr, buf.read_all<PurchaseContractMsg>(),
+                              tx_hash);
       break;
-    case SellCTMsg::ID:
-      apply_sellCT(addr, buf.read_all<SellCTMsg>(), tx_hash);
-      break;
-    case CreatePCMsg::ID:
-      apply_createPC(addr, buf.read_all<CreatePCMsg>(), tx_hash);
+    case SellContractMsg::ID:
+      apply_sell_contract(addr, buf.read_all<SellContractMsg>(), tx_hash);
       break;
     default:
       throw Error("Invalid MsgID {}", uint16_t(hdr.msgid));
@@ -43,7 +40,7 @@ void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash)
 void Handler::apply_mint(const Address& addr, const MintMsg& mint_msg,
                          const Hash& tx_hash)
 {
-  auto account = ctx.get_or_create<Account>(addr);
+  auto& account = ctx.get_or_create<Account>(addr);
 
   // Compute the new balance.
   const uint256_t new_balance =
@@ -59,8 +56,8 @@ void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg,
   if (addr == tx_msg.dest)
     throw Error("Cannot send token from/to the same address");
 
-  auto account_source = ctx.get_as<Account>(addr);
-  auto account_dest = ctx.get_or_create<Account>(tx_msg.dest);
+  auto& account_source = ctx.get_as<Account>(addr);
+  auto& account_dest = ctx.get_or_create<Account>(tx_msg.dest);
 
   // Compute the new balances.
   const uint256_t new_source_balance =
@@ -73,100 +70,108 @@ void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg,
   account_dest.set_balance(tx_msg.token_key, new_dest_balance);
 }
 
-void Handler::apply_createCC(const Address& addr,
-                             const CreateCCMsg& create_cc_msg,
-                             const Hash& tx_hash)
+void Handler::apply_create_contract(const Address& addr,
+                                    const CreateContractMsg& cc_msg,
+                                    const Hash& tx_hash)
 {
   ContractID contractID = tx_hash.prefix<ContractID::Size>();
-  CommunityContract contract(ctx, contractID);
-  contract.create(create_cc_msg.curve);
-  contract.set_max_supply(create_cc_msg.max_supply);
+  ctx.create<Contract>(contractID, cc_msg.revenue_id, cc_msg.curve,
+                       cc_msg.max_supply, cc_msg.is_transferable,
+                       cc_msg.is_discountable, cc_msg.beneficiary);
 }
 
-void Handler::apply_purchaseCT(const Address& addr,
-                               const PurchaseCTMsg& pct_msg,
-                               const Hash& tx_hash)
+void Handler::apply_purchase_contract(const Address& addr,
+                                      const PurchaseContractMsg& pct_msg,
+                                      const Hash& tx_hash)
 {
-  auto account = ctx.get_as<Account>(addr);
-  CommunityContract contract(ctx, pct_msg.contract_id);
+  auto& account = ctx.get_as<Account>(addr);
+  auto& contract = ctx.get_as<Contract>(pct_msg.contract_id);
 
   const uint256_t remain_tokens =
-      contract.get_max_supply() - contract.get_current_supply();
+      contract.get_max_supply() - contract.get_total_supply();
 
   if (remain_tokens < pct_msg.value) {
     throw Error("There aren't tokens enough to sell");
   }
   // Compute price of tokens
-  const uint256_t current_supply = contract.get_current_supply();
-  const uint256_t buy_price =
-      contract.get_buy_price(current_supply + pct_msg.value) -
-      contract.get_buy_price(current_supply);
+  const uint256_t circulating_supply = contract.get_circulating_supply();
+
+  const uint256_t new_circulating_supply = circulating_supply + pct_msg.value;
+
+  const uint256_t buy_price = contract.get_buy_price(new_circulating_supply) -
+                              contract.get_buy_price(circulating_supply);
+  const uint256_t sell_price = contract.get_sell_price(new_circulating_supply) -
+                               contract.get_sell_price(circulating_supply);
 
   // Check price with band_limit
-  if (buy_price > pct_msg.band_limit) {
+  if (buy_price > pct_msg.price_limit) {
     throw Error("Price for purchasing these community token ({}) is more than "
                 "band_limit ({}), so you cannot purchase this number of tokens",
-                buy_price, pct_msg.band_limit);
+                buy_price, pct_msg.price_limit);
   }
 
-  const uint256_t new_account_band_balance =
-      account.get_band_balance() - buy_price;
-  const uint256_t new_account_ct_balance =
+  // TODO: Create revenue class and get base contract_id
+  ContractID base_contract_id =
+      ContractID::from_hex("0000000000000000000000000000000000000000");
+
+  const uint256_t new_account_base_balance =
+      account.get_balance(base_contract_id) - buy_price;
+  const uint256_t new_account_out_balance =
       account.get_balance(pct_msg.contract_id) + pct_msg.value;
-  const uint256_t new_current_supply = current_supply + pct_msg.value;
 
-  const uint256_t sell_price = contract.get_sell_price(new_current_supply) -
-                               contract.get_sell_price(current_supply);
-  const uint256_t profit_from_this = buy_price - sell_price;
+  const uint256_t new_total_supply =
+      contract.get_total_supply() + pct_msg.value;
 
-  const uint256_t new_current_profit =
-      contract.get_current_profit() + profit_from_this;
+  const uint256_t spread_price = buy_price - sell_price;
+
+  auto& beneficiary = ctx.get_as<Account>(contract.get_beneficiary());
 
   // Update the information
-  account.set_band_balance(new_account_band_balance);
-  account.set_balance(pct_msg.contract_id, new_account_ct_balance);
-  contract.set_current_supply(new_current_supply);
-  contract.set_current_profit(new_current_profit);
+  account.set_balance(base_contract_id, new_account_base_balance);
+  account.set_balance(pct_msg.contract_id, new_account_out_balance);
+
+  const uint256_t new_beneficiary_balance =
+      beneficiary.get_balance(base_contract_id) + spread_price;
+
+  beneficiary.set_balance(base_contract_id, new_beneficiary_balance);
+
+  contract.set_circulating_supply(new_circulating_supply);
+  contract.set_total_supply(new_total_supply);
 }
 
-void Handler::apply_sellCT(const Address& addr, const SellCTMsg& sct_msg,
-                           const Hash& tx_hash)
+void Handler::apply_sell_contract(const Address& addr,
+                                  const SellContractMsg& sct_msg,
+                                  const Hash& tx_hash)
 {
-  auto account = ctx.get_as<Account>(addr);
-  CommunityContract contract(ctx, sct_msg.contract_id);
+  auto& account = ctx.get_as<Account>(addr);
+  auto& contract = ctx.get_as<Contract>(sct_msg.contract_id);
 
   // Compute price of tokens
-  const uint256_t current_supply = contract.get_current_supply();
-  const uint256_t sell_price =
-      contract.get_sell_price(current_supply) -
-      contract.get_sell_price(current_supply - sct_msg.value);
+  const uint256_t circulating_supply = contract.get_circulating_supply();
+  const uint256_t new_circulating_supply = circulating_supply - sct_msg.value;
+  const uint256_t new_total_supply =
+      contract.get_total_supply() - sct_msg.value;
 
+  const uint256_t sell_price = contract.get_sell_price(circulating_supply) -
+                               contract.get_sell_price(new_circulating_supply);
+
+  // TODO: Read from revenue
+  const ContractID contract_id{};
   // Check price with minimum band
-  if (sell_price < sct_msg.band_limit) {
+  if (sell_price < sct_msg.price_limit) {
     throw Error("Now price({}) is lower than your minimum band that you want "
-                "to sell ({}), so your sell request isn't processed.",
-                sell_price, sct_msg.band_limit);
+                "to sell({}), so your sell request isn't processed.",
+                sell_price, sct_msg.price_limit);
   }
-  const uint256_t new_account_band_balance =
-      account.get_band_balance() + sell_price;
-  const uint256_t new_account_ct_balance =
+  const uint256_t new_account_base_balance =
+      account.get_balance(contract_id) + sell_price;
+  const uint256_t new_account_out_balance =
       account.get_balance(sct_msg.contract_id) - sct_msg.value;
-  const uint256_t new_current_supply = current_supply - sct_msg.value;
 
   // Update the information
-  account.set_band_balance(new_account_band_balance);
-  account.set_balance(sct_msg.contract_id, new_account_ct_balance);
-  contract.set_current_supply(new_current_supply);
-}
+  account.set_balance(contract_id, new_account_base_balance);
+  account.set_balance(sct_msg.contract_id, new_account_out_balance);
 
-void Handler::apply_createPC(const Address& addr,
-                             const CreatePCMsg& create_pc_msg,
-                             const Hash& tx_hash)
-{
-  ContractID contractID = tx_hash.prefix<ContractID::Size>();
-  ProductContract contract(ctx, contractID);
-  contract.create(create_pc_msg.curve, create_pc_msg.community_contract_id);
-  contract.set_max_supply(create_pc_msg.max_supply);
-
-  // TODO: other options
+  contract.set_circulating_supply(new_circulating_supply);
+  contract.set_total_supply(new_total_supply);
 }

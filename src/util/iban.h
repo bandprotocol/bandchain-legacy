@@ -7,7 +7,7 @@
 template <int SIZE>
 class Bytes;
 
-BETTER_ENUM(IBANType, char, Account = 'A', Token = 'C')
+BETTER_ENUM(IBANType, char, Account = 'A', Contract = 'C', Price = 'P', Revenue = 'R')
 
 class IBAN
 {

@@ -15,6 +15,12 @@ uint256_t pow(uint256_t l, uint256_t r)
 
 } // namespace
 
+Curve::Curve(const Curve& _curve)
+    : equation(_curve.equation->clone())
+    , price_spread(_curve.price_spread)
+{
+}
+
 Curve::~Curve() {}
 
 uint256_t Curve::apply_buy(const Vars& vars) const
@@ -30,8 +36,7 @@ uint256_t Curve::apply_sell(const Vars& vars) const
     throw Error("Equation hasn't been set");
 
   uint256_t price_buy = apply_buy(vars);
-  return price_spread.get_sell_price(price_buy,
-                                     vars.get_value(Variable::Supply));
+  return price_spread.get_sell_price(price_buy, vars.get_x());
 }
 
 PriceSpread Curve::get_price_spread() const { return price_spread; }
@@ -113,56 +118,39 @@ std::unique_ptr<Eq> Eq::parse(Buffer& buf)
       buf >> constant;
       return std::make_unique<EqConstant>(constant);
     }
-    case OpCode::Variable: {
-      Variable var;
-      buf >> var;
-      return std::make_unique<EqVar>(var);
+    case OpCode::Variable:
+      return std::make_unique<EqVar>();
+    case OpCode::Contract: {
+      auto eq_contract = std::make_unique<EqContract>();
+      buf >> eq_contract->address;
+      return std::move(eq_contract);
+    }
+    case OpCode::Price: {
+      auto eq_price = std::make_unique<EqPrice>();
+      buf >> eq_price->address;
+      return std::move(eq_price);
     }
   }
   throw Error("Opcode doesn't match any OpCode");
-}
-EqBinary::EqBinary(std::unique_ptr<Eq> _left, std::unique_ptr<Eq> _right)
-    : left(std::move(_left))
-    , right(std::move(_right))
-{
-}
-
-EqBinary::EqBinary(Buffer& buf)
-    : left(std::move(Eq::parse(buf)))
-    , right(std::move(Eq::parse(buf)))
-{
-}
-
-std::string EqAdd::to_string() const
-{
-  return "({} + {})"_format(*left, *right);
-}
-std::string EqSub::to_string() const
-{
-  return "({} - {})"_format(*left, *right);
-}
-std::string EqMul::to_string() const
-{
-  return "({} * {})"_format(*left, *right);
-}
-std::string EqDiv::to_string() const
-{
-  return "({} / {})"_format(*left, *right);
-}
-std::string EqMod::to_string() const
-{
-  return "({} % {})"_format(*left, *right);
-}
-std::string EqExp::to_string() const
-{
-  return "({} ^ {})"_format(*left, *right);
 }
 std::string EqConstant::to_string() const { return "{}"_format(constant); }
 
 std::string EqVar::to_string() const
 {
   // TODO
-  return "Variable";
+  return "x";
+}
+
+std::string EqPrice::to_string() const
+{
+  // TODO
+  return "Price";
+}
+
+std::string EqContract::to_string() const
+{
+  // TODO
+  return "CTPrice";
 }
 
 uint256_t EqAdd::apply(const Vars& vars) const
@@ -199,48 +187,33 @@ uint256_t EqExp::apply(const Vars& vars) const
 
 uint256_t EqConstant::apply(const Vars& vars) const { return constant; }
 
-uint256_t EqVar::apply(const Vars& vars) const { return vars.get_value(var); }
+uint256_t EqVar::apply(const Vars& vars) const { return vars.get_x(); }
 
-void EqAdd::dump(Buffer& buf) const
+uint256_t EqPrice::apply(const Vars& vars) const
 {
-  buf << OpCode::Add;
-  left->dump(buf);
-  right->dump(buf);
+  return vars.get_external_price(address);
 }
 
-void EqSub::dump(Buffer& buf) const
+uint256_t EqContract::apply(const Vars& vars) const
 {
-  buf << OpCode::Sub;
-  left->dump(buf);
-  right->dump(buf);
+  return vars.get_contract_price(address);
 }
 
-void EqMul::dump(Buffer& buf) const
+std::unique_ptr<Eq> EqConstant::clone() const
 {
-  buf << OpCode::Mul;
-  left->dump(buf);
-  right->dump(buf);
+  return std::make_unique<EqConstant>(constant);
 }
 
-void EqDiv::dump(Buffer& buf) const
+std::unique_ptr<Eq> EqVar::clone() const { return std::make_unique<EqVar>(); }
+
+std::unique_ptr<Eq> EqPrice::clone() const
 {
-  buf << OpCode::Div;
-  left->dump(buf);
-  right->dump(buf);
+  return std::make_unique<EqPrice>(address);
 }
 
-void EqMod::dump(Buffer& buf) const
+std::unique_ptr<Eq> EqContract::clone() const
 {
-  buf << OpCode::Mod;
-  left->dump(buf);
-  right->dump(buf);
-}
-
-void EqExp::dump(Buffer& buf) const
-{
-  buf << OpCode::Exp;
-  left->dump(buf);
-  right->dump(buf);
+  return std::make_unique<EqContract>(address);
 }
 
 void EqConstant::dump(Buffer& buf) const
@@ -249,8 +222,16 @@ void EqConstant::dump(Buffer& buf) const
   buf << constant;
 }
 
-void EqVar::dump(Buffer& buf) const
+void EqVar::dump(Buffer& buf) const { buf << OpCode::Variable; }
+
+void EqPrice::dump(Buffer& buf) const
 {
-  buf << OpCode::Variable;
-  buf << var;
+  buf << OpCode::Price;
+  buf << address;
+}
+
+void EqContract::dump(Buffer& buf) const
+{
+  buf << OpCode::Contract;
+  buf << address;
 }

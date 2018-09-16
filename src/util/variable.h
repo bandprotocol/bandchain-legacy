@@ -2,16 +2,11 @@
 
 #include "inc/essential.h"
 
-enum class Variable : uint8_t {
-  Supply = 1,
-  BNDUSD = 2,
-  BNDTHB = 3,
-  CTPrice = 4,
-};
-
 class Vars
 {
 public:
   virtual ~Vars() {}
-  virtual uint256_t get_value(Variable var) const = 0;
+  virtual uint256_t get_x() const = 0;
+  virtual uint256_t get_external_price(const ContextKey& key) const = 0;
+  virtual uint256_t get_contract_price(const ContextKey& key) const = 0;
 };

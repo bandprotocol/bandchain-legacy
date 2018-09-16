@@ -11,11 +11,9 @@ struct MsgID {
     Unset = 0,
     Mint = 1,
     Tx = 2,
-    CreateCC = 3,
-    PurchaseCT = 4,
-    SellCT = 5,
-    CreatePC = 6,
-    PurchasePT = 7,
+    CreateContract = 3,
+    PurchaseContract = 4,
+    SellContract = 5,
   };
 };
 
@@ -79,86 +77,60 @@ struct TxMsg : BaseMsg<MsgID::Tx> {
   }
 };
 
-/// CreateCCMsg allows anyone to create new community contract by initializing
-/// bonding curve equation.
-struct CreateCCMsg : BaseMsg<MsgID::CreateCC> {
+/// CreateContractMsg allows anyone to create new contract by initializing
+/// bonding curve equation and revenue id to collect revenue from redeem token.
+struct CreateContractMsg : BaseMsg<MsgID::CreateContract> {
+  ContextKey revenue_id{};
   Curve curve;
   uint256_t max_supply{};
+  bool is_transferable{};
+  bool is_discountable{};
+  Address beneficiary{};
 
-  friend Buffer& operator<<(Buffer& buf, const CreateCCMsg& msg)
+  friend Buffer& operator<<(Buffer& buf, const CreateContractMsg& msg)
   {
-    return buf << msg.curve << msg.max_supply;
+    return buf << msg.revenue_id << msg.curve << msg.max_supply
+               << msg.is_transferable << msg.is_discountable << msg.beneficiary;
   }
 
-  friend Buffer& operator>>(Buffer& buf, CreateCCMsg& msg)
+  friend Buffer& operator>>(Buffer& buf, CreateContractMsg& msg)
   {
-    return buf >> msg.curve >> msg.max_supply;
+    return buf >> msg.revenue_id >> msg.curve >> msg.max_supply >>
+           msg.is_transferable >> msg.is_discountable >> msg.beneficiary;
   }
 };
 
-/// PurchaseCTMsg allows anyone to purchase community tokens from contractID
-struct PurchaseCTMsg : BaseMsg<MsgID::PurchaseCT> {
+/// PurchaseContractMsg allows anyone to purchase token(s) from contract.
+struct PurchaseContractMsg : BaseMsg<MsgID::PurchaseContract> {
   ContractID contract_id{};
-  uint256_t value{};
-  uint256_t band_limit{};
-
-  friend Buffer& operator<<(Buffer& buf, const PurchaseCTMsg& msg)
-  {
-    return buf << msg.contract_id << msg.value << msg.band_limit;
-  }
-
-  friend Buffer& operator>>(Buffer& buf, PurchaseCTMsg& msg)
-  {
-    return buf >> msg.contract_id >> msg.value >> msg.band_limit;
-  }
-};
-
-/// SellCTMsg allows anyone to sell community token and take band back.
-struct SellCTMsg : BaseMsg<MsgID::SellCT> {
-  ContractID contract_id{};
-  uint256_t value{};
-  uint256_t band_limit{};
-
-  friend Buffer& operator<<(Buffer& buf, const SellCTMsg& msg)
-  {
-    return buf << msg.contract_id << msg.value << msg.band_limit;
-  }
-
-  friend Buffer& operator>>(Buffer& buf, SellCTMsg& msg)
-  {
-    return buf >> msg.contract_id >> msg.value >> msg.band_limit;
-  }
-};
-
-/// CreateMsg allows community manager to create new product contract by
-/// initializing bonding curve equation and community contract id.
-struct CreatePCMsg : BaseMsg<MsgID::CreatePC> {
-  Curve curve;
-  uint256_t max_supply{};
-  ContractID community_contract_id{};
-
-  friend Buffer& operator<<(Buffer& buf, const CreatePCMsg& msg)
-  {
-    return buf << msg.curve << msg.max_supply << msg.community_contract_id;
-  }
-
-  friend Buffer& operator>>(Buffer& buf, CreatePCMsg& msg)
-  {
-    return buf >> msg.curve >> msg.max_supply >> msg.community_contract_id;
-  }
-};
-
-struct PurchasePTMsg : BaseMsg<MsgID::PurchasePT> {
   uint256_t value{};
   uint256_t price_limit{};
 
-  friend Buffer& operator<<(Buffer& buf, const PurchasePTMsg& msg)
+  friend Buffer& operator<<(Buffer& buf, const PurchaseContractMsg& msg)
   {
-    return buf << msg.value << msg.price_limit;
+    return buf << msg.contract_id << msg.value << msg.price_limit;
   }
 
-  friend Buffer& operator>>(Buffer& buf, PurchasePTMsg& msg)
+  friend Buffer& operator>>(Buffer& buf, PurchaseContractMsg& msg)
   {
-    return buf >> msg.value >> msg.price_limit;
+    return buf >> msg.contract_id >> msg.value >> msg.price_limit;
+  }
+};
+
+/// SellContractMsg allows anyone to sell token(s) and take "base" token(s)
+/// back.
+struct SellContractMsg : BaseMsg<MsgID::SellContract> {
+  ContractID contract_id{};
+  uint256_t value{};
+  uint256_t price_limit{};
+
+  friend Buffer& operator<<(Buffer& buf, const SellContractMsg& msg)
+  {
+    return buf << msg.contract_id << msg.value << msg.price_limit;
+  }
+
+  friend Buffer& operator>>(Buffer& buf, SellContractMsg& msg)
+  {
+    return buf >> msg.contract_id >> msg.value >> msg.price_limit;
   }
 };

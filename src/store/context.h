@@ -6,6 +6,8 @@
 class Object
 {
 public:
+  Object(const Object&) = delete;
+
   Object(const ContextKey& _key)
       : key(_key)
   {

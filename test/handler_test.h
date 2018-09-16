@@ -6,7 +6,6 @@
 // #include "crypto/ed25519.h"
 // #include "store/account.h"
 // #include "store/context_map.h"
-// #include "store/pcontract.h"
 // #include "util/buffer.h"
 // #include "util/equation.h"
 // #include "util/iban.h"
@@ -208,7 +207,8 @@
 //     ProductContract contract(ctx, contract_id);
 
 //     TS_ASSERT_EQUALS(
-//         IBAN("BX56 DCF2 D2NN MAJ4 N75J PK48 FLTX S9UJ JG6S", IBANType::Token)
+//         IBAN("BX56 DCF2 D2NN MAJ4 N75J PK48 FLTX S9UJ JG6S",
+//         IBANType::Contract)
 //             .as_addr(),
 //         contract.get_community_contract());
 
