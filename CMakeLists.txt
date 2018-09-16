@@ -15,6 +15,7 @@ find_package(RocksDB REQUIRED)
 include_directories(3pc/spdlog-0.17.0/include)
 include_directories(3pc/gsl-0cebbd7/include)
 include_directories(3pc/json-3.1.2/include)
+include_directories(3pc/better-enum-0.11.1/include)
 include_directories(. src test)
 
 

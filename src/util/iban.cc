@@ -81,11 +81,9 @@ IBAN::IBAN(const std::string& iban_string, IBANType iban_type)
   if (prefix[1] != 'X')
     throw Error("IBAN has invalid country code");
 
-  if (iban_type == IBANType::Account && prefix[0] != 'A')
-    throw Error("Account IBAN must have country code AX");
-
-  if (iban_type == IBANType::Token && prefix[0] != 'B')
-    throw Error("Token IBAN must have country code BX");
+  if (prefix[0] != iban_type._to_integral())
+    throw Error("IBAN has invalid prefix type {} (expect {})", prefix[0],
+                iban_type._to_integral());
 
   if (compute_remainder(account, prefix) != 1)
     throw Error("Invalid IBAN checksum");
@@ -93,7 +91,7 @@ IBAN::IBAN(const std::string& iban_string, IBANType iban_type)
 
 IBAN::IBAN(const Address& addr, IBANType iban_type)
 {
-  prefix[0] = iban_type == IBANType::Account ? 'A' : 'B';
+  prefix[0] = iban_type._to_integral();
   prefix[1] = 'X';
 
   uint256_t addr_value;

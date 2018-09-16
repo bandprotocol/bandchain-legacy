@@ -1,14 +1,13 @@
 #pragma once
 
+#include <enum/enum.h>
+
 #include "inc/essential.h"
 
 template <int SIZE>
 class Bytes;
 
-enum class IBANType {
-  Account,
-  Token,
-};
+BETTER_ENUM(IBANType, char, Account = 'A', Token = 'C')
 
 class IBAN
 {
