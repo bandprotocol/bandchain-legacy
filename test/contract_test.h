@@ -6,37 +6,6 @@
 #include "store/contract.h"
 #include "util/equation.h"
 
-using eq_ptr = std::unique_ptr<Eq>;
-
-namespace
-{
-eq_ptr get_default_equation()
-{
-  // x^3 -3x^2 + 2x - 7
-  eq_ptr x = std::make_unique<EqVar>();
-  eq_ptr c = std::make_unique<EqConstant>(3);
-  eq_ptr x3 = std::make_unique<EqExp>(std::move(x), std::move(c));
-
-  x = std::make_unique<EqVar>();
-  c = std::make_unique<EqConstant>(2);
-  x = std::make_unique<EqExp>(std::move(x), std::move(c));
-  c = std::make_unique<EqConstant>(3);
-  x = std::make_unique<EqMul>(std::move(c), std::move(x));
-  x3 = std::make_unique<EqSub>(std::move(x3), std::move(x));
-
-  x = std::make_unique<EqVar>();
-  c = std::make_unique<EqConstant>(2);
-  x = std::make_unique<EqMul>(std::move(c), std::move(x));
-  x3 = std::make_unique<EqAdd>(std::move(x3), std::move(x));
-
-  c = std::make_unique<EqConstant>(7);
-  x3 = std::make_unique<EqSub>(std::move(x3), std::move(c));
-
-  return x3;
-}
-
-} // namespace
-
 class TempVarsContract : public Vars
 {
 public:
@@ -55,6 +24,8 @@ public:
 class ProductContractTest : public CxxTest::TestSuite
 {
 public:
+  using eq_ptr = std::unique_ptr<Eq>;
+
   void testCreatePC()
   {
     ContextMap ctx;
@@ -75,8 +46,34 @@ public:
 
     auto& contract2 = ctx.get<Contract>(contract_id);
 
-    TS_ASSERT_EQUALS(revenue_id, contract2.get_revenue_id());
+    TS_ASSERT_EQUALS(revenue_id, contract2.revenue_id);
 
-    TS_ASSERT_EQUALS(300, contract2.get_max_supply());
+    TS_ASSERT_EQUALS(300, contract2.max_supply);
+  }
+
+private:
+  eq_ptr get_default_equation()
+  {
+    // x^3 -3x^2 + 2x - 7
+    eq_ptr x = std::make_unique<EqVar>();
+    eq_ptr c = std::make_unique<EqConstant>(3);
+    eq_ptr x3 = std::make_unique<EqExp>(std::move(x), std::move(c));
+
+    x = std::make_unique<EqVar>();
+    c = std::make_unique<EqConstant>(2);
+    x = std::make_unique<EqExp>(std::move(x), std::move(c));
+    c = std::make_unique<EqConstant>(3);
+    x = std::make_unique<EqMul>(std::move(c), std::move(x));
+    x3 = std::make_unique<EqSub>(std::move(x3), std::move(x));
+
+    x = std::make_unique<EqVar>();
+    c = std::make_unique<EqConstant>(2);
+    x = std::make_unique<EqMul>(std::move(c), std::move(x));
+    x3 = std::make_unique<EqAdd>(std::move(x3), std::move(x));
+
+    c = std::make_unique<EqConstant>(7);
+    x3 = std::make_unique<EqSub>(std::move(x3), std::move(c));
+
+    return x3;
   }
 };

@@ -17,6 +17,8 @@ public:
 
   virtual ~Object() {}
 
+  virtual void debug_save() const = 0;
+
   template <typename T>
   T* as()
   {
@@ -26,6 +28,7 @@ public:
     return result;
   }
 
+public:
   const ContextKey key;
 };
 

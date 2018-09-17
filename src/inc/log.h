@@ -6,8 +6,11 @@
 class logger
 {
 public:
-  static std::shared_ptr<spdlog::logger> get(const std::string& ident)
+  static std::shared_ptr<spdlog::logger> get(std::string ident)
   {
+    ident.insert(ident.begin(), (11 - ident.size()) / 2, ' ');
+    ident.insert(ident.end(), 10 - ident.size(), ' ');
+
     auto log = spdlog::get(ident);
     if (log) {
       return log;

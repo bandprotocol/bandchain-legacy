@@ -79,44 +79,34 @@ void Handler::apply_purchase_contract(const Address& addr,
 {
   auto& account = ctx.get<Account>(addr);
   auto& contract = ctx.get<Contract>(pct_msg.contract_id);
-  auto& beneficiary = ctx.get<Account>(contract.get_beneficiary());
+  auto& beneficiary = ctx.get<Account>(contract.beneficiary);
 
-  const uint256_t remain_tokens =
-      contract.get_max_supply() - contract.get_total_supply();
-
-  if (remain_tokens < pct_msg.value) {
-    throw Error("There aren't tokens enough to sell");
+  if (contract.max_supply - contract.total_supply < pct_msg.value) {
+    throw Error("There aren't tokens enough for sell");
   }
-  // Compute price of tokens
-  const uint256_t circulating_supply = contract.get_circulating_supply();
 
-  const uint256_t new_circulating_supply = circulating_supply + pct_msg.value;
+  const uint256_t buy_price =
+      contract.get_buy_price(contract.circulating_supply + pct_msg.value) -
+      contract.get_buy_price(contract.circulating_supply);
 
-  const uint256_t buy_price = contract.get_buy_price(new_circulating_supply) -
-                              contract.get_buy_price(circulating_supply);
-  const uint256_t sell_price = contract.get_sell_price(new_circulating_supply) -
-                               contract.get_sell_price(circulating_supply);
+  const uint256_t sell_price =
+      contract.get_sell_price(contract.circulating_supply + pct_msg.value) -
+      contract.get_sell_price(contract.circulating_supply);
 
-  // Check price with band_limit
   if (buy_price > pct_msg.price_limit) {
-    throw Error("Price for purchasing these community token ({}) is more than "
-                "band_limit ({}), so you cannot purchase this number of tokens",
-                buy_price, pct_msg.price_limit);
+    throw Error("Invalid buy price limit {} greater than buy price",
+                pct_msg.price_limit, buy_price);
   }
 
-  // TODO: Create revenue class and get base contract_id
-  ContractID base_contract_id =
-      ContractID::from_hex("0000000000000000000000000000000000000000");
-
-  const uint256_t new_total_supply =
-      contract.get_total_supply() + pct_msg.value;
+  // TODO: Read from revenue
+  const ContractID base_contract_id{};
 
   account[base_contract_id] -= buy_price;
   account[pct_msg.contract_id] += pct_msg.value;
   beneficiary[base_contract_id] += (buy_price - sell_price);
 
-  contract.set_circulating_supply(new_circulating_supply);
-  contract.set_total_supply(new_total_supply);
+  contract.circulating_supply += pct_msg.value;
+  contract.total_supply += pct_msg.value;
 }
 
 void Handler::apply_sell_contract(const Address& addr,
@@ -126,27 +116,21 @@ void Handler::apply_sell_contract(const Address& addr,
   auto& account = ctx.get<Account>(addr);
   auto& contract = ctx.get<Contract>(sct_msg.contract_id);
 
-  // Compute price of tokens
-  const uint256_t circulating_supply = contract.get_circulating_supply();
-  const uint256_t new_circulating_supply = circulating_supply - sct_msg.value;
-  const uint256_t new_total_supply =
-      contract.get_total_supply() - sct_msg.value;
-
-  const uint256_t sell_price = contract.get_sell_price(circulating_supply) -
-                               contract.get_sell_price(new_circulating_supply);
+  const uint256_t sell_price =
+      contract.get_sell_price(contract.circulating_supply) -
+      contract.get_sell_price(contract.circulating_supply - sct_msg.value);
 
   // TODO: Read from revenue
   const ContractID base_contract_id{};
-  // Check price with minimum band
+
   if (sell_price < sct_msg.price_limit) {
-    throw Error("Now price({}) is lower than your minimum band that you want "
-                "to sell({}), so your sell request isn't processed.",
-                sell_price, sct_msg.price_limit);
+    throw Error("Invalid sell price limit {} less than sell price {}",
+                sct_msg.price_limit, sell_price);
   }
 
   account[sct_msg.contract_id] -= sct_msg.value;
   account[base_contract_id] += sell_price;
 
-  contract.set_circulating_supply(new_circulating_supply);
-  contract.set_total_supply(new_total_supply);
+  contract.circulating_supply -= sct_msg.value;
+  contract.total_supply -= sct_msg.value;
 }

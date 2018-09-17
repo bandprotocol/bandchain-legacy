@@ -28,6 +28,8 @@ void log_debug_query(std::shared_ptr<spdlog::logger> log,
   log_debug_json_pretty(log, req, "    ");
   DEBUG(log, "  Response:");
   log_debug_json_pretty(log, res, "    ");
+  DEBUG(log, "============================================================"
+             "============================================================");
 }
 } // namespace
 
@@ -88,26 +90,20 @@ json Query::process_community_info(const json& params)
   auto contract_id = IBAN(contract_id_iban, IBANType::Contract).as_addr();
 
   auto& contract = ctx.get<Contract>(contract_id);
-  const std::string equation = contract.get_string_equation();
-  const uint256_t circulating_supply = contract.get_circulating_supply();
-  const uint256_t total_supply = contract.get_total_supply();
-  const uint256_t max_supply = contract.get_max_supply();
   PriceSpread ps = contract.get_price_spread();
-  const ContextKey revenue_id = contract.get_revenue_id();
-
-  const uint8_t is_transferable = contract.get_is_transferable();
-  const uint8_t is_discountable = contract.get_is_discountable();
 
   json response;
-  response["equation"] = equation;
-  response["circulating_supply"] = "{}"_format(circulating_supply);
-  response["total_supply"] = "{}"_format(total_supply);
-  response["max_supply"] = "{}"_format(max_supply);
+  response["equation"] = contract.get_string_equation();
+  response["circulating_supply"] = "{}"_format(contract.circulating_supply);
+  response["total_supply"] = "{}"_format(contract.total_supply);
+  response["max_supply"] = "{}"_format(contract.max_supply);
   response["spread_type"] = ps.get_spread_type()._to_string();
   response["spread_value"] = "{}"_format(ps.get_spread_value());
-  response["revenue_id"] = revenue_id.to_iban_string(IBANType::Revenue);
 
-  response["is_transferable"] = (bool)is_transferable;
-  response["is_discountable"] = (bool)is_discountable;
+  response["revenue_id"] =
+      contract.revenue_id.to_iban_string(IBANType::Revenue);
+
+  response["is_transferable"] = contract.is_transferable;
+  response["is_discountable"] = contract.is_discountable;
   return response;
 }

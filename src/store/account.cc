@@ -13,10 +13,15 @@ Account::Account(const Account& account)
 
 uint256_t& Account::operator[](const TokenKey& token_key)
 {
-  uint256_t& value = balances[token_key];
-  DEBUG(log, "GET_BALANCE:");
+  return balances[token_key];
+}
+
+void Account::debug_save() const
+{
+  DEBUG(log, "SAVE_ACCOUNT:");
   DEBUG(log, "  Account: {}", key.to_iban_string(IBANType::Account));
-  DEBUG(log, "  Token: {}", token_key.to_iban_string(IBANType::Contract));
-  DEBUG(log, "  Value: {}", value);
-  return value;
+  for (auto& [token, value] : balances) {
+    DEBUG(log, "  Token: {}, Value: {}",
+          token.to_iban_string(IBANType::Contract), value);
+  }
 }
