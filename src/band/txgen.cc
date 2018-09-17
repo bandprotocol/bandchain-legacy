@@ -127,11 +127,12 @@ std::string txgen::process_create_contract(const json& params)
   Buffer buf;
   parse_equation(buf, op_codes);
 
-  SpreadType t = SpreadType(
-      uint8_t(std::stoul(params.at("spread_type").get<std::string>())));
-  uint256_t value = uint256_t(params.at("spread_value").get<std::string>());
+  SpreadType spread_type = SpreadType::_from_string(
+      params.at("spread_type").get<std::string>().c_str());
+  uint256_t spread_value =
+      uint256_t(params.at("spread_value").get<std::string>());
 
-  PriceSpread price_spread(t, value);
+  PriceSpread price_spread(spread_type, spread_value);
   buf << price_spread;
   buf >> create_msg.curve;
 

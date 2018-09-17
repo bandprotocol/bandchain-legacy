@@ -6,18 +6,35 @@
 #include "inc/essential.h"
 #include "util/buffer.h"
 
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+template <typename T, typename std::enable_if_t<std::is_enum_v<T>, int> = 0>
 Buffer& operator<<(Buffer& buf, T val)
 {
   return buf << static_cast<std::underlying_type_t<T>>(val);
 }
 
-template <typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+template <typename T, typename std::enable_if_t<std::is_enum_v<T>, int> = 0>
 Buffer& operator>>(Buffer& buf, T& val)
 {
   std::underlying_type_t<T> _val;
   buf >> _val;
   val = T(_val);
+  return buf;
+}
+
+template <typename T, typename std::enable_if_t<
+                          std::is_integral_v<typename T::_integral>, int> = 0>
+Buffer& operator<<(Buffer& buf, T val)
+{
+  return buf << val._to_integral();
+}
+
+template <typename T, typename std::enable_if_t<
+                          std::is_integral_v<typename T::_integral>, int> = 0>
+Buffer& operator>>(Buffer& buf, T& val)
+{
+  typename T::_integral _val;
+  buf >> _val;
+  val = T::_from_integral(_val);
   return buf;
 }
 

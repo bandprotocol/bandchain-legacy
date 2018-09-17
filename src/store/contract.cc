@@ -22,7 +22,7 @@ Contract::Contract(const ContractID& contract_id, const ContextKey& _revenue_id,
         beneficiary.to_iban_string(IBANType::Account));
   DEBUG(log, "  Curve: {}", curve);
   DEBUG(log, "  SpreadType: {}",
-        (uint8_t)curve.get_price_spread().get_spread_type());
+        curve.get_price_spread().get_spread_type()._to_string());
   DEBUG(log, "  SpreadValue: {}", curve.get_price_spread().get_spread_value());
   DEBUG(log, "  MaxSupply: {}", max_supply);
   DEBUG(log, "  Transferable: {}", (bool)is_transferable);

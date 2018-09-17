@@ -1,35 +1,29 @@
 #pragma once
 
+#include <enum/enum.h>
+
 #include "inc/essential.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
 #include "util/endian.h"
 #include "util/variable.h"
 
-enum class OpCode : uint16_t {
-  Add = 1,
-  Sub = 2,
-  Mul = 3,
-  Div = 4,
-  Mod = 5,
-  Exp = 6,
-  Constant = 7,
-  Variable = 8,
-  Price = 9,
-  Contract = 10,
-};
+BETTER_ENUM(OpCode, uint16_t, Unset = 0, Add = 1, Sub = 2, Mul = 3, Div = 4,
+            Mod = 5, Exp = 6, Constant = 7, Variable = 8, Price = 9,
+            Contract = 10)
 
-enum class SpreadType : uint8_t {
-  Constant = 1,
-  Rational = 2,
-};
+BETTER_ENUM(SpreadType, uint8_t, Unset = 0, Constant = 1, Rational = 2)
 
 class Eq;
 
 class PriceSpread
 {
 public:
-  PriceSpread() {}
+  PriceSpread()
+      : spread_type(SpreadType::Unset)
+  {
+  }
+
   PriceSpread(SpreadType _spread_type, uint256_t _spread_value)
       : spread_type(_spread_type)
       , spread_value(_spread_value)
@@ -95,7 +89,7 @@ public:
   static std::unique_ptr<Eq> parse(Buffer& buf);
 };
 
-template <typename T, OpCode op, char op_char>
+template <typename T, OpCode::_enumerated op, char op_char>
 class EqBinary : public Eq
 {
 public:
@@ -105,8 +99,8 @@ public:
   {
   }
   EqBinary(Buffer& buf)
-      : left(std::move(Eq::parse(buf)))
-      , right(std::move(Eq::parse(buf)))
+      : left(Eq::parse(buf))
+      , right(Eq::parse(buf))
   {
   }
 
@@ -136,7 +130,6 @@ class EqAdd : public EqBinary<EqAdd, OpCode::Add, '+'>
 {
 public:
   using EqBinary<EqAdd, OpCode::Add, '+'>::EqBinary;
-
   uint256_t apply(const Vars& vars) const final;
 };
 

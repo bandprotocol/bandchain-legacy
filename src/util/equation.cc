@@ -60,7 +60,7 @@ Buffer& operator<<(Buffer& buf, const Curve& curve)
 
 Buffer& operator>>(Buffer& buf, Curve& curve)
 {
-  curve.equation = std::move(Eq::parse(buf));
+  curve.equation = Eq::parse(buf);
   buf >> curve.price_spread;
   return buf;
 }
@@ -69,18 +69,17 @@ uint256_t PriceSpread::get_sell_price(uint256_t price, uint256_t supply) const
 {
   // Check type constant
   switch (spread_type) {
-    case SpreadType::Constant: {
+    case +SpreadType::Constant: {
       uint256_t dif = spread_value * supply;
       if (price > dif)
         return price - dif;
       else
         return 0;
     }
-    case SpreadType::Rational:
+    case +SpreadType::Rational:
       return spread_value * price / PriceSpread::ratio;
-    default:
-      throw Error("This price spread type {} doesn't match any type in system",
-                  (uint8_t)spread_type);
+    case +SpreadType::Unset:
+      throw Error("Invalid price spread type");
   }
 }
 
@@ -98,40 +97,42 @@ Buffer& operator>>(Buffer& buf, PriceSpread& price_spread)
 
 std::unique_ptr<Eq> Eq::parse(Buffer& buf)
 {
-  OpCode opcode;
+  OpCode opcode(OpCode::Unset);
+
   buf >> opcode;
   switch (opcode) {
-    case OpCode::Add:
+    case +OpCode::Add:
       return std::make_unique<EqAdd>(buf);
-    case OpCode::Sub:
+    case +OpCode::Sub:
       return std::make_unique<EqSub>(buf);
-    case OpCode::Mul:
+    case +OpCode::Mul:
       return std::make_unique<EqMul>(buf);
-    case OpCode::Div:
+    case +OpCode::Div:
       return std::make_unique<EqDiv>(buf);
-    case OpCode::Mod:
+    case +OpCode::Mod:
       return std::make_unique<EqMod>(buf);
-    case OpCode::Exp:
+    case +OpCode::Exp:
       return std::make_unique<EqExp>(buf);
-    case OpCode::Constant: {
+    case +OpCode::Constant: {
       uint256_t constant;
       buf >> constant;
       return std::make_unique<EqConstant>(constant);
     }
-    case OpCode::Variable:
+    case +OpCode::Variable:
       return std::make_unique<EqVar>();
-    case OpCode::Contract: {
+    case +OpCode::Contract: {
       auto eq_contract = std::make_unique<EqContract>();
       buf >> eq_contract->address;
       return std::move(eq_contract);
     }
-    case OpCode::Price: {
+    case +OpCode::Price: {
       auto eq_price = std::make_unique<EqPrice>();
       buf >> eq_price->address;
       return std::move(eq_price);
     }
+    case +OpCode::Unset:
+      throw Error("Unexpected Opcode");
   }
-  throw Error("Opcode doesn't match any OpCode");
 }
 std::string EqConstant::to_string() const { return "{}"_format(constant); }
 

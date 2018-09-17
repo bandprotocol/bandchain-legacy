@@ -6,10 +6,15 @@
 #ifndef BETTER_ENUMS_ENUM_H
 #define BETTER_ENUMS_ENUM_H
 
+#define BETTER_ENUMS_STRICT_CONVERSION
+
 #include <cstddef>
 #include <cstring>
 #include <iosfwd>
 #include <stdexcept>
+
+// BETTER_ENUM is changed to throw Error instead of std::runtime_error
+#include "inc/essential.h"
 
 // Feature detection.
 
@@ -243,10 +248,23 @@
 #define BETTER_ENUMS_ITERATE(X, f, l)                                          \
   X(f, l, 0)                                                                   \
   X(f, l, 1)                                                                   \
-  X(f, l, 2) X(f, l, 3) X(f, l, 4) X(f, l, 5) X(f, l, 6) X(f, l, 7) X(f, l, 8) \
-      X(f, l, 9) X(f, l, 10) X(f, l, 11) X(f, l, 12) X(f, l, 13) X(f, l, 14)   \
-          X(f, l, 15) X(f, l, 16) X(f, l, 17) X(f, l, 18) X(f, l, 19)          \
-              X(f, l, 20) X(f, l, 21) X(f, l, 22) X(f, l, 23)
+  X(f, l, 2)                                                                   \
+  X(f, l, 3)                                                                   \
+  X(f, l, 4)                                                                   \
+  X(f, l, 5)                                                                   \
+  X(f, l, 6)                                                                   \
+  X(f, l, 7)                                                                   \
+  X(f, l, 8)                                                                   \
+  X(f, l, 9)                                                                   \
+  X(f, l, 10)                                                                  \
+  X(f, l, 11)                                                                  \
+  X(f, l, 12)                                                                  \
+  X(f, l, 13)                                                                  \
+  X(f, l, 14)                                                                  \
+  X(f, l, 15)                                                                  \
+  X(f, l, 16)                                                                  \
+  X(f, l, 17)                                                                  \
+  X(f, l, 18) X(f, l, 19) X(f, l, 20) X(f, l, 21) X(f, l, 22) X(f, l, 23)
 
 #endif // #ifdef BETTER_ENUMS_MACRO_FILE else case
 
@@ -310,14 +328,13 @@ _map_index(const Element* array, optional<std::size_t> index)
 
 #define BETTER_ENUMS_OR_THROW                                                  \
   if (!maybe)                                                                  \
-    throw std::runtime_error(message);                                         \
+    throw Error(message);                                                      \
                                                                                \
   return *maybe;
 
 #else
 
-#define BETTER_ENUMS_OR_THROW                                                  \
-  return maybe ? *maybe : throw std::runtime_error(message);
+#define BETTER_ENUMS_OR_THROW return maybe ? *maybe : throw Error(message);
 
 #endif
 

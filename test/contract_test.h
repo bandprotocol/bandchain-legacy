@@ -32,7 +32,7 @@ eq_ptr get_default_equation()
   c = std::make_unique<EqConstant>(7);
   x3 = std::make_unique<EqSub>(std::move(x3), std::move(c));
 
-  return std::move(x3);
+  return x3;
 }
 
 } // namespace

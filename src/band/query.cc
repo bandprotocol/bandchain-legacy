@@ -98,7 +98,7 @@ json Query::process_community_info(const json& params)
   response["circulating_supply"] = "{}"_format(circulating_supply);
   response["total_supply"] = "{}"_format(total_supply);
   response["max_supply"] = "{}"_format(max_supply);
-  response["spread_type"] = "{}"_format((uint8_t)ps.get_spread_type());
+  response["spread_type"] = ps.get_spread_type()._to_string();
   response["spread_value"] = "{}"_format(ps.get_spread_value());
   response["revenue_id"] = revenue_id.to_iban_string(IBANType::Revenue);
 
