@@ -1,5 +1,7 @@
 #include "query.h"
 
+#include <boost/scope_exit.hpp>
+
 #include "band/txgen.h"
 #include "store/account.h"
 #include "store/contract.h"
@@ -38,6 +40,9 @@ Query::Query(Context& _ctx)
 
 std::string Query::process_query(const std::string& raw_data)
 {
+  BOOST_SCOPE_EXIT(&ctx) { ctx.reset(); }
+  BOOST_SCOPE_EXIT_END
+
   auto data = json::parse(raw_data);
   if (!data.is_object())
     throw Error("Invalid query data. Must be JSON object.");
@@ -68,8 +73,8 @@ json Query::process_balance(const json& params)
   auto address = IBAN(address_iban, IBANType::Account).as_addr();
   auto token = IBAN(token_iban, IBANType::Contract).as_addr();
 
-  auto& account = ctx.get_as<Account>(address);
-  const uint256_t balance = account.get_balance(token);
+  auto& account = ctx.get<Account>(address);
+  const uint256_t balance = account[token];
 
   json response;
   response["balance"] = "{}"_format(balance);
@@ -82,7 +87,7 @@ json Query::process_community_info(const json& params)
 
   auto contract_id = IBAN(contract_id_iban, IBANType::Contract).as_addr();
 
-  auto& contract = ctx.get_as<Contract>(contract_id);
+  auto& contract = ctx.get<Contract>(contract_id);
   const std::string equation = contract.get_string_equation();
   const uint256_t circulating_supply = contract.get_circulating_supply();
   const uint256_t total_supply = contract.get_total_supply();

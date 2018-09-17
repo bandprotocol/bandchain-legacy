@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "inc/essential.h"
 #include "util/bytes.h"
 
@@ -16,12 +18,12 @@ public:
   virtual ~Object() {}
 
   template <typename T>
-  T& as()
+  T* as()
   {
     T* result = dynamic_cast<T*>(this);
     if (result == nullptr)
       throw Error("Invalid object cast");
-    return *result;
+    return result;
   }
 
   const ContextKey key;
@@ -32,46 +34,70 @@ class Context
 public:
   virtual ~Context(){};
 
-  // /// Get the current blockchain height.
-  // virtual uint64_t height() const = 0;
-
-  // /// Get the current merkle root of the blockchain.
-  // virtual Hash root() const = 0;
-
-  // /// Commit all changes to persistent data store, and increment the block
-  // /// height by one.
-  // virtual void commit() = 0;
-
-  virtual Object* get(const ContextKey& key) const = 0;
-
-  virtual bool check(const ContextKey& key) const = 0;
-
-  virtual void add(std::unique_ptr<Object> obj) = 0;
+  void reset();
+  void flush();
 
   template <typename T>
-  T& get_as(const ContextKey& key)
+  T& get(const ContextKey& key)
   {
-    return get(key)->as<T>();
-  }
-
-  template <typename T, typename... Args>
-  T& create(const ContextKey& key, Args&&... args)
-  {
-    auto uniq = std::make_unique<T>(key, std::forward<Args>(args)...);
-    auto raw = uniq.get();
-    add(std::move(uniq));
-    return *raw;
+    if (auto ptr = get_context_impl<T>(key); ptr != nullptr)
+      return *ptr;
+    throw Error("ContextKey {} does not exist", key);
   }
 
   template <typename T, typename... Args>
   T& get_or_create(const ContextKey& key, Args&&... args)
   {
-    if (auto ptr = get(key); ptr != nullptr)
-      return ptr->as<T>();
+    if (auto ptr = get_context_impl<T>(key); ptr != nullptr)
+      return *ptr;
+    return create_context_impl<T>(key, std::forward<Args>(args)...);
+  }
 
-    return create<T>(key, std::forward<Args>(args)...);
+  template <typename T, typename... Args>
+  T& create(const ContextKey& key, Args&&... args)
+  {
+    if (auto ptr = get_context_impl<T>(key); ptr != nullptr)
+      throw Error("ContextKey {} already exists", key);
+    return create_context_impl<T>(key, std::forward<Args>(args)...);
+  }
+
+private:
+  template <typename T>
+  T* get_context_impl(const ContextKey& key)
+  {
+    if (auto it = cache.find(key); it != cache.end())
+      return it->second.get()->as<T>();
+
+    auto impl_ptr = get_impl(key);
+    if (impl_ptr == nullptr)
+      return nullptr;
+
+    auto uniq = std::make_unique<T>(*impl_ptr->as<T>());
+    auto raw = uniq.get();
+    cache[key] = std::move(uniq);
+
+    return raw;
+  }
+
+  template <typename T, typename... Args>
+  T& create_context_impl(const ContextKey& key, Args&&... args)
+  {
+    auto uniq = std::make_unique<T>(key, std::forward<Args>(args)...);
+    auto raw = uniq.get();
+    auto [it, ok] = cache.try_emplace(key, std::move(uniq));
+    if (!ok)
+      throw Failure("ContextKey {} already exists in cache", key);
+    return *raw;
   }
 
 protected:
+  /// To be overriden by Context implementation
+  virtual Object* get_impl(const ContextKey& key) const = 0;
+  virtual void add_impl(std::unique_ptr<Object> obj) = 0;
+
+  /// Log instance
   static inline auto log = logger::get("context");
+
+private:
+  std::unordered_map<ContextKey, std::unique_ptr<Object>> cache;
 };

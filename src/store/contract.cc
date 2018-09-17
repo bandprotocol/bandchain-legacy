@@ -29,6 +29,13 @@ Contract::Contract(const ContractID& contract_id, const ContextKey& _revenue_id,
   DEBUG(log, "  Discountable: {}", (bool)is_discountable);
 }
 
+Contract::Contract(const Contract& contract)
+    : Contract(contract.key, contract.revenue_id, contract.curve,
+               contract.max_supply, contract.is_transferable,
+               contract.is_discountable, contract.beneficiary)
+{
+}
+
 ContextKey Contract::get_revenue_id() const { return revenue_id; }
 
 std::string Contract::get_string_equation() const { return curve.to_string(); }

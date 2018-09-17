@@ -73,7 +73,7 @@ public:
     ctx.create<Contract>(contract_id, revenue_id, curve, 300, 0, 1,
                          benificiary);
 
-    auto& contract2 = ctx.get_as<Contract>(contract_id);
+    auto& contract2 = ctx.get<Contract>(contract_id);
 
     TS_ASSERT_EQUALS(revenue_id, contract2.get_revenue_id());
 

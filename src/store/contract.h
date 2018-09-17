@@ -14,6 +14,8 @@ public:
            uint8_t _is_transferable, uint8_t _is_discountable,
            const Address& _beneficiary);
 
+  Contract(const Contract& contract);
+
   ContextKey get_revenue_id() const;
 
   // Get the (readable) equation string of this community contract.
