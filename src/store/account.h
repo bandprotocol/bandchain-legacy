@@ -13,6 +13,7 @@ public:
 
   uint256_t& operator[](const TokenKey& token_key);
 
+  void debug_create() const;
   void debug_save() const;
 
 private:

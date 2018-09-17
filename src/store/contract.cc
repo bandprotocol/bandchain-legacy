@@ -45,9 +45,9 @@ uint256_t Contract::get_sell_price(const uint256_t& token_supply) const
   return curve.apply_sell(vars);
 }
 
-void Contract::debug_save() const
+void Contract::debug_create() const
 {
-  DEBUG(log, "SAVE_CONTRACT:");
+  DEBUG(log, "CREATE_CONTRACT:");
   DEBUG(log, "  ContractID: {}", key.to_iban_string(IBANType::Contract));
   DEBUG(log, "  RevenueID: {}", revenue_id.to_iban_string(IBANType::Revenue));
   DEBUG(log, "  Beneficiary: {}",
@@ -59,6 +59,12 @@ void Contract::debug_save() const
   DEBUG(log, "  MaxSupply: {}", max_supply);
   DEBUG(log, "  Transferable: {}", is_transferable);
   DEBUG(log, "  Discountable: {}", is_discountable);
+}
+
+void Contract::debug_save() const
+{
+  DEBUG(log, "SAVE_CONTRACT:");
+  DEBUG(log, "  ContractID: {}", key.to_iban_string(IBANType::Contract));
   DEBUG(log, "  CirculatingSupply: {}", circulating_supply);
   DEBUG(log, "  TotalSupply: {}", total_supply);
 }

@@ -23,6 +23,7 @@ public:
 
   uint256_t get_sell_price(const uint256_t& token_supply) const;
 
+  void debug_create() const;
   void debug_save() const;
 
 public:

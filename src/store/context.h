@@ -17,6 +17,7 @@ public:
 
   virtual ~Object() {}
 
+  virtual void debug_create() const = 0;
   virtual void debug_save() const = 0;
 
   template <typename T>
@@ -86,6 +87,8 @@ private:
   T& create_context_impl(const ContextKey& key, Args&&... args)
   {
     auto uniq = std::make_unique<T>(key, std::forward<Args>(args)...);
+    uniq->debug_create();
+
     auto raw = uniq.get();
     auto [it, ok] = cache.try_emplace(key, std::move(uniq));
     if (!ok)
