@@ -64,9 +64,10 @@ void TendermintApplication::do_query(const RequestQuery& req,
   }
 }
 
-void TendermintApplication::do_begin_block(const RequestBeginBlock&)
+void TendermintApplication::do_begin_block(const RequestBeginBlock& req)
 {
   // TODO: Penalize missing validators
+  current_timestamp = req.header().time();
 }
 
 void TendermintApplication::do_check_tx(const RequestCheckTx& req,

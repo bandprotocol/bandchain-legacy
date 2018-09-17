@@ -10,27 +10,30 @@ Handler::Handler(Context& _ctx)
 {
 }
 
-void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash)
+void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash,
+                            int64_t timestamp)
 {
   // Convert the verify key into the sender's address.
   const Address addr = ed25519_vk_to_addr(hdr.vk);
 
   switch (hdr.msgid) {
     case MintMsg::ID:
-      apply_mint(addr, buf.read_all<MintMsg>(), tx_hash);
+      apply_mint(addr, buf.read_all<MintMsg>(), tx_hash, timestamp);
       break;
     case TxMsg::ID:
-      apply_tx(addr, buf.read_all<TxMsg>(), tx_hash);
+      apply_tx(addr, buf.read_all<TxMsg>(), tx_hash, timestamp);
       break;
     case CreateContractMsg::ID:
-      apply_create_contract(addr, buf.read_all<CreateContractMsg>(), tx_hash);
+      apply_create_contract(addr, buf.read_all<CreateContractMsg>(), tx_hash,
+                            timestamp);
       break;
     case PurchaseContractMsg::ID:
       apply_purchase_contract(addr, buf.read_all<PurchaseContractMsg>(),
-                              tx_hash);
+                              tx_hash, timestamp);
       break;
     case SellContractMsg::ID:
-      apply_sell_contract(addr, buf.read_all<SellContractMsg>(), tx_hash);
+      apply_sell_contract(addr, buf.read_all<SellContractMsg>(), tx_hash,
+                          timestamp);
       break;
     default:
       throw Error("Invalid MsgID {}", uint16_t(hdr.msgid));
@@ -38,7 +41,7 @@ void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash)
 }
 
 void Handler::apply_mint(const Address& addr, const MintMsg& mint_msg,
-                         const Hash& tx_hash)
+                         const Hash& tx_hash, int64_t timestamp)
 {
   auto& account = ctx.get_or_create<Account>(addr);
 
@@ -51,7 +54,7 @@ void Handler::apply_mint(const Address& addr, const MintMsg& mint_msg,
 }
 
 void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg,
-                       const Hash& tx_hash)
+                       const Hash& tx_hash, int64_t timestamp)
 {
   if (addr == tx_msg.dest)
     throw Error("Cannot send token from/to the same address");
@@ -72,7 +75,7 @@ void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg,
 
 void Handler::apply_create_contract(const Address& addr,
                                     const CreateContractMsg& cc_msg,
-                                    const Hash& tx_hash)
+                                    const Hash& tx_hash, int64_t timestamp)
 {
   ContractID contractID = tx_hash.prefix<ContractID::Size>();
   ctx.create<Contract>(contractID, cc_msg.revenue_id, cc_msg.curve,
@@ -82,7 +85,7 @@ void Handler::apply_create_contract(const Address& addr,
 
 void Handler::apply_purchase_contract(const Address& addr,
                                       const PurchaseContractMsg& pct_msg,
-                                      const Hash& tx_hash)
+                                      const Hash& tx_hash, int64_t timestamp)
 {
   auto& account = ctx.get_as<Account>(addr);
   auto& contract = ctx.get_as<Contract>(pct_msg.contract_id);
@@ -141,7 +144,7 @@ void Handler::apply_purchase_contract(const Address& addr,
 
 void Handler::apply_sell_contract(const Address& addr,
                                   const SellContractMsg& sct_msg,
-                                  const Hash& tx_hash)
+                                  const Hash& tx_hash, int64_t timestamp)
 {
   auto& account = ctx.get_as<Account>(addr);
   auto& contract = ctx.get_as<Contract>(sct_msg.contract_id);

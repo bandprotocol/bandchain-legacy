@@ -32,6 +32,9 @@ public:
 protected:
   uint64_t last_block_height = 0;
 
+  /// The timestamp of the current block to apply, as provided by Tendermint.
+  int64_t current_timestamp = 0;
+
 private:
   /// Return Tendermint version that this app supports.
   std::string get_tm_version() { return "0.22.3-2aa2b63c"; }
