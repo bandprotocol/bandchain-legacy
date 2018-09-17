@@ -8,7 +8,7 @@
 class VarsContext : public Vars
 {
 public:
-  VarsContext(uint256_t _x);
+  VarsContext(const uint256_t& _x);
   uint256_t get_x() const final;
   uint256_t get_external_price(const ContextKey& key) const final;
   uint256_t get_contract_price(const ContextKey& key) const final;

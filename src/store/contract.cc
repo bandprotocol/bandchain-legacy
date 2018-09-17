@@ -69,13 +69,13 @@ uint8_t Contract::get_is_discountable() const { return is_discountable; }
 
 Address Contract::get_beneficiary() const { return beneficiary; }
 
-uint256_t Contract::get_buy_price(uint256_t token_supply) const
+uint256_t Contract::get_buy_price(const uint256_t& token_supply) const
 {
   VarsContext vars(token_supply);
   return curve.apply_buy(vars);
 }
 
-uint256_t Contract::get_sell_price(uint256_t token_supply) const
+uint256_t Contract::get_sell_price(const uint256_t& token_supply) const
 {
   VarsContext vars(token_supply);
   return curve.apply_sell(vars);

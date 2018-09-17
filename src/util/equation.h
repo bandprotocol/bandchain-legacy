@@ -36,7 +36,8 @@ public:
   friend Buffer& operator>>(Buffer& buf, PriceSpread& price_spread);
   friend Buffer& operator<<(Buffer& buf, const PriceSpread& price_spread);
 
-  uint256_t get_sell_price(uint256_t price, uint256_t value) const;
+  uint256_t get_sell_price(const uint256_t& price,
+                           const uint256_t& value) const;
 
 private:
   SpreadType spread_type;
@@ -171,7 +172,7 @@ public:
 class EqConstant : public Eq
 {
 public:
-  EqConstant(uint256_t _constant)
+  EqConstant(const uint256_t& _constant)
       : constant(_constant)
   {
   }

@@ -42,9 +42,9 @@ public:
 
   Address get_beneficiary() const;
 
-  uint256_t get_buy_price(uint256_t token_supply) const;
+  uint256_t get_buy_price(const uint256_t& token_supply) const;
 
-  uint256_t get_sell_price(uint256_t token_supply) const;
+  uint256_t get_sell_price(const uint256_t& token_supply) const;
 
 private:
   const ContextKey revenue_id{};

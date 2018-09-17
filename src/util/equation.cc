@@ -4,7 +4,7 @@
 
 namespace
 {
-uint256_t pow(uint256_t l, uint256_t r)
+uint256_t pow(const uint256_t& l, const uint256_t& r)
 {
   uint256_t v = 1;
   for (uint256_t i = 0; i < r; ++i) {
@@ -65,7 +65,8 @@ Buffer& operator>>(Buffer& buf, Curve& curve)
   return buf;
 }
 
-uint256_t PriceSpread::get_sell_price(uint256_t price, uint256_t supply) const
+uint256_t PriceSpread::get_sell_price(const uint256_t& price,
+                                      const uint256_t& supply) const
 {
   // Check type constant
   switch (spread_type) {

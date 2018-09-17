@@ -17,7 +17,7 @@ uint256_t Account::get_balance(const TokenKey& token_key)
   return value;
 }
 
-void Account::set_balance(const TokenKey& token_key, uint256_t value)
+void Account::set_balance(const TokenKey& token_key, const uint256_t& value)
 {
   DEBUG(log, "SET_BALANCE:");
   DEBUG(log, "  Account: {}", key.to_iban_string(IBANType::Account));

@@ -1,6 +1,6 @@
 #include "store/varcontext.h"
 
-VarsContext::VarsContext(uint256_t _x)
+VarsContext::VarsContext(const uint256_t& _x)
     : x(_x)
 {
 }
