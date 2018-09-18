@@ -6,19 +6,21 @@
 #include "store/contract.h"
 #include "util/bytes.h"
 #include "util/equation.h"
+#include "util/iban.h"
 
 class TempVarsContract : public Vars
 {
 public:
   uint256_t get_x() const final { return s; }
-  uint256_t get_external_price(const ContextKey& key) const final
+  uint256_t get_external_price(const PriceID& key) const final
   {
     return 1'000'000;
   }
-  uint256_t get_contract_price(const ContextKey& key) const final
+  uint256_t get_contract_price(const ContractID& key) const final
   {
     return 10'000;
   }
+
   uint256_t s;
 };
 

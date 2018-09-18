@@ -7,7 +7,6 @@
 #include "store/account.h"
 #include "store/contract.h"
 #include "store/revenue.h"
-#include "util/bytes.h"
 
 Handler::Handler(Context& _ctx)
     : ctx(_ctx)
@@ -16,66 +15,66 @@ Handler::Handler(Context& _ctx)
 
 void Handler::init(const std::string& init_state)
 {
-  // Do something first
   ctx.create<Revenue>(
-      IBAN("RX70 RRRR RRRR RRRR RRRR RRRR RRRR RRRR RRRR", IBANType::Revenue)
+      IBAN<IBANType::Revenue>("RX70 RRRR RRRR RRRR RRRR RRRR RRRR RRRR RRRR")
           .as_addr(),
-      IBAN("CX09 CCCC CCCC CCCC CCCC CCCC CCCC CCCC CCCC", IBANType::Contract)
+      IBAN<IBANType::Contract>("CX09 CCCC CCCC CCCC CCCC CCCC CCCC CCCC CCCC")
           .as_addr(),
-      IBAN("AX72 AAAA AAAA AAAA AAAA AAAA AAAA AAAA AAAA", IBANType::Account)
+      IBAN<IBANType::Account>("AX72 AAAA AAAA AAAA AAAA AAAA AAAA AAAA AAAA")
           .as_addr(),
       TimePeriod(),
-      IBAN("SX87 SSSS SSSS SSSS SSSS SSSS SSSS SSSS SSSS", IBANType::Stake)
+      IBAN<IBANType::Stake>("SX87 SSSS SSSS SSSS SSSS SSSS SSSS SSSS SSSS")
           .as_addr(),
       false);
   ctx.create<Contract>(
-      IBAN("CX09 CCCC CCCC CCCC CCCC CCCC CCCC CCCC CCCC", IBANType::Contract)
+      IBAN<IBANType::Contract>("CX09 CCCC CCCC CCCC CCCC CCCC CCCC CCCC CCCC")
           .as_addr(),
-      IBAN("RX70 RRRR RRRR RRRR RRRR RRRR RRRR RRRR RRRR", IBANType::Revenue)
+      IBAN<IBANType::Revenue>("RX70 RRRR RRRR RRRR RRRR RRRR RRRR RRRR RRRR")
           .as_addr(),
-      IBAN("CX09 CCCC CCCC CCCC CCCC CCCC CCCC CCCC CCCC", IBANType::Contract)
+      IBAN<IBANType::Contract>("CX09 CCCC CCCC CCCC CCCC CCCC CCCC CCCC CCCC")
           .as_addr(),
       Curve(std::make_unique<EqVar>()), Curve(std::make_unique<EqConstant>(0)),
       std::numeric_limits<uint256_t>::max(), true, false,
-      IBAN("AX72 AAAA AAAA AAAA AAAA AAAA AAAA AAAA AAAA", IBANType::Account)
+      IBAN<IBANType::Account>("AX72 AAAA AAAA AAAA AAAA AAAA AAAA AAAA AAAA")
           .as_addr());
   ctx.flush();
 }
+
 void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash,
                             int64_t timestamp)
 {
   BOOST_SCOPE_EXIT(&ctx) { ctx.reset(); }
   BOOST_SCOPE_EXIT_END
 
-  // Convert the verify key into the sender's address.
-  const Address addr = ed25519_vk_to_addr(hdr.vk);
+  // Convert the verify key to the sender's account ID
+  const AccountID account_id = AccountID::from_addr(ed25519_vk_to_addr(hdr.vk));
 
   switch (hdr.msgid) {
     case +MsgID::Mint:
-      apply_mint(addr, buf.read_all<MintMsg>(), tx_hash, timestamp);
+      apply_mint(account_id, buf.read_all<MintMsg>(), tx_hash, timestamp);
       break;
     case +MsgID::Tx:
-      apply_tx(addr, buf.read_all<TxMsg>(), tx_hash, timestamp);
+      apply_tx(account_id, buf.read_all<TxMsg>(), tx_hash, timestamp);
       break;
     case +MsgID::CreateContract:
-      apply_create_contract(addr, buf.read_all<CreateContractMsg>(), tx_hash,
-                            timestamp);
+      apply_create_contract(account_id, buf.read_all<CreateContractMsg>(),
+                            tx_hash, timestamp);
       break;
     case +MsgID::PurchaseContract:
-      apply_purchase_contract(addr, buf.read_all<PurchaseContractMsg>(),
+      apply_purchase_contract(account_id, buf.read_all<PurchaseContractMsg>(),
                               tx_hash, timestamp);
       break;
     case +MsgID::SellContract:
-      apply_sell_contract(addr, buf.read_all<SellContractMsg>(), tx_hash,
+      apply_sell_contract(account_id, buf.read_all<SellContractMsg>(), tx_hash,
                           timestamp);
       break;
     case +MsgID::SpendToken:
-      apply_spend_token(addr, buf.read_all<SpendTokenMsg>(), tx_hash,
+      apply_spend_token(account_id, buf.read_all<SpendTokenMsg>(), tx_hash,
                         timestamp);
       break;
     case +MsgID::CreateRevenue:
-      apply_create_revenue(addr, buf.read_all<CreateRevenueMsg>(), tx_hash,
-                           timestamp);
+      apply_create_revenue(account_id, buf.read_all<CreateRevenueMsg>(),
+                           tx_hash, timestamp);
       break;
 
     case +MsgID::Unset:
@@ -85,43 +84,44 @@ void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash,
   ctx.flush();
 }
 
-void Handler::apply_mint(const Address& addr, const MintMsg& mint_msg,
+void Handler::apply_mint(const AccountID& account_id, const MintMsg& mint_msg,
                          const Hash& tx_hash, int64_t timestamp)
 {
-  auto& account = ctx.get_or_create<Account>(addr);
+  auto& account = ctx.get_or_create<Account>(account_id);
   account[mint_msg.token_key] += mint_msg.value;
 }
 
-void Handler::apply_tx(const Address& addr, const TxMsg& tx_msg,
+void Handler::apply_tx(const AccountID& account_id, const TxMsg& tx_msg,
                        const Hash& tx_hash, int64_t timestamp)
 {
-  auto& account_src = ctx.get<Account>(addr);
+  auto& account_src = ctx.get<Account>(account_id);
   auto& account_dst = ctx.get_or_create<Account>(tx_msg.dest);
   account_src[tx_msg.token_key] -= tx_msg.value;
   account_dst[tx_msg.token_key] += tx_msg.value;
 }
 
-void Handler::apply_create_contract(const Address& addr,
+void Handler::apply_create_contract(const AccountID& account_id,
                                     const CreateContractMsg& cc_msg,
                                     const Hash& tx_hash, int64_t timestamp)
 {
-  ContractID contractID = tx_hash.prefix<ContractID::Size>();
+  ContractID contractID = ContractID::from_addr(ed25519_vk_to_addr(tx_hash));
   auto& revenue = ctx.get<Revenue>(cc_msg.revenue_id);
 
-  if (revenue.get_is_private() && addr != revenue.get_manager())
-    throw Error("Your address doesn't match manager's revenue address.");
+  if (revenue.is_private && account_id != revenue.manager)
+    throw Error(
+        "Your account_idess doesn't match manager's revenue account_idess.");
 
-  ctx.create<Contract>(
-      contractID, cc_msg.revenue_id, revenue.get_base_token_id(),
-      cc_msg.buy_curve, cc_msg.sell_curve, cc_msg.max_supply,
-      cc_msg.is_transferable, cc_msg.is_discountable, cc_msg.beneficiary);
+  ctx.create<Contract>(contractID, cc_msg.revenue_id, revenue.base_token_id,
+                       cc_msg.buy_curve, cc_msg.sell_curve, cc_msg.max_supply,
+                       cc_msg.is_transferable, cc_msg.is_discountable,
+                       cc_msg.beneficiary);
 }
 
-void Handler::apply_purchase_contract(const Address& addr,
+void Handler::apply_purchase_contract(const AccountID& account_id,
                                       const PurchaseContractMsg& pct_msg,
                                       const Hash& tx_hash, int64_t timestamp)
 {
-  auto& account = ctx.get<Account>(addr);
+  auto& account = ctx.get<Account>(account_id);
   auto& contract = ctx.get<Contract>(pct_msg.contract_id);
   auto& beneficiary = ctx.get<Account>(contract.beneficiary);
 
@@ -150,11 +150,11 @@ void Handler::apply_purchase_contract(const Address& addr,
   contract.total_supply += pct_msg.value;
 }
 
-void Handler::apply_sell_contract(const Address& addr,
+void Handler::apply_sell_contract(const AccountID& account_id,
                                   const SellContractMsg& sct_msg,
                                   const Hash& tx_hash, int64_t timestamp)
 {
-  auto& account = ctx.get<Account>(addr);
+  auto& account = ctx.get<Account>(account_id);
   auto& contract = ctx.get<Contract>(sct_msg.contract_id);
 
   const uint256_t sell_price =
@@ -173,11 +173,11 @@ void Handler::apply_sell_contract(const Address& addr,
   contract.total_supply -= sct_msg.value;
 }
 
-void Handler::apply_spend_token(const Address& addr,
+void Handler::apply_spend_token(const AccountID& account_id,
                                 const SpendTokenMsg& spend_msg,
                                 const Hash& tx_hash, int64_t timestamp)
 {
-  auto& account = ctx.get<Account>(addr);
+  auto& account = ctx.get<Account>(account_id);
   auto& contract = ctx.get<Contract>(spend_msg.token_key);
   auto& revenue = ctx.get<Revenue>(contract.revenue_id);
 
@@ -191,16 +191,15 @@ void Handler::apply_spend_token(const Address& addr,
   account[spend_msg.token_key] -= spend_msg.value;
   const uint256_t new_revenue = revenue.get_period_revenue(tpc) + sell_price;
 
-  // Update the information
   contract.circulating_supply = new_circulating_supply;
   revenue.set_period_revenue(tpc, new_revenue);
 }
 
-void Handler::apply_create_revenue(const Address& addr,
+void Handler::apply_create_revenue(const AccountID& account_id,
                                    const CreateRevenueMsg& cr_msg,
                                    const Hash& tx_hash, int64_t timestamp)
 {
-  ContextKey revenue_id = tx_hash.prefix<ContextKey::Size>();
-  ctx.create<Revenue>(revenue_id, cr_msg.base_token_id, addr,
+  RevenueID revenue_id = RevenueID::from_addr(ed25519_vk_to_addr(tx_hash));
+  ctx.create<Revenue>(revenue_id, cr_msg.base_token_id, account_id,
                       cr_msg.time_period, cr_msg.stake_id, cr_msg.is_private);
 }

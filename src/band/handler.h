@@ -4,6 +4,7 @@
 #include "inc/essential.h"
 #include "store/context.h"
 #include "util/bytes.h"
+#include "util/iban.h"
 
 class Handler
 {
@@ -20,22 +21,24 @@ public:
 
 private:
   /// Actual transaction processing.
-  void apply_mint(const Address& addr, const MintMsg& mint_msg,
+  void apply_mint(const AccountID& addr, const MintMsg& mint_msg,
                   const Hash& tx_hash, int64_t timestamp);
-  void apply_tx(const Address& addr, const TxMsg& tx_msg, const Hash& tx_hash,
+  void apply_tx(const AccountID& addr, const TxMsg& tx_msg, const Hash& tx_hash,
                 int64_t timestamp);
-  void apply_create_contract(const Address& addr,
+  void apply_create_contract(const AccountID& addr,
                              const CreateContractMsg& cc_msg,
                              const Hash& tx_hash, int64_t timestamp);
-  void apply_purchase_contract(const Address& addr,
+  void apply_purchase_contract(const AccountID& addr,
                                const PurchaseContractMsg& pct_msg,
                                const Hash& tx_hash, int64_t timestamp);
-  void apply_sell_contract(const Address& addr, const SellContractMsg& sct_msg,
-                           const Hash& tx_hash, int64_t timestamp);
-  void apply_spend_token(const Address& addr, const SpendTokenMsg& spend_msg,
+  void apply_sell_contract(const AccountID& addr,
+                           const SellContractMsg& sct_msg, const Hash& tx_hash,
+                           int64_t timestamp);
+  void apply_spend_token(const AccountID& addr, const SpendTokenMsg& spend_msg,
                          const Hash& tx_hash, int64_t timestamp);
-  void apply_create_revenue(const Address& addr, const CreateRevenueMsg& cr_msg,
-                            const Hash& tx_hash, int64_t timestamp);
+  void apply_create_revenue(const AccountID& addr,
+                            const CreateRevenueMsg& cr_msg, const Hash& tx_hash,
+                            int64_t timestamp);
 
 private:
   Context& ctx;

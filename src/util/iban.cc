@@ -56,7 +56,7 @@ int base32_decode(char c)
 }
 } // namespace
 
-IBAN::IBAN(const std::string& iban_string, IBANType iban_type)
+IBANBase::IBANBase(const std::string& iban_string, IBANType iban_type)
 {
   int digit = 0;
 
@@ -86,12 +86,11 @@ IBAN::IBAN(const std::string& iban_string, IBANType iban_type)
                 iban_type._to_integral());
 
   if (compute_remainder(account, prefix) != 1) {
-    // NOCOMMIT_LOG("{}", compute_remainder(account, prefix));
     throw Error("Invalid IBAN checksum");
   }
 }
 
-IBAN::IBAN(const Address& addr, IBANType iban_type)
+IBANBase::IBANBase(const Address& addr, IBANType iban_type)
 {
   prefix[0] = iban_type._to_integral();
   prefix[1] = 'X';
@@ -113,9 +112,7 @@ IBAN::IBAN(const Address& addr, IBANType iban_type)
   prefix[3] = '0' + (checksum % 10);
 }
 
-bool IBAN::is_account_iban() const { return prefix[0] == 'A'; }
-
-Address IBAN::as_addr() const
+Address IBANBase::as_addr_impl() const
 {
   Address ret;
 
@@ -132,7 +129,7 @@ Address IBAN::as_addr() const
   return ret;
 }
 
-std::string IBAN::to_string() const
+std::string IBANBase::to_string() const
 {
   std::string ret;
   ret.append(prefix.begin(), prefix.end());

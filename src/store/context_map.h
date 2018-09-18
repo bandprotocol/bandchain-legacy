@@ -11,10 +11,10 @@ public:
   ContextMap();
 
 private:
-  Object* get_impl(const ContextKey& key) const final;
+  Object* get_impl(const Address& key) const final;
 
   void add_impl(std::unique_ptr<Object> obj) final;
 
 private:
-  std::unordered_map<ContextKey, std::unique_ptr<Object>> data;
+  std::unordered_map<Address, std::unique_ptr<Object>> data;
 };

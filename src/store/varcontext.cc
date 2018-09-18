@@ -7,13 +7,13 @@ VarsContext::VarsContext(const uint256_t& _x)
 
 uint256_t VarsContext::get_x() const { return x; }
 
-uint256_t VarsContext::get_external_price(const ContextKey& key) const
+uint256_t VarsContext::get_external_price(const PriceID& key) const
 {
   // TODO
   return x;
 }
 
-uint256_t VarsContext::get_contract_price(const ContextKey& key) const
+uint256_t VarsContext::get_contract_price(const ContractID& key) const
 {
   // TODO
   return x;

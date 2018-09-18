@@ -12,6 +12,7 @@ void Context::flush()
     obj.second->debug_save();
     add_impl(std::move(obj.second));
   }
+  cache.clear();
 
   DEBUG(log, "============================================================"
              "============================================================");

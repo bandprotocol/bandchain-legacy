@@ -38,10 +38,10 @@ void parse_equation(Buffer& buf, const std::vector<std::string>& op_codes)
       buf << OpCode::Variable;
     } else if (op.size() >= 36 and op.substr(0, 2) == "CX") {
       buf << OpCode::Contract;
-      buf << IBAN(op, IBANType::Contract).as_addr();
+      buf << ContractID::from_string(op);
     } else if (op.size() >= 36 and op.substr(0, 2) == "PX") {
       buf << OpCode::Price;
-      buf << IBAN(op, IBANType::Price).as_addr();
+      buf << PriceID::from_string(op);
     } else {
       uint256_t num = uint256_t(op);
       buf << OpCode::Constant;
@@ -103,7 +103,7 @@ std::string txgen::process_mint(const json& params)
 {
   MintMsg mint_msg;
   mint_msg.token_key =
-      IBAN(params.at("token").get<std::string>(), IBANType::Contract).as_addr();
+      ContractID::from_string(params.at("token").get<std::string>());
   mint_msg.value = uint256_t(params.at("value").get<std::string>());
   return Buffer::serialize(mint_msg);
 }
@@ -112,9 +112,8 @@ std::string txgen::process_tx(const json& params)
 {
   TxMsg tx_msg;
   tx_msg.token_key =
-      IBAN(params.at("token").get<std::string>(), IBANType::Contract).as_addr();
-  tx_msg.dest =
-      IBAN(params.at("dest").get<std::string>(), IBANType::Account).as_addr();
+      ContractID::from_string(params.at("token").get<std::string>());
+  tx_msg.dest = AccountID::from_string(params.at("dest").get<std::string>());
   tx_msg.value = uint256_t(params.at("value").get<std::string>());
   return Buffer::serialize(tx_msg);
 }
@@ -124,8 +123,7 @@ std::string txgen::process_create_contract(const json& params)
   CreateContractMsg create_msg;
 
   create_msg.revenue_id =
-      IBAN(params.at("revenue_id").get<std::string>(), IBANType::Revenue)
-          .as_addr();
+      RevenueID::from_string(params.at("revenue_id").get<std::string>());
 
   std::vector<std::string> op_codes = params.at("buy_expressions");
   Buffer buf;
@@ -142,8 +140,7 @@ std::string txgen::process_create_contract(const json& params)
   create_msg.is_discountable =
       uint8_t(std::stoul(params.at("is_discountable").get<std::string>()));
   create_msg.beneficiary =
-      IBAN(params.at("beneficiary").get<std::string>(), IBANType::Account)
-          .as_addr();
+      AccountID::from_string(params.at("beneficiary").get<std::string>());
   return Buffer::serialize(create_msg);
 }
 
@@ -153,8 +150,7 @@ std::string txgen::process_purchase_contract(const json& params)
   pct_msg.value = uint256_t(params.at("value").get<std::string>());
   pct_msg.price_limit = uint256_t(params.at("price_limit").get<std::string>());
   pct_msg.contract_id =
-      IBAN(params.at("contract_id").get<std::string>(), IBANType::Contract)
-          .as_addr();
+      ContractID::from_string(params.at("contract_id").get<std::string>());
 
   return Buffer::serialize(pct_msg);
 }
@@ -165,8 +161,7 @@ std::string txgen::process_sell_contract(const json& params)
   sct_msg.value = uint256_t(params.at("value").get<std::string>());
   sct_msg.price_limit = uint256_t(params.at("price_limit").get<std::string>());
   sct_msg.contract_id =
-      IBAN(params.at("contract_id").get<std::string>(), IBANType::Contract)
-          .as_addr();
+      ContractID::from_string(params.at("contract_id").get<std::string>());
 
   return Buffer::serialize(sct_msg);
 }
@@ -175,8 +170,7 @@ std::string txgen::process_spend_token(const json& params)
 {
   SpendTokenMsg spend_msg;
   spend_msg.token_key =
-      IBAN(params.at("token_id").get<std::string>(), IBANType::Contract)
-          .as_addr();
+      ContractID::from_string(params.at("token_id").get<std::string>());
   spend_msg.value = uint256_t(params.at("value").get<std::string>());
 
   return Buffer::serialize(spend_msg);
@@ -186,10 +180,9 @@ std::string txgen::process_create_revenue(const json& params)
 {
   CreateRevenueMsg cr_msg;
   cr_msg.base_token_id =
-      IBAN(params.at("base_token_id").get<std::string>(), IBANType::Contract)
-          .as_addr();
+      ContractID::from_string(params.at("base_token_id").get<std::string>());
   cr_msg.stake_id =
-      IBAN(params.at("stake_id").get<std::string>(), IBANType::Stake).as_addr();
+      StakeID::from_string(params.at("stake_id").get<std::string>());
 
   TimeUnit time_unit =
       TimeUnit::_from_string(params.at("time_unit").get<std::string>().c_str());

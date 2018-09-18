@@ -6,7 +6,6 @@
 #include "crypto/random.h"
 #include "inc/essential.h"
 #include "util/buffer.h"
-#include "util/iban.h"
 #include "util/string.h"
 
 template <int SIZE>
@@ -64,9 +63,7 @@ public:
 
   /// Return a friendly hex representation of this bytes value.
   std::string to_string() const;
-
-  /// Return a the IBAN string of this address.
-  std::string to_iban_string(IBANType iban_type) const;
+  std::string to_hex_string() const;
 
   /// Read and write from/to buffer.
   friend Buffer& operator<<(Buffer& buf, const Bytes& data)
@@ -82,14 +79,11 @@ private:
   std::array<std::byte, SIZE> rawdata{};
 } __attribute__((packed));
 
-using Address = Bytes<20>;    //< Public wallet address
-using TokenKey = Bytes<20>;   //< Public token address
-using ContextKey = Bytes<20>; //< Unique ID for on-chain data structures
-using ContractID = Bytes<20>; //< Contract ID
-using Hash = Bytes<32>;       //< SHA-256 hash value
-using VerifyKey = Bytes<32>;  //< Ed25519 verify key
-using SecretKey = Bytes<64>;  //< Ed25519 secret key
-using Signature = Bytes<64>;  //< Ed25519 signature
+using Address = Bytes<20>;   //< 20-Byte address
+using Hash = Bytes<32>;      //< SHA-256 hash value
+using VerifyKey = Bytes<32>; //< Ed25519 verify key
+using SecretKey = Bytes<64>; //< Ed25519 secret key
+using Signature = Bytes<64>; //< Ed25519 signature
 
 namespace std
 {
@@ -186,12 +180,12 @@ Bytes<RET_SIZE> Bytes<SIZE>::suffix() const
 template <int SIZE>
 std::string Bytes<SIZE>::to_string() const
 {
-  return bytes_to_hex(as_span());
+  static_assert(SIZE != 20, "Please use IBANAddrBase::to_string()");
+  return to_hex_string();
 }
 
 template <int SIZE>
-std::string Bytes<SIZE>::to_iban_string(IBANType iban_type) const
+std::string Bytes<SIZE>::to_hex_string() const
 {
-  static_assert(SIZE == 20);
-  return IBAN(*this, iban_type).to_string();
+  return bytes_to_hex(as_span());
 }

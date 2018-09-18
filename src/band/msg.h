@@ -40,8 +40,8 @@ struct BaseMsg {
 /// This message is primarily used for testing and will obviously not be
 /// available for use in mainnet.
 struct MintMsg : BaseMsg<MsgID::Mint> {
-  TokenKey token_key{}; // The token ID to mint
-  uint256_t value{};    //< The value to mint
+  ContractID token_key{}; // The token ID to mint
+  uint256_t value{};      //< The value to mint
 
   friend Buffer& operator<<(Buffer& buf, const MintMsg& msg)
   {
@@ -58,9 +58,9 @@ struct MintMsg : BaseMsg<MsgID::Mint> {
 /// requirement is that you must have at least that amount of tokens in your
 /// blockchain account.
 struct TxMsg : BaseMsg<MsgID::Tx> {
-  TokenKey token_key{}; // The token ID to send
-  Address dest{};       //< The address to send the value to
-  uint256_t value{};    //< The value of this transaction
+  ContractID token_key{}; // The token ID to send
+  AccountID dest{};       //< The address to send the value to
+  uint256_t value{};      //< The value of this transaction
 
   friend Buffer& operator<<(Buffer& buf, const TxMsg& msg)
   {
@@ -76,13 +76,13 @@ struct TxMsg : BaseMsg<MsgID::Tx> {
 /// CreateContractMsg allows anyone to create new contract by initializing
 /// bonding curve equation and revenue id to collect revenue from redeem token.
 struct CreateContractMsg : BaseMsg<MsgID::CreateContract> {
-  ContextKey revenue_id{};
+  RevenueID revenue_id{};
   Curve buy_curve;
   Curve sell_curve;
   uint256_t max_supply{};
   bool is_transferable{};
   bool is_discountable{};
-  Address beneficiary{};
+  AccountID beneficiary{};
 
   friend Buffer& operator<<(Buffer& buf, const CreateContractMsg& msg)
   {
@@ -135,7 +135,7 @@ struct SellContractMsg : BaseMsg<MsgID::SellContract> {
 };
 
 struct SpendTokenMsg : BaseMsg<MsgID::SpendToken> {
-  TokenKey token_key{};
+  ContractID token_key{};
   uint256_t value{};
 
   friend Buffer& operator<<(Buffer& buf, const SpendTokenMsg& msg)
@@ -151,8 +151,8 @@ struct SpendTokenMsg : BaseMsg<MsgID::SpendToken> {
 
 struct CreateRevenueMsg : BaseMsg<MsgID::CreateRevenue> {
   ContractID base_token_id{};
-  Address manager{};
-  ContextKey stake_id{};
+  AccountID manager{};
+  StakeID stake_id{};
   TimePeriod time_period{};
   bool is_private{};
 

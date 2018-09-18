@@ -5,16 +5,15 @@
 #include "store/varcontext.h"
 #include "util/equation.h"
 
-class Contract : public Object
+class Contract final : public ObjectImpl<IBANType::Contract>
 {
 public:
-  Contract(const ContractID& contract_id, const ContextKey& _revenue_id,
+  Contract(const Contract& contract) = default;
+  Contract(const ContractID& contract_id, const RevenueID& _revenue_id,
            const ContractID& _base_contract_id, const Curve& _buy_curve,
            const Curve& _sell_curve, const uint256_t& _max_supply,
-           uint8_t _is_transferable, uint8_t _is_discountable,
-           const Address& _beneficiary);
-
-  Contract(const Contract& contract);
+           bool _is_transferable, bool _is_discountable,
+           const AccountID& _beneficiary);
 
   uint256_t get_buy_price(const uint256_t& token_supply) const;
 
@@ -24,14 +23,14 @@ public:
   void debug_save() const final;
 
 public:
-  const ContextKey revenue_id;
+  const RevenueID revenue_id;
   const ContractID base_contract_id;
   const Curve buy_curve;
   const Curve sell_curve;
   const uint256_t max_supply;
   const bool is_transferable;
   const bool is_discountable;
-  const Address beneficiary;
+  const AccountID beneficiary;
 
   uint256_t circulating_supply = 0;
   uint256_t total_supply = 0;

@@ -72,8 +72,8 @@ json Query::process_balance(const json& params)
   const auto& address_iban = params.at("address").get<std::string>();
   const auto& token_iban = params.at("token").get<std::string>();
 
-  auto address = IBAN(address_iban, IBANType::Account).as_addr();
-  auto token = IBAN(token_iban, IBANType::Contract).as_addr();
+  auto address = AccountID::from_string(address_iban);
+  auto token = ContractID::from_string(token_iban);
 
   auto& account = ctx.get<Account>(address);
   const uint256_t balance = account[token];
@@ -86,8 +86,7 @@ json Query::process_balance(const json& params)
 json Query::process_community_info(const json& params)
 {
   const auto& contract_id_iban = params.at("contract_id").get<std::string>();
-
-  auto contract_id = IBAN(contract_id_iban, IBANType::Contract).as_addr();
+  auto contract_id = ContractID::from_string(contract_id_iban);
 
   auto& contract = ctx.get<Contract>(contract_id);
 
@@ -97,10 +96,7 @@ json Query::process_community_info(const json& params)
   response["circulating_supply"] = "{}"_format(contract.circulating_supply);
   response["total_supply"] = "{}"_format(contract.total_supply);
   response["max_supply"] = "{}"_format(contract.max_supply);
-
-  response["revenue_id"] =
-      contract.revenue_id.to_iban_string(IBANType::Revenue);
-
+  response["revenue_id"] = contract.revenue_id.to_string();
   response["is_transferable"] = contract.is_transferable;
   response["is_discountable"] = contract.is_discountable;
   return response;

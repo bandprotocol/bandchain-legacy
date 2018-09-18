@@ -110,12 +110,12 @@ std::unique_ptr<Eq> Eq::parse(Buffer& buf)
       return std::make_unique<EqVar>();
     case +OpCode::Contract: {
       auto eq_contract = std::make_unique<EqContract>();
-      buf >> eq_contract->address;
+      buf >> eq_contract->contract_id;
       return std::move(eq_contract);
     }
     case +OpCode::Price: {
       auto eq_price = std::make_unique<EqPrice>();
-      buf >> eq_price->address;
+      buf >> eq_price->price_id;
       return std::move(eq_price);
     }
     case +OpCode::Unset:
@@ -135,13 +135,13 @@ std::string EqVar::to_string() const
 std::string EqPrice::to_string() const
 {
   // TODO
-  return address.to_iban_string(IBANType::Price);
+  return price_id.to_string();
 }
 
 std::string EqContract::to_string() const
 {
   // TODO
-  return address.to_iban_string(IBANType::Contract);
+  return contract_id.to_string();
 }
 
 uint256_t EqAdd::apply(const Vars& vars) const
@@ -182,12 +182,12 @@ uint256_t EqVar::apply(const Vars& vars) const { return vars.get_x(); }
 
 uint256_t EqPrice::apply(const Vars& vars) const
 {
-  return vars.get_external_price(address);
+  return vars.get_external_price(price_id);
 }
 
 uint256_t EqContract::apply(const Vars& vars) const
 {
-  return vars.get_contract_price(address);
+  return vars.get_contract_price(contract_id);
 }
 
 std::unique_ptr<Eq> EqConstant::clone() const
@@ -199,12 +199,12 @@ std::unique_ptr<Eq> EqVar::clone() const { return std::make_unique<EqVar>(); }
 
 std::unique_ptr<Eq> EqPrice::clone() const
 {
-  return std::make_unique<EqPrice>(address);
+  return std::make_unique<EqPrice>(price_id);
 }
 
 std::unique_ptr<Eq> EqContract::clone() const
 {
-  return std::make_unique<EqContract>(address);
+  return std::make_unique<EqContract>(contract_id);
 }
 
 void EqConstant::dump(Buffer& buf) const
@@ -218,11 +218,11 @@ void EqVar::dump(Buffer& buf) const { buf << OpCode::Variable; }
 void EqPrice::dump(Buffer& buf) const
 {
   buf << OpCode::Price;
-  buf << address;
+  buf << price_id;
 }
 
 void EqContract::dump(Buffer& buf) const
 {
   buf << OpCode::Contract;
-  buf << address;
+  buf << contract_id;
 }

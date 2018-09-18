@@ -190,8 +190,8 @@ class EqPrice : public Eq
 {
 public:
   EqPrice() {}
-  EqPrice(const ContextKey& _address)
-      : address(_address)
+  EqPrice(const PriceID& _price_id)
+      : price_id(_price_id)
   {
   }
   uint256_t apply(const Vars& vars) const final;
@@ -199,15 +199,15 @@ public:
   void dump(Buffer& buf) const final;
   std::unique_ptr<Eq> clone() const final;
 
-  ContextKey address;
+  PriceID price_id;
 };
 
 class EqContract : public Eq
 {
 public:
   EqContract() {}
-  EqContract(const ContextKey& _address)
-      : address(_address)
+  EqContract(const ContractID& _contract_id)
+      : contract_id(_contract_id)
   {
   }
   uint256_t apply(const Vars& vars) const final;
@@ -215,5 +215,5 @@ public:
   void dump(Buffer& buf) const final;
   std::unique_ptr<Eq> clone() const final;
 
-  ContextKey address;
+  ContractID contract_id;
 };
