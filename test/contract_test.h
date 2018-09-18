@@ -37,11 +37,10 @@ public:
     TempVarsContract t;
 
     eq_ptr p = get_default_equation();
+
     ContractID contract_id = ContractID::rand();
-
-    ContextKey revenue_id = ContextKey::rand();
-
-    Address benificiary = Address::rand();
+    RevenueID revenue_id = RevenueID::rand();
+    AccountID benificiary = AccountID::rand();
 
     Curve curve(std::move(p));
     Curve curve2(get_default_equation());

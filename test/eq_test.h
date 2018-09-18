@@ -10,8 +10,8 @@ class TempVarseq : public Vars
 {
 public:
   uint256_t get_x() const { return s; }
-  uint256_t get_external_price(const ContextKey& key) const { return e; }
-  uint256_t get_contract_price(const ContextKey& key) const { return c; }
+  uint256_t get_external_price(const PriceID& key) const { return e; }
+  uint256_t get_contract_price(const ContractID& key) const { return c; }
 
   uint256_t s;
   uint256_t e;
@@ -121,7 +121,7 @@ public:
     ContractID con = ContractID::rand();
     c = std::make_unique<EqContract>(con);
     x = std::make_unique<EqMul>(std::move(c), std::move(x));
-    ContextKey pri = ContextKey::rand();
+    PriceID pri = PriceID::rand();
     c = std::make_unique<EqPrice>(pri);
     x = std::make_unique<EqMul>(std::move(c), std::move(x));
     x3 = std::make_unique<EqAdd>(std::move(x3), std::move(x));
@@ -129,10 +129,8 @@ public:
     Buffer buf;
     x3->dump(buf);
     Curve curve(std::move(x3));
-    // TS_ASSERT_EQUALS(curve.to_string(),
-    //                  "((x ^ 3) + ({} * ({} * (x * 10))))"_format(
-    //                      pri.to_iban_string(IBANType::Price),
-    //                      con.to_iban_string(IBANType::Contract)));
+    TS_ASSERT_EQUALS(curve.to_string(),
+                     "((x ^ 3) + ({} * ({} * (x * 10))))"_format(pri, con));
 
     t.s = 20;
     t.c = 3;

@@ -59,6 +59,11 @@ public:
 
   static IBANAddrBase rand() { return IBANAddrBase(Address::rand()); }
 
+  static IBANAddrBase from_hex(const std::string& hex)
+  {
+    return IBANAddrBase(Address::from_hex(hex));
+  }
+
   static IBANAddrBase from_addr(const Address& addr)
   {
     return IBANAddrBase(addr);

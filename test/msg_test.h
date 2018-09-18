@@ -36,7 +36,7 @@ public:
     TS_ASSERT_EQUALS(MintMsg::ID, MsgID::Mint);
 
     MintMsg msg;
-    msg.token_key = TokenKey::rand();
+    msg.token_key = ContractID::rand();
     msg.value = 1000'000'000'000'000;
 
     Buffer buf;
@@ -58,8 +58,8 @@ public:
     TS_ASSERT_EQUALS(TxMsg::ID, MsgID::Tx);
 
     TxMsg msg;
-    msg.token_key = TokenKey::rand();
-    msg.dest = Address::rand();
+    msg.token_key = ContractID::rand();
+    msg.dest = AccountID::rand();
     msg.value = 1000'000'000'000'000;
 
     Buffer buf;
