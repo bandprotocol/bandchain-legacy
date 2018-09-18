@@ -13,6 +13,7 @@ public:
   Handler(Context& _ctx);
 
   void init(const std::string& init_state);
+
   /// Apply the given message to the blockchain.
   void apply_message(const MsgHdr& addr, Buffer& buf, const Hash& tx_hash,
                      int64_t timestamp);

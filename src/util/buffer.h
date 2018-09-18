@@ -66,7 +66,10 @@ public:
   bool empty() const { return buf.empty(); }
 
   /// Return the size of this buffer in bytes.
-  decltype(auto) size_bytes() const { return as_span().size_bytes(); }
+  gsl::span<const std::byte>::size_type size_bytes() const
+  {
+    return as_span().size_bytes();
+  }
 
   /// Clear the content in this buffer.
   void clear() { buf.clear(); }

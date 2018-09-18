@@ -13,6 +13,7 @@ Handler::Handler(Context& _ctx)
     : ctx(_ctx)
 {
 }
+
 void Handler::init(const std::string& init_state)
 {
   // Do something first

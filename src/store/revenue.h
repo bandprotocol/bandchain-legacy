@@ -45,5 +45,5 @@ private:
   bool is_private;
   std::unordered_map<uint64_t, uint256_t> revenues;
 
-  static inline auto log = logger::get("store/revenue");
+  static inline auto log = logger::get("revenue");
 };
