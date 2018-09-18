@@ -17,29 +17,17 @@ uint256_t pow(const uint256_t& l, const uint256_t& r)
 
 Curve::Curve(const Curve& _curve)
     : equation(_curve.equation->clone())
-    , price_spread(_curve.price_spread)
 {
 }
 
 Curve::~Curve() {}
 
-uint256_t Curve::apply_buy(const Vars& vars) const
+uint256_t Curve::apply(const Vars& vars) const
 {
   if (!equation)
     throw Error("Equation hasn't been set");
   return equation->apply(vars);
 }
-
-uint256_t Curve::apply_sell(const Vars& vars) const
-{
-  if (!equation)
-    throw Error("Equation hasn't been set");
-
-  uint256_t price_buy = apply_buy(vars);
-  return price_spread.get_sell_price(price_buy, vars.get_x());
-}
-
-PriceSpread Curve::get_price_spread() const { return price_spread; }
 
 std::string Curve::to_string() const
 {
@@ -54,53 +42,52 @@ Buffer& operator<<(Buffer& buf, const Curve& curve)
   if (!curve.equation)
     throw Failure("Dump on null equation");
   curve.equation->dump(buf);
-  buf << curve.price_spread;
   return buf;
 }
 
 Buffer& operator>>(Buffer& buf, Curve& curve)
 {
   curve.equation = Eq::parse(buf);
-  buf >> curve.price_spread;
   return buf;
 }
 
-uint256_t PriceSpread::get_sell_price(const uint256_t& price,
-                                      const uint256_t& supply) const
-{
-  // Check type constant
-  switch (spread_type) {
-    case +SpreadType::Constant: {
-      uint256_t dif = spread_value * supply;
-      if (price > dif)
-        return price - dif;
-      else
-        return 0;
-    }
-    case +SpreadType::Rational:
-      return spread_value * price / PriceSpread::ratio;
-    case +SpreadType::Unset:
-      throw Error("Invalid price spread type");
-  }
-}
+// uint256_t PriceSpread::get_sell_price(const uint256_t& price,
+//                                       const uint256_t& supply) const
+// {
+//   // Check type constant
+//   switch (spread_type) {
+//     case +SpreadType::Constant: {
+//       uint256_t dif = spread_value * supply;
+//       if (price > dif)
+//         return price - dif;
+//       else
+//         return 0;
+//     }
+//     case +SpreadType::Rational:
+//       return spread_value * price / PriceSpread::ratio;
+//     case +SpreadType::Unset:
+//       throw Error("Invalid price spread type");
+//   }
+// }
 
-Buffer& operator<<(Buffer& buf, const PriceSpread& price_spread)
-{
-  buf << price_spread.spread_type << price_spread.spread_value;
-  return buf;
-}
+// Buffer& operator<<(Buffer& buf, const PriceSpread& price_spread)
+// {
+//   buf << price_spread.spread_type << price_spread.spread_value;
+//   return buf;
+// }
 
-Buffer& operator>>(Buffer& buf, PriceSpread& price_spread)
-{
-  buf >> price_spread.spread_type >> price_spread.spread_value;
-  return buf;
-}
+// Buffer& operator>>(Buffer& buf, PriceSpread& price_spread)
+// {
+//   buf >> price_spread.spread_type >> price_spread.spread_value;
+//   return buf;
+// }
 
 std::unique_ptr<Eq> Eq::parse(Buffer& buf)
 {
   OpCode opcode(OpCode::Unset);
 
   buf >> opcode;
+
   switch (opcode) {
     case +OpCode::Add:
       return std::make_unique<EqAdd>(buf);
@@ -134,6 +121,8 @@ std::unique_ptr<Eq> Eq::parse(Buffer& buf)
     case +OpCode::Unset:
       throw Error("Unexpected Opcode");
   }
+
+  throw Failure("Invalid Opcode");
 }
 std::string EqConstant::to_string() const { return "{}"_format(constant); }
 
@@ -146,13 +135,13 @@ std::string EqVar::to_string() const
 std::string EqPrice::to_string() const
 {
   // TODO
-  return "Price";
+  return address.to_iban_string(IBANType::Price);
 }
 
 std::string EqContract::to_string() const
 {
   // TODO
-  return "CTPrice";
+  return address.to_iban_string(IBANType::Contract);
 }
 
 uint256_t EqAdd::apply(const Vars& vars) const

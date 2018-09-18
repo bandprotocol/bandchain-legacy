@@ -66,7 +66,7 @@ public:
   bool empty() const { return buf.empty(); }
 
   /// Return the size of this buffer in bytes.
-  size_t size_bytes() const { return buf.size(); }
+  decltype(auto) size_bytes() const { return as_span().size_bytes(); }
 
   /// Clear the content in this buffer.
   void clear() { buf.clear(); }

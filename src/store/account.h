@@ -13,8 +13,8 @@ public:
 
   uint256_t& operator[](const TokenKey& token_key);
 
-  void debug_create() const;
-  void debug_save() const;
+  void debug_create() const final;
+  void debug_save() const final;
 
 private:
   std::unordered_map<TokenKey, uint256_t> balances;

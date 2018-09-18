@@ -62,22 +62,27 @@ json txgen::process_txgen(const json& params)
 
   std::string body;
   switch (msg_hdr.msgid) {
-    case MintMsg::ID:
+    case +MsgID::Mint:
       body = process_mint(params);
       break;
-    case TxMsg::ID:
+    case +MsgID::Tx:
       body = process_tx(params);
       break;
-    case CreateContractMsg::ID:
+    case +MsgID::CreateContract:
       body = process_create_contract(params);
       break;
-    case PurchaseContractMsg::ID:
+    case +MsgID::PurchaseContract:
       body = process_purchase_contract(params);
       break;
-    case SellContractMsg::ID:
+    case +MsgID::SellContract:
       body = process_sell_contract(params);
       break;
-
+    case +MsgID::SpendToken:
+      body = process_spend_token(params);
+      break;
+    case +MsgID::CreateRevenue:
+      body = process_create_revenue(params);
+      break;
     case +MsgID::Unset:
       throw Error("Message ID doesn't match any ID in system");
   }
@@ -122,18 +127,14 @@ std::string txgen::process_create_contract(const json& params)
       IBAN(params.at("revenue_id").get<std::string>(), IBANType::Revenue)
           .as_addr();
 
-  std::vector<std::string> op_codes = params.at("expressions");
+  std::vector<std::string> op_codes = params.at("buy_expressions");
   Buffer buf;
   parse_equation(buf, op_codes);
+  buf >> create_msg.buy_curve;
 
-  SpreadType spread_type = SpreadType::_from_string(
-      params.at("spread_type").get<std::string>().c_str());
-  uint256_t spread_value =
-      uint256_t(params.at("spread_value").get<std::string>());
-
-  PriceSpread price_spread(spread_type, spread_value);
-  buf << price_spread;
-  buf >> create_msg.curve;
+  op_codes = params.at("sell_expressions").get<std::vector<std::string>>();
+  parse_equation(buf, op_codes);
+  buf >> create_msg.sell_curve;
 
   create_msg.max_supply = uint256_t(params.at("max_supply").get<std::string>());
   create_msg.is_transferable =
@@ -168,4 +169,35 @@ std::string txgen::process_sell_contract(const json& params)
           .as_addr();
 
   return Buffer::serialize(sct_msg);
+}
+
+std::string txgen::process_spend_token(const json& params)
+{
+  SpendTokenMsg spend_msg;
+  spend_msg.token_key =
+      IBAN(params.at("token_id").get<std::string>(), IBANType::Contract)
+          .as_addr();
+  spend_msg.value = uint256_t(params.at("value").get<std::string>());
+
+  return Buffer::serialize(spend_msg);
+}
+
+std::string txgen::process_create_revenue(const json& params)
+{
+  CreateRevenueMsg cr_msg;
+  cr_msg.base_token_id =
+      IBAN(params.at("base_token_id").get<std::string>(), IBANType::Contract)
+          .as_addr();
+  cr_msg.stake_id =
+      IBAN(params.at("stake_id").get<std::string>(), IBANType::Stake).as_addr();
+
+  TimeUnit time_unit =
+      TimeUnit::_from_string(params.at("time_unit").get<std::string>().c_str());
+  uint16_t time_value =
+      uint16_t(std::stoul(params.at("time_value").get<std::string>()));
+  cr_msg.time_period = TimePeriod(time_value, time_unit);
+  cr_msg.is_private =
+      bool(std::stoul(params.at("is_private").get<std::string>()));
+
+  return Buffer::serialize(cr_msg);
 }

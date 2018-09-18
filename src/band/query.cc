@@ -90,15 +90,13 @@ json Query::process_community_info(const json& params)
   auto contract_id = IBAN(contract_id_iban, IBANType::Contract).as_addr();
 
   auto& contract = ctx.get<Contract>(contract_id);
-  PriceSpread ps = contract.get_price_spread();
 
   json response;
-  response["equation"] = contract.get_string_equation();
+  response["buy_equation"] = contract.buy_curve.to_string();
+  response["sell_equation"] = contract.sell_curve.to_string();
   response["circulating_supply"] = "{}"_format(contract.circulating_supply);
   response["total_supply"] = "{}"_format(contract.total_supply);
   response["max_supply"] = "{}"_format(contract.max_supply);
-  response["spread_type"] = ps.get_spread_type()._to_string();
-  response["spread_value"] = "{}"_format(ps.get_spread_value());
 
   response["revenue_id"] =
       contract.revenue_id.to_iban_string(IBANType::Revenue);

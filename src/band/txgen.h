@@ -11,8 +11,12 @@ json process_txgen(const json& params);
 /// One function per one message type.
 std::string process_mint(const json& params);
 std::string process_tx(const json& params);
+
 std::string process_create_contract(const json& params);
 std::string process_purchase_contract(const json& params);
 std::string process_sell_contract(const json& params);
+
+std::string process_spend_token(const json& params);
+std::string process_create_revenue(const json& params);
 
 } // namespace txgen

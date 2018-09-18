@@ -90,7 +90,7 @@ private:
     uniq->debug_create();
 
     auto raw = uniq.get();
-    auto [it, ok] = cache.try_emplace(key, std::move(uniq));
+    bool ok = cache.try_emplace(key, std::move(uniq)).second;
     if (!ok)
       throw Failure("ContextKey {} already exists in cache", key);
     return *raw;

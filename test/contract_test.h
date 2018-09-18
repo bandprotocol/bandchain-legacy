@@ -4,6 +4,7 @@
 #include "inc/essential.h"
 #include "store/context_map.h"
 #include "store/contract.h"
+#include "util/bytes.h"
 #include "util/equation.h"
 
 class TempVarsContract : public Vars
@@ -40,9 +41,10 @@ public:
 
     Address benificiary = Address::rand();
 
-    Curve curve(std::move(p), {SpreadType::Constant, 3});
-    ctx.create<Contract>(contract_id, revenue_id, curve, 300, 0, 1,
-                         benificiary);
+    Curve curve(std::move(p));
+    Curve curve2(get_default_equation());
+    ctx.create<Contract>(contract_id, revenue_id, ContractID{}, curve, curve2,
+                         300, 0, 1, benificiary);
 
     auto& contract2 = ctx.get<Contract>(contract_id);
 

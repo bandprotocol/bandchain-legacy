@@ -49,5 +49,22 @@ public:
         IBAN("CX54 AAAA AAAA AAAA AAAA AAAA AAAA AAAA AAAA", IBANType::Contract)
             .as_addr(),
         Address());
+    TS_ASSERT_EQUALS(
+        IBAN("RX70 RRRR RRRR RRRR RRRR RRRR RRRR RRRR RRRR", IBANType::Revenue)
+            .as_addr(),
+        Address::from_hex("7bdef7bdef7bdef7bdef7bdef7bdef7bdef7bdef"));
+    TS_ASSERT_EQUALS(
+        IBAN("CX09 CCCC CCCC CCCC CCCC CCCC CCCC CCCC CCCC", IBANType::Contract)
+            .as_addr(),
+        Address::from_hex("1084210842108421084210842108421084210842"));
+    TS_ASSERT_EQUALS(
+        IBAN("AX72 AAAA AAAA AAAA AAAA AAAA AAAA AAAA AAAA", IBANType::Account)
+            .as_addr(),
+        Address::from_hex("0000000000000000000000000000000000000000"));
+
+    TS_ASSERT_EQUALS(
+        IBAN("SX87 SSSS SSSS SSSS SSSS SSSS SSSS SSSS SSSS", IBANType::Stake)
+            .as_addr(),
+        Address::from_hex("8421084210842108421084210842108421084210"));
   }
 };

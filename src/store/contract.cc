@@ -4,45 +4,42 @@
 #include "util/endian.h"
 
 Contract::Contract(const ContractID& contract_id, const ContextKey& _revenue_id,
-                   const Curve& _curve, const uint256_t& _max_supply,
-                   bool _is_transferable, bool _is_discountable,
+                   const ContractID& _base_contract_id, const Curve& _buy_curve,
+                   const Curve& _sell_curve, const uint256_t& _max_supply,
+                   uint8_t _is_transferable, uint8_t _is_discountable,
                    const Address& _beneficiary)
     : Object(contract_id)
     , revenue_id(_revenue_id)
-    , beneficiary(_beneficiary)
+    , base_contract_id(_base_contract_id)
+    , buy_curve(_buy_curve)
+    , sell_curve(_sell_curve)
+    , max_supply(_max_supply)
     , is_transferable(_is_transferable)
     , is_discountable(_is_discountable)
-    , max_supply(_max_supply)
-    , curve(_curve)
+    , beneficiary(_beneficiary)
 {
 }
 
 Contract::Contract(const Contract& contract)
-    : Contract(contract.key, contract.revenue_id, contract.curve,
-               contract.max_supply, contract.is_transferable,
-               contract.is_discountable, contract.beneficiary)
+    : Contract(contract.key, contract.revenue_id, contract.base_contract_id,
+               contract.buy_curve, contract.sell_curve, contract.max_supply,
+               contract.is_transferable, contract.is_discountable,
+               contract.beneficiary)
 {
   circulating_supply = contract.circulating_supply;
   total_supply = contract.total_supply;
 }
 
-std::string Contract::get_string_equation() const { return curve.to_string(); }
-
-PriceSpread Contract::get_price_spread() const
-{
-  return curve.get_price_spread();
-}
-
 uint256_t Contract::get_buy_price(const uint256_t& token_supply) const
 {
   VarsContext vars(token_supply);
-  return curve.apply_buy(vars);
+  return buy_curve.apply(vars);
 }
 
 uint256_t Contract::get_sell_price(const uint256_t& token_supply) const
 {
   VarsContext vars(token_supply);
-  return curve.apply_sell(vars);
+  return sell_curve.apply(vars);
 }
 
 void Contract::debug_create() const
@@ -52,10 +49,8 @@ void Contract::debug_create() const
   DEBUG(log, "  RevenueID: {}", revenue_id.to_iban_string(IBANType::Revenue));
   DEBUG(log, "  Beneficiary: {}",
         beneficiary.to_iban_string(IBANType::Account));
-  DEBUG(log, "  Curve: {}", curve);
-  DEBUG(log, "  SpreadType: {}",
-        curve.get_price_spread().get_spread_type()._to_string());
-  DEBUG(log, "  SpreadValue: {}", curve.get_price_spread().get_spread_value());
+  DEBUG(log, "  BuyCurve: {}", buy_curve);
+  DEBUG(log, "  SellCurve: {}", sell_curve);
   DEBUG(log, "  MaxSupply: {}", max_supply);
   DEBUG(log, "  Transferable: {}", is_transferable);
   DEBUG(log, "  Discountable: {}", is_discountable);

@@ -85,8 +85,10 @@ IBAN::IBAN(const std::string& iban_string, IBANType iban_type)
     throw Error("IBAN has invalid prefix type {} (expect {})", prefix[0],
                 iban_type._to_integral());
 
-  if (compute_remainder(account, prefix) != 1)
+  if (compute_remainder(account, prefix) != 1) {
+    // NOCOMMIT_LOG("{}", compute_remainder(account, prefix));
     throw Error("Invalid IBAN checksum");
+  }
 }
 
 IBAN::IBAN(const Address& addr, IBANType iban_type)

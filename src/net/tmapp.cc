@@ -8,20 +8,22 @@ namespace
 bool read_ahead(Buffer& buf, int& value)
 {
   value = 0;
-  auto buf_span = buf.as_span();
 
-  for (size_t i = 0; i < buf_span.size(); ++i) {
-    int byte = std::to_integer<int>(buf_span[i]);
-    value |= (byte & 0x7F) << (7 * i);
+  int idx = 0;
+  for (const auto raw_byte : buf.as_span()) {
+    int byte = std::to_integer<int>(raw_byte);
+    value |= (byte & 0x7F) << (7 * idx);
     if (!(byte & 0x80)) {
       value >>= 1;
-      if (buf.size_bytes() > i + value) {
-        buf.consume(1 + i);
+      if (buf.size_bytes() > idx + value) {
+        buf.consume(1 + idx);
         return true;
       } else {
         return false;
       }
     }
+
+    ++idx;
   }
   return false;
 }

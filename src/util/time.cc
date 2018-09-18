@@ -27,6 +27,7 @@ uint64_t get_total_count(TimeUnit time_unit, int64_t timestamp)
     case +TimeUnit::Year:
       return time->tm_year;
   }
+  throw Failure("Invalid time unit");
 }
 } // namespace
 
@@ -51,7 +52,7 @@ Buffer& operator>>(Buffer& buf, TimePeriod& period)
   return buf >> period.time_value >> period.time_unit;
 }
 
-uint64_t TimePeriod::timestamp_to_tpc(int64_t timestamp)
+uint64_t TimePeriod::timestamp_to_tpc(int64_t timestamp) const
 {
   uint64_t total_count = get_total_count(time_unit, timestamp);
   return total_count / time_value;

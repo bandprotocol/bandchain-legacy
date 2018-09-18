@@ -20,6 +20,7 @@ std::string BandApplication::get_current_app_hash() const
 void BandApplication::init(const std::string& init_state)
 {
   // Nothing here yet!
+  handler.init(init_state);
 }
 
 std::string BandApplication::query(const std::string& path,

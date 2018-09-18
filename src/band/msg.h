@@ -7,9 +7,11 @@
 #include "util/bytes.h"
 #include "util/endian.h"
 #include "util/equation.h"
+#include "util/time.h"
 
 BETTER_ENUM(MsgID, uint16_t, Unset = 0, Mint = 1, Tx = 2, CreateContract = 3,
-            PurchaseContract = 4, SellContract = 5)
+            PurchaseContract = 4, SellContract = 5, SpendToken = 6,
+            CreateRevenue = 7)
 
 /// The header of ANY message that will be processed in this BAND blockchain.
 struct MsgHdr {
@@ -75,7 +77,8 @@ struct TxMsg : BaseMsg<MsgID::Tx> {
 /// bonding curve equation and revenue id to collect revenue from redeem token.
 struct CreateContractMsg : BaseMsg<MsgID::CreateContract> {
   ContextKey revenue_id{};
-  Curve curve;
+  Curve buy_curve;
+  Curve sell_curve;
   uint256_t max_supply{};
   bool is_transferable{};
   bool is_discountable{};
@@ -83,14 +86,16 @@ struct CreateContractMsg : BaseMsg<MsgID::CreateContract> {
 
   friend Buffer& operator<<(Buffer& buf, const CreateContractMsg& msg)
   {
-    return buf << msg.revenue_id << msg.curve << msg.max_supply
-               << msg.is_transferable << msg.is_discountable << msg.beneficiary;
+    return buf << msg.revenue_id << msg.buy_curve << msg.sell_curve
+               << msg.max_supply << msg.is_transferable << msg.is_discountable
+               << msg.beneficiary;
   }
 
   friend Buffer& operator>>(Buffer& buf, CreateContractMsg& msg)
   {
-    return buf >> msg.revenue_id >> msg.curve >> msg.max_supply >>
-           msg.is_transferable >> msg.is_discountable >> msg.beneficiary;
+    return buf >> msg.revenue_id >> msg.buy_curve >> msg.sell_curve >>
+           msg.max_supply >> msg.is_transferable >> msg.is_discountable >>
+           msg.beneficiary;
   }
 };
 
@@ -126,5 +131,40 @@ struct SellContractMsg : BaseMsg<MsgID::SellContract> {
   friend Buffer& operator>>(Buffer& buf, SellContractMsg& msg)
   {
     return buf >> msg.contract_id >> msg.value >> msg.price_limit;
+  }
+};
+
+struct SpendTokenMsg : BaseMsg<MsgID::SpendToken> {
+  TokenKey token_key{};
+  uint256_t value{};
+
+  friend Buffer& operator<<(Buffer& buf, const SpendTokenMsg& msg)
+  {
+    return buf << msg.token_key << msg.value;
+  }
+
+  friend Buffer& operator>>(Buffer& buf, SpendTokenMsg& msg)
+  {
+    return buf >> msg.token_key >> msg.value;
+  }
+};
+
+struct CreateRevenueMsg : BaseMsg<MsgID::CreateRevenue> {
+  ContractID base_token_id{};
+  Address manager{};
+  ContextKey stake_id{};
+  TimePeriod time_period{};
+  bool is_private{};
+
+  friend Buffer& operator<<(Buffer& buf, const CreateRevenueMsg& msg)
+  {
+    return buf << msg.base_token_id << msg.manager << msg.stake_id
+               << msg.time_period << msg.is_private;
+  }
+
+  friend Buffer& operator>>(Buffer& buf, CreateRevenueMsg& msg)
+  {
+    return buf >> msg.base_token_id >> msg.manager >> msg.stake_id >>
+           msg.time_period >> msg.is_private;
   }
 };
