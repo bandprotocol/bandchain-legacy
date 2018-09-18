@@ -55,7 +55,8 @@ json txgen::process_txgen(const json& params)
 {
   MsgHdr msg_hdr;
 
-  msg_hdr.msgid = std::stoul(params.at("msgid").get<std::string>());
+  msg_hdr.msgid =
+      MsgID::_from_string(params.at("msgid").get<std::string>().c_str());
   msg_hdr.ts = get_current_ts();
   msg_hdr.vk = VerifyKey::from_hex(params.at("vk").get<std::string>());
 
@@ -76,10 +77,8 @@ json txgen::process_txgen(const json& params)
     case SellContractMsg::ID:
       body = process_sell_contract(params);
       break;
-    // case CreatePCMsg::ID:
-    //   body = process_createPC(params);
-    //   break;
-    default:
+
+    case +MsgID::Unset:
       throw Error("Message ID doesn't match any ID in system");
   }
 

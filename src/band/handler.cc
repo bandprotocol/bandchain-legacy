@@ -40,8 +40,9 @@ void Handler::apply_message(const MsgHdr& hdr, Buffer& buf, const Hash& tx_hash,
       apply_sell_contract(addr, buf.read_all<SellContractMsg>(), tx_hash,
                           timestamp);
       break;
-    default:
-      throw Error("Invalid MsgID {}", uint16_t(hdr.msgid));
+
+    case +MsgID::Unset:
+      throw Error("Invalid MsgID");
   }
 
   ctx.flush();

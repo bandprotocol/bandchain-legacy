@@ -1,27 +1,21 @@
 #pragma once
 
+#include <enum/enum.h>
+
 #include "inc/essential.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
 #include "util/endian.h"
 #include "util/equation.h"
 
-struct MsgID {
-  enum : uint16_t {
-    Unset = 0,
-    Mint = 1,
-    Tx = 2,
-    CreateContract = 3,
-    PurchaseContract = 4,
-    SellContract = 5,
-  };
-};
+BETTER_ENUM(MsgID, uint16_t, Unset = 0, Mint = 1, Tx = 2, CreateContract = 3,
+            PurchaseContract = 4, SellContract = 5)
 
 /// The header of ANY message that will be processed in this BAND blockchain.
 struct MsgHdr {
-  uint16_t msgid{}; //< The ID from this message
-  uint64_t ts{};    //< The timestamp at which this message is broadcasted
-  VerifyKey vk{};   //< The verify key of the person who broadcasts this message
+  MsgID msgid{MsgID::Unset}; //< The ID from this message
+  uint64_t ts{};  //< The timestamp at which this message is broadcasted
+  VerifyKey vk{}; //< The verify key of the person who broadcasts this message
 
   friend Buffer& operator<<(Buffer& buf, const MsgHdr& msg)
   {
@@ -34,10 +28,10 @@ struct MsgHdr {
   }
 };
 
-template <uint16_t MSG_ID>
+template <MsgID::_enumerated MSG_ID>
 struct BaseMsg {
   /// Convenient static member so that the ID can be easily accessed
-  static constexpr uint16_t ID = MSG_ID;
+  static constexpr MsgID ID = MSG_ID;
 };
 
 /// MingMsg allows anyone in the world to mint token to their own account.
