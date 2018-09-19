@@ -25,7 +25,8 @@ void Handler::init(const std::string& init_state)
       TimePeriod(),
       IBAN<IBANType::Stake>("SX87 SSSS SSSS SSSS SSSS SSSS SSSS SSSS SSSS")
           .as_addr(),
-      false);
+      false, Curve(std::make_unique<EqVar>()),
+      Curve(std::make_unique<EqVar>()));
   ctx.create<Contract>(
       IBAN<IBANType::Contract>("CX09 CCCC CCCC CCCC CCCC CCCC CCCC CCCC CCCC")
           .as_addr(),
@@ -108,8 +109,7 @@ void Handler::apply_create_contract(const AccountID& account_id,
   auto& revenue = ctx.get<Revenue>(cc_msg.revenue_id);
 
   if (revenue.is_private && account_id != revenue.manager)
-    throw Error(
-        "Your account_idess doesn't match manager's revenue account_idess.");
+    throw Error("Your account_id doesn't match manager's revenue account_id.");
 
   ctx.create<Contract>(contractID, cc_msg.revenue_id, revenue.base_token_id,
                        cc_msg.buy_curve, cc_msg.sell_curve, cc_msg.max_supply,
@@ -123,7 +123,7 @@ void Handler::apply_purchase_contract(const AccountID& account_id,
 {
   auto& account = ctx.get<Account>(account_id);
   auto& contract = ctx.get<Contract>(pct_msg.contract_id);
-  auto& beneficiary = ctx.get<Account>(contract.beneficiary);
+  auto& beneficiary = ctx.get_or_create<Account>(contract.beneficiary);
 
   if (contract.max_supply - contract.total_supply < pct_msg.value) {
     throw Error("There aren't tokens enough for sell");
@@ -189,10 +189,10 @@ void Handler::apply_spend_token(const AccountID& account_id,
                                contract.get_sell_price(new_circulating_supply);
 
   account[spend_msg.token_key] -= spend_msg.value;
-  const uint256_t new_revenue = revenue.get_period_revenue(tpc) + sell_price;
 
   contract.circulating_supply = new_circulating_supply;
-  revenue.set_period_revenue(tpc, new_revenue);
+  // revenue[tpc] += sell_price;
+  revenue[tpc] += revenue.base_to_x(sell_price);
 }
 
 void Handler::apply_create_revenue(const AccountID& account_id,
@@ -201,5 +201,6 @@ void Handler::apply_create_revenue(const AccountID& account_id,
 {
   RevenueID revenue_id = RevenueID::from_addr(ed25519_vk_to_addr(tx_hash));
   ctx.create<Revenue>(revenue_id, cr_msg.base_token_id, account_id,
-                      cr_msg.time_period, cr_msg.stake_id, cr_msg.is_private);
+                      cr_msg.time_period, cr_msg.stake_id, cr_msg.is_private,
+                      cr_msg.curve_to_base, cr_msg.curve_to_x);
 }

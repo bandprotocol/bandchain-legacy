@@ -155,16 +155,20 @@ struct CreateRevenueMsg : BaseMsg<MsgID::CreateRevenue> {
   StakeID stake_id{};
   TimePeriod time_period{};
   bool is_private{};
+  Curve curve_to_base;
+  Curve curve_to_x;
 
   friend Buffer& operator<<(Buffer& buf, const CreateRevenueMsg& msg)
   {
     return buf << msg.base_token_id << msg.manager << msg.stake_id
-               << msg.time_period << msg.is_private;
+               << msg.time_period << msg.is_private << msg.curve_to_base
+               << msg.curve_to_x;
   }
 
   friend Buffer& operator>>(Buffer& buf, CreateRevenueMsg& msg)
   {
     return buf >> msg.base_token_id >> msg.manager >> msg.stake_id >>
-           msg.time_period >> msg.is_private;
+           msg.time_period >> msg.is_private >> msg.curve_to_base >>
+           msg.curve_to_x;
   }
 };

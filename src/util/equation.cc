@@ -22,6 +22,12 @@ Curve::Curve(const Curve& _curve)
 
 Curve::~Curve() {}
 
+Curve& Curve::operator=(const Curve& _curve)
+{
+  equation = std::move(_curve.equation->clone());
+  return *this;
+}
+
 uint256_t Curve::apply(const Vars& vars) const
 {
   if (!equation)

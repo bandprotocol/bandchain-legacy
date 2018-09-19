@@ -49,12 +49,15 @@ public:
     TS_ASSERT_EQUALS(
         RevenueID::from_string("RX70 RRRR RRRR RRRR RRRR RRRR RRRR RRRR RRRR"),
         RevenueID::from_hex("7bdef7bdef7bdef7bdef7bdef7bdef7bdef7bdef"));
+
     TS_ASSERT_EQUALS(
         ContractID::from_string("CX09 CCCC CCCC CCCC CCCC CCCC CCCC CCCC CCCC"),
         ContractID::from_hex("1084210842108421084210842108421084210842"));
+
     TS_ASSERT_EQUALS(
         AccountID::from_string("AX72 AAAA AAAA AAAA AAAA AAAA AAAA AAAA AAAA"),
         AccountID::from_hex("0000000000000000000000000000000000000000"));
+
     TS_ASSERT_EQUALS(
         StakeID::from_string("SX87 SSSS SSSS SSSS SSSS SSSS SSSS SSSS SSSS"),
         StakeID::from_hex("8421084210842108421084210842108421084210"));

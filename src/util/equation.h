@@ -56,6 +56,7 @@ public:
   }
 
   Curve(Curve&& curve) = default;
+  Curve& operator=(const Curve& _curve);
 
   ~Curve();
 
