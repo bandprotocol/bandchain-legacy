@@ -60,7 +60,9 @@ protected:
   void add_callable(const uint16_t func_id, void (T::*func)(Args...))
   {
     functions.emplace(func_id, [func](void* obj, Buffer& buf) {
-      (((T*)obj)->*func)(buf.read<Args>()...);
+      std::tuple<T*, Args...> tup{(T*)obj, buf.read<Args>()...};
+      std::function<void(T*, Args...)> func_cast = func;
+      std::apply(func_cast, tup);
     });
   }
 
