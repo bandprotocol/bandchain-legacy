@@ -1,39 +1,72 @@
 #pragma once
 
-#include "inc/essential.h"
-#include "store/context.h"
-#include "store/varcontext.h"
-#include "util/equation.h"
+#include <enum/enum.h>
+#include <functional>
+#include <unordered_map>
 
-class Contract final : public ObjectImpl<IBANType::Contract>
+#include "inc/essential.h"
+#include "util/buffer.h"
+#include "util/bytes.h"
+#include "util/endian.h"
+
+class Context;
+
+class Contract
 {
 public:
-  Contract(const Contract& contract) = default;
-  Contract(const ContractID& contract_id, const RevenueID& _revenue_id,
-           const ContractID& _base_contract_id, const Curve& _buy_curve,
-           const Curve& _sell_curve, const uint256_t& _max_supply,
-           bool _is_transferable, bool _is_discountable,
-           const AccountID& _beneficiary);
+  inline static Context* m_ctx = nullptr;
 
-  uint256_t get_buy_price(const uint256_t& token_supply) const;
+  virtual ~Contract() {}
+  virtual std::unique_ptr<Contract> clone() const = 0;
 
-  uint256_t get_sell_price(const uint256_t& token_supply) const;
+  virtual void debug_create() const = 0;
+  virtual void debug_save() const = 0;
 
-  void debug_create() const final;
-  void debug_save() const final;
+  void call_buf(Buffer& buf)
+  {
+    auto func_id = buf.read<uint16_t>();
+    if (auto it = functions.find(func_id); it != functions.end()) {
+      (it->second)(this, buf);
+    } else {
+      throw Error("Invalid function ident");
+    }
+  }
+
+  template <typename T>
+  T* as()
+  {
+    T* result = dynamic_cast<T*>(this);
+    if (result == nullptr)
+      throw Error("Invalid contract cast");
+
+    return result;
+  }
+
+protected:
+  Contract(const Address& addr)
+      : m_addr(addr)
+  {
+  }
+
+  /// Get the sender of the current message. Throws if the sender has not
+  /// been set.
+  Address get_sender();
+
+  /// Set the sender of the current message to this contract.
+  void set_sender();
+
+  /// TODO: Move this to static level
+  template <typename T, typename... Args>
+  void add_callable(const uint16_t func_id, void (T::*func)(Args...))
+  {
+    functions.emplace(func_id, [func](void* obj, Buffer& buf) {
+      (((T*)obj)->*func)(buf.read<Args>()...);
+    });
+  }
 
 public:
-  const RevenueID revenue_id;
-  const ContractID base_contract_id;
-  const Curve buy_curve;
-  const Curve sell_curve;
-  const uint256_t max_supply;
-  const bool is_transferable;
-  const bool is_discountable;
-  const AccountID beneficiary;
+  const Address m_addr;
 
-  uint256_t circulating_supply = 0;
-  uint256_t total_supply = 0;
-
-  static inline auto log = logger::get("contract");
+protected:
+  std::unordered_map<uint16_t, std::function<void(void*, Buffer&)>> functions;
 };

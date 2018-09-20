@@ -1,8 +1,5 @@
 #pragma once
 
-#include "band/handler.h"
-#include "band/msg.h"
-#include "band/query.h"
 #include "inc/essential.h"
 #include "net/tmapp.h"
 #include "store/context.h"
@@ -25,8 +22,7 @@ public:
   /// following BAND RPC specification.
   std::string query(const std::string& path, const std::string& data) final;
 
-  /// Check the transaction. For now it only checks that the transaction has
-  /// a proper signature.
+  /// Check the transaction. For now it does nothing.
   void check(const std::string& msg_raw) final;
 
   /// Apply the transaction to the blockchain.
@@ -34,6 +30,6 @@ public:
 
 private:
   Context& ctx;
-  Handler handler;
-  Query qry;
+  // Handler handler;
+  // Query qry;
 };

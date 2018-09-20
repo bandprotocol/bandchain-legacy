@@ -24,7 +24,7 @@ Curve::~Curve() {}
 
 Curve& Curve::operator=(const Curve& _curve)
 {
-  equation = std::move(_curve.equation->clone());
+  equation = _curve.equation->clone();
   return *this;
 }
 

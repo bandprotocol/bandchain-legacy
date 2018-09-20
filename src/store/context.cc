@@ -1,9 +1,21 @@
 #include "context.h"
 
+void Context::call(Buffer& buf)
+{
+  Address addr = buf.read<Address>();
+  Contract* contract = get_context_impl(addr);
+
+  if (contract == nullptr)
+    throw Error("Contract not found");
+
+  Contract::m_ctx = this; // TODO
+  contract->call_buf(buf);
+}
+
 void Context::reset()
 {
-  // No more cache...
   cache.clear();
+  sender = Address();
 }
 
 void Context::flush()
@@ -13,6 +25,7 @@ void Context::flush()
     add_impl(std::move(obj.second));
   }
   cache.clear();
+  sender = Address();
 
   DEBUG(log, "============================================================"
              "============================================================");

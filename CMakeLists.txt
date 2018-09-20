@@ -22,6 +22,7 @@ include_directories(. src test)
 
 file(GLOB source_files
      "src/band/*.h" "src/band/*.cc"
+     "src/contract/*.h" "src/contract/*.cc"
      "src/crypto/*.h" "src/crypto/*.cc"
      "src/inc/*.h" "src/inc/*.cc"
      "src/msg/*.h" "src/msg/*.cc"

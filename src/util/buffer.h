@@ -44,6 +44,18 @@ public:
   /// the span will become invalid.
   gsl::span<const std::byte> as_span() const { return gsl::make_span(buf); }
 
+  Buffer& operator<<(Buffer& data)
+  {
+    buf.insert(buf.end(), data.buf.begin(), data.buf.end());
+    return *this;
+  }
+
+  Buffer& operator>>(Buffer& data)
+  {
+    data.buf.insert(data.buf.end(), buf.begin(), buf.end());
+    return *this;
+  }
+
   template <typename T>
   friend Buffer& operator<<(Buffer& buf, gsl::span<T> data)
   {

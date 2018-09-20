@@ -63,7 +63,6 @@ public:
 
   /// Return a friendly hex representation of this bytes value.
   std::string to_string() const;
-  std::string to_hex_string() const;
 
   /// Read and write from/to buffer.
   friend Buffer& operator<<(Buffer& buf, const Bytes& data)
@@ -179,13 +178,6 @@ Bytes<RET_SIZE> Bytes<SIZE>::suffix() const
 
 template <int SIZE>
 std::string Bytes<SIZE>::to_string() const
-{
-  static_assert(SIZE != 20, "Please use IBANAddrBase::to_string()");
-  return to_hex_string();
-}
-
-template <int SIZE>
-std::string Bytes<SIZE>::to_hex_string() const
 {
   return bytes_to_hex(as_span());
 }
