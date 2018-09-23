@@ -2,6 +2,7 @@
 
 #include "crypto/ed25519.h"
 #include "store/context.h"
+#include "store/global.h"
 #include "util/endian.h"
 
 Account::Account(const VerifyKey& verify_key)
@@ -22,5 +23,5 @@ void Account::delegate_call(Signature sig, Buffer buf)
   ++m_nonce;
 
   set_sender();
-  m_ctx->call(buf);
+  Global::get().m_ctx->call(buf);
 }

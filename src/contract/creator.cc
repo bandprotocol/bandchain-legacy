@@ -5,6 +5,7 @@
 #include "contract/account.h"
 #include "contract/token.h"
 #include "store/context.h"
+#include "store/global.h"
 #include "util/endian.h"
 
 BETTER_ENUM(ContractID, uint16_t, Unset = 0, Account = 1, Token = 2)
@@ -22,10 +23,10 @@ void Creator::create(Buffer buf)
 
   switch (contract_id) {
     case +ContractID::Account:
-      m_ctx->create<Account>(buf.read<VerifyKey>());
+      Global::get().m_ctx->create<Account>(buf.read<VerifyKey>());
       break;
     case +ContractID::Token:
-      m_ctx->create<Token>();
+      Global::get().m_ctx->create<Token>();
       break;
     case +ContractID::Unset:
       throw Error("TODO");

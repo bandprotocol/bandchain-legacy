@@ -14,8 +14,6 @@ class Context;
 class Contract
 {
 public:
-  inline static Context* m_ctx = nullptr;
-
   virtual ~Contract() {}
   virtual std::unique_ptr<Contract> clone() const = 0;
 

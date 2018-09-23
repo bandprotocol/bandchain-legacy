@@ -1,5 +1,7 @@
 #include "context.h"
 
+#include "store/global.h"
+
 void Context::call(Buffer& buf)
 {
   Address addr = buf.read<Address>();
@@ -8,14 +10,14 @@ void Context::call(Buffer& buf)
   if (contract == nullptr)
     throw Error("Contract not found");
 
-  Contract::m_ctx = this; // TODO
+  Global::get().m_ctx = this; // TODO
   contract->call_buf(buf);
 }
 
 void Context::reset()
 {
   cache.clear();
-  sender = Address();
+  Global::get().reset_per_tx();
 }
 
 void Context::flush()
@@ -25,7 +27,7 @@ void Context::flush()
     add_impl(std::move(obj.second));
   }
   cache.clear();
-  sender = Address();
+  Global::get().reset_per_tx();
 
   DEBUG(log, "============================================================"
              "============================================================");

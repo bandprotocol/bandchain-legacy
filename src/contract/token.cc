@@ -1,7 +1,10 @@
 #include "token.h"
 
+#include "crypto/ed25519.h"
+#include "store/global.h"
+
 Token::Token()
-    : Contract(Address::rand()) // TODO
+    : Contract(ed25519_vk_to_addr(Global::get().tx_hash))
 {
   add_callable(1, &Token::mint);
   add_callable(2, &Token::transfer);

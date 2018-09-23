@@ -73,6 +73,5 @@ protected:
   static inline auto log = logger::get("context");
 
 private:
-  Address sender;
   std::unordered_map<Address, std::unique_ptr<Contract>> cache;
 };
