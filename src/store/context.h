@@ -14,7 +14,7 @@ public:
 
   virtual ~Context(){};
 
-  void call(Buffer& buf);
+  void call(Buffer& in_buf, Buffer* out_buf = nullptr);
 
   void reset();
   void flush();

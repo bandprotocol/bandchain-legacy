@@ -27,7 +27,7 @@ public:
   virtual void check(const std::string& msg_raw) = 0;
 
   /// Apply an incoming message to the blockchain.
-  virtual void apply(const std::string& msg_raw) = 0;
+  virtual std::string apply(const std::string& msg_raw) = 0;
 
 protected:
   uint64_t last_block_height = 0;

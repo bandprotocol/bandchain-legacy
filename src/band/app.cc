@@ -42,7 +42,7 @@ void BandApplication::check(const std::string& msg_raw)
   // TODO
 }
 
-void BandApplication::apply(const std::string& msg_raw)
+std::string BandApplication::apply(const std::string& msg_raw)
 {
   BOOST_SCOPE_EXIT(&ctx) { ctx.reset(); }
   BOOST_SCOPE_EXIT_END
@@ -50,7 +50,11 @@ void BandApplication::apply(const std::string& msg_raw)
   Buffer msg_buf(gsl::make_span(msg_raw));
   Global::get().tx_hash = sha256(gsl::make_span(msg_raw));
   uint64_t ts = msg_buf.read<uint64_t>();
-  ctx.call(msg_buf);
+  (void)ts;
 
+  Buffer result;
+  ctx.call(msg_buf, &result);
   ctx.flush();
+
+  return result.to_raw_string();
 }

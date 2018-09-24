@@ -2,16 +2,16 @@
 
 #include "store/global.h"
 
-void Context::call(Buffer& buf)
+void Context::call(Buffer& in_buf, Buffer* out_buf)
 {
-  Address addr = buf.read<Address>();
+  Address addr = in_buf.read<Address>();
   Contract* contract = get_context_impl(addr);
 
   if (contract == nullptr)
     throw Error("Contract not found");
 
   Global::get().m_ctx = this; // TODO
-  contract->call_buf(buf);
+  contract->call_buf(in_buf, out_buf);
 }
 
 void Context::reset()

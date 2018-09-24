@@ -7,7 +7,7 @@ class Creator final : public Contract
 public:
   Creator();
 
-  void create(Buffer buf);
+  Address create(Buffer buf);
 
 public:
   void debug_create() const final { DEBUG(log, "create created"); }

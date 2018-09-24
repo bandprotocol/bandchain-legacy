@@ -26,7 +26,7 @@ public:
   void check(const std::string& msg_raw) final;
 
   /// Apply the transaction to the blockchain.
-  void apply(const std::string& msg_raw) final;
+  std::string apply(const std::string& msg_raw) final;
 
 private:
   Context& ctx;

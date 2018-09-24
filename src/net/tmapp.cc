@@ -105,7 +105,7 @@ void TendermintApplication::do_deliver_tx(const RequestDeliverTx& req,
                                           ResponseDeliverTx& res)
 {
   try {
-    apply(req.tx());
+    res.set_data(apply(req.tx()));
     res.set_code(0);
   } catch (const Error& err) {
     res.set_info(err.what());
