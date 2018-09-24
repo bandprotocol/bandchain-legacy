@@ -4,9 +4,11 @@
 
 #include "contract/account.h"
 #include "contract/creator.h"
+#include "contract/token.h"
 #include "crypto/sha256.h"
 #include "store/contract.h"
 #include "store/global.h"
+#include "util/equation.h"
 
 BandApplication::BandApplication(Context& _ctx)
     : ctx(_ctx)
@@ -22,6 +24,9 @@ std::string BandApplication::get_current_app_hash() const
 void BandApplication::init(const std::string& init_state)
 {
   ctx.create<Creator>();
+  Address band = Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  Curve linear = Curve(std::make_unique<EqVar>());
+  ctx.create<Token>(band, band, linear);
   ctx.flush();
 }
 

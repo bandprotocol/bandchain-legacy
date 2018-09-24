@@ -100,8 +100,8 @@ struct hash<IBANAddrBase<IBAN_TYPE>> {
 };
 } // namespace std
 
-using AccountID = IBANAddrBase<IBANType::Account>;
-using ContractID = IBANAddrBase<IBANType::Contract>;
-using PriceID = IBANAddrBase<IBANType::Price>;
-using RevenueID = IBANAddrBase<IBANType::Revenue>;
-using StakeID = IBANAddrBase<IBANType::Stake>;
+// using AccountID = IBANAddrBase<IBANType::Account>;
+// using ContractID = IBANAddrBase<IBANType::Contract>;
+// using PriceID = IBANAddrBase<IBANType::Price>;
+// using RevenueID = IBANAddrBase<IBANType::Revenue>;
+// using StakeID = IBANAddrBase<IBANType::Stake>;

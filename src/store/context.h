@@ -23,7 +23,7 @@ public:
   T& get(const Address& key)
   {
     if (auto ptr = get_context_impl(key); ptr != nullptr)
-      return ptr->as<T>();
+      return *(ptr->as<T>());
     throw Error("Address {} does not exist", key);
   }
 

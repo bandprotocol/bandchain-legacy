@@ -191,7 +191,7 @@ class EqPrice : public Eq
 {
 public:
   EqPrice() {}
-  EqPrice(const PriceID& _price_id)
+  EqPrice(const Address& _price_id)
       : price_id(_price_id)
   {
   }
@@ -200,14 +200,14 @@ public:
   void dump(Buffer& buf) const final;
   std::unique_ptr<Eq> clone() const final;
 
-  PriceID price_id;
+  Address price_id;
 };
 
 class EqContract : public Eq
 {
 public:
   EqContract() {}
-  EqContract(const ContractID& _contract_id)
+  EqContract(const Address& _contract_id)
       : contract_id(_contract_id)
   {
   }
@@ -216,5 +216,5 @@ public:
   void dump(Buffer& buf) const final;
   std::unique_ptr<Eq> clone() const final;
 
-  ContractID contract_id;
+  Address contract_id;
 };

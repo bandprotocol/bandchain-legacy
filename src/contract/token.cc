@@ -1,13 +1,17 @@
 #include "token.h"
 
-#include "crypto/ed25519.h"
 #include "store/global.h"
 
-Token::Token()
-    : Contract(ed25519_vk_to_addr(Global::get().tx_hash))
+Token::Token(const Address& token_id, const Address& _base_token_id,
+             const Curve& _buy_curve)
+    : Contract(token_id)
+    , base_token_id(_base_token_id)
+    , buy_curve(_buy_curve)
 {
   add_callable(1, &Token::mint);
   add_callable(2, &Token::transfer);
+  add_callable(3, &Token::buy);
+  add_callable(4, &Token::sell);
 }
 
 void Token::mint(uint256_t value)
@@ -22,18 +26,45 @@ void Token::transfer(Address dest, uint256_t value)
   m_balances[dest] += value;
 }
 
+void Token::buy(uint256_t value)
+{
+  uint256_t buy_price = buy_curve.apply(VarsSimple(current_supply + value)) -
+                        buy_curve.apply(VarsSimple(current_supply));
+
+  auto& base_contract = Global::get().m_ctx->get<Token>(base_token_id);
+
+  base_contract.m_balances[get_sender()] -= buy_price;
+  m_balances[get_sender()] += value;
+  current_supply += value;
+}
+
+void Token::sell(uint256_t value)
+{
+  uint256_t sell_price = buy_curve.apply(VarsSimple(current_supply)) -
+                         buy_curve.apply(VarsSimple(current_supply - value));
+
+  auto& base_contract = Global::get().m_ctx->get<Token>(base_token_id);
+
+  base_contract.m_balances[get_sender()] += sell_price;
+  m_balances[get_sender()] -= value;
+  current_supply -= value;
+}
+
 void Token::debug_create() const
 {
-  NOCOMMIT_LOG("token created at {} {}", m_addr, (void*)this);
+  DEBUG(log, "token created at {} {}", m_addr, (void*)this);
+  DEBUG(log, "Base token id: {}", base_token_id);
+  DEBUG(log, "Buy curve: {}", buy_curve);
   for (auto& [addr, val] : m_balances) {
-    NOCOMMIT_LOG("  {} has {}", addr, val);
+    DEBUG(log, "  {} has {}", addr, val);
   }
 }
 
 void Token::debug_save() const
 {
-  NOCOMMIT_LOG("token saved at {} {}", m_addr, (void*)this);
+  DEBUG(log, "token saved at {} {}", m_addr, (void*)this);
+  DEBUG(log, "Supply {}", current_supply);
   for (auto& [addr, val] : m_balances) {
-    NOCOMMIT_LOG("  {} has {}", addr, val);
+    DEBUG(log, "  {} has {}", addr, val);
   }
 }

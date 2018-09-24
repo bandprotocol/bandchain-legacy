@@ -5,15 +5,21 @@
 #include "inc/essential.h"
 #include "store/contract.h"
 #include "util/bytes.h"
+#include "util/equation.h"
 
 class Token final : public Contract
 {
 public:
-  Token();
+  Token(const Address& token_id, const Address& _base_token_id,
+        const Curve& _buy_curve);
 
   void mint(uint256_t value);
 
   void transfer(Address dest, uint256_t value);
+
+  void buy(uint256_t value);
+
+  void sell(uint256_t value);
 
 public:
   void debug_create() const final;
@@ -23,6 +29,11 @@ public:
     return std::make_unique<Token>(*this);
   }
 
+  const Address base_token_id;
+  const Curve buy_curve;
+
 private:
   std::unordered_map<Address, uint256_t> m_balances;
+  uint256_t current_supply = 0;
+  static inline auto log = logger::get("token");
 };

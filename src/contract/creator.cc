@@ -4,6 +4,7 @@
 
 #include "contract/account.h"
 #include "contract/token.h"
+#include "crypto/ed25519.h"
 #include "store/context.h"
 #include "store/global.h"
 #include "util/endian.h"
@@ -25,9 +26,18 @@ void Creator::create(Buffer buf)
     case +ContractID::Account:
       Global::get().m_ctx->create<Account>(buf.read<VerifyKey>());
       break;
-    case +ContractID::Token:
-      Global::get().m_ctx->create<Token>();
+    case +ContractID::Token: {
+      Address base = buf.read<Address>();
+      Curve buy = buf.read<Curve>();
+      Global::get().m_ctx->create<Token>(
+          ed25519_vk_to_addr(Global::get().tx_hash), base, buy);
+
+      // Global::get().m_ctx->create<Token>(
+      //     ed25519_vk_to_addr(Global::get().tx_hash), buf.read<Address>(),
+      //     buf.read<Curve>(), buf.read<Curve>());
+
       break;
+    }
     case +ContractID::Unset:
       throw Error("TODO");
   }
