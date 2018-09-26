@@ -1,7 +1,7 @@
 #pragma once
 
+#include <deque>
 #include <type_traits>
-#include <vector>
 
 #include "inc/essential.h"
 #include "util/string.h"
@@ -44,6 +44,19 @@ public:
   /// Expose this data as a read-only span. Note that if this is destroyed,
   /// the span will become invalid.
   gsl::span<const std::byte> as_span() const { return gsl::make_span(buf); }
+
+  Buffer& operator<<(std::byte val)
+  {
+    buf.push_back(val);
+    return *this;
+  }
+
+  Buffer& operator>>(std::byte& val)
+  {
+    val = buf.front();
+    buf.erase(buf.begin());
+    return *this;
+  }
 
   Buffer& operator<<(Buffer& data)
   {

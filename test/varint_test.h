@@ -2,7 +2,6 @@
 
 #include "inc/essential.h"
 #include "util/buffer.h"
-#include "util/endian.h"
 
 class VarintTest : public CxxTest::TestSuite
 {
