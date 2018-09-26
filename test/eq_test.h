@@ -10,8 +10,8 @@ class TempVarseq : public Vars
 {
 public:
   uint256_t get_x() const { return s; }
-  uint256_t get_external_price(const PriceID& key) const { return e; }
-  uint256_t get_contract_price(const ContractID& key) const { return c; }
+  uint256_t get_external_price(const Address& key) const { return e; }
+  uint256_t get_contract_price(const Address& key) const { return c; }
 
   uint256_t s;
   uint256_t e;
@@ -118,10 +118,10 @@ public:
     x = std::make_unique<EqVar>();
     c = std::make_unique<EqConstant>(10);
     x = std::make_unique<EqMul>(std::move(x), std::move(c));
-    ContractID con = ContractID::rand();
+    Address con = Address::rand();
     c = std::make_unique<EqContract>(con);
     x = std::make_unique<EqMul>(std::move(c), std::move(x));
-    PriceID pri = PriceID::rand();
+    Address pri = Address::rand();
     c = std::make_unique<EqPrice>(pri);
     x = std::make_unique<EqMul>(std::move(c), std::move(x));
     x3 = std::make_unique<EqAdd>(std::move(x3), std::move(x));

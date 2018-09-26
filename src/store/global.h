@@ -9,7 +9,7 @@ class Global
 public:
   Context* m_ctx = nullptr;
   Address sender{};
-  int64_t block_time{};
+  uint64_t block_time{};
   Address block_proposer{};
   Hash tx_hash{};
 

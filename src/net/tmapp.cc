@@ -98,6 +98,9 @@ void TendermintApplication::do_check_tx(const RequestCheckTx& req,
   } catch (const std::overflow_error& e) {
     res.set_info("uint256 integer overflow error");
     res.set_code(1);
+  } catch (const std::out_of_range& e) {
+    res.set_info("out of range lookup error");
+    res.set_code(1);
   }
 }
 
@@ -115,6 +118,9 @@ void TendermintApplication::do_deliver_tx(const RequestDeliverTx& req,
     res.set_code(1);
   } catch (const std::overflow_error& e) {
     res.set_info("uint256 integer overflow error");
+    res.set_code(1);
+  } catch (const std::out_of_range& e) {
+    res.set_info("out of range lookup error");
     res.set_code(1);
   }
 }

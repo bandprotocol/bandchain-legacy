@@ -14,6 +14,7 @@ class Context;
 class Contract
 {
 public:
+  friend class VotingTest;
   virtual ~Contract() {}
   virtual std::unique_ptr<Contract> clone() const = 0;
 

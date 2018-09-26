@@ -21,6 +21,8 @@ public:
 
   void sell(uint256_t value);
 
+  uint256_t balance(const Address& address) const;
+
 public:
   void debug_create() const final;
   void debug_save() const final;
