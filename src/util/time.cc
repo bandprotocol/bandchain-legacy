@@ -2,8 +2,6 @@
 
 #include <ctime>
 
-#include "util/endian.h"
-
 namespace
 {
 uint64_t get_total_count(TimeUnit time_unit, int64_t timestamp)

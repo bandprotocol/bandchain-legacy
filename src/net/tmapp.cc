@@ -3,7 +3,6 @@
 #include "store/contract.h"
 #include "store/global.h"
 #include "util/buffer.h"
-#include "util/endian.h"
 
 namespace
 {

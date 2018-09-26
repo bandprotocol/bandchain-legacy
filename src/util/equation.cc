@@ -1,7 +1,5 @@
 #include "util/equation.h"
 
-#include "util/endian.h"
-
 namespace
 {
 uint256_t pow(const uint256_t& l, const uint256_t& r)

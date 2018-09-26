@@ -5,7 +5,6 @@
 #include "inc/essential.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
-#include "util/endian.h"
 #include "util/variable.h"
 
 BETTER_ENUM(OpCode, uint16_t, Unset = 0, Add = 1, Sub = 2, Mul = 3, Div = 4,

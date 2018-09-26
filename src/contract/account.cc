@@ -3,7 +3,6 @@
 #include "crypto/ed25519.h"
 #include "store/context.h"
 #include "store/global.h"
-#include "util/endian.h"
 
 Account::Account(const VerifyKey& verify_key)
     : Contract(ed25519_vk_to_addr(verify_key))

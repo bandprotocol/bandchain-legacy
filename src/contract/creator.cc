@@ -8,7 +8,6 @@
 #include "crypto/ed25519.h"
 #include "store/context.h"
 #include "store/global.h"
-#include "util/endian.h"
 
 BETTER_ENUM(ContractID, uint16_t, Unset = 0, Account = 1, Token = 2, Voting = 3)
 
