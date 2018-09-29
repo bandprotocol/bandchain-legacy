@@ -8,12 +8,8 @@ Voting::Voting(const Address& voting_id, const Address& _token_id)
     : Contract(voting_id)
     , token_id(_token_id)
 {
-  add_callable(1, &Voting::request_voting_power);
-  add_callable(2, &Voting::withdraw_voting_power);
-  add_callable(3, &Voting::rescue_token);
-  add_callable(4, &Voting::commit_vote);
-  add_callable(5, &Voting::reveal_vote);
 }
+
 void Voting::request_voting_power(uint256_t value)
 {
   auto& token = Global::get().m_ctx->get<Token>(token_id);

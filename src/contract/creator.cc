@@ -1,7 +1,5 @@
 #include "creator.h"
 
-#include <enum/enum.h>
-
 #include "contract/account.h"
 #include "contract/token.h"
 #include "contract/voting.h"
@@ -9,17 +7,14 @@
 #include "store/context.h"
 #include "store/global.h"
 
-BETTER_ENUM(ContractID, uint16_t, Unset = 0, Account = 1, Token = 2, Voting = 3)
-
 Creator::Creator()
     : Contract(Address())
 {
-  add_callable(1, &Creator::create);
 }
 
 Address Creator::create(Buffer buf)
 {
-  ContractID contract_id(ContractID::Unset);
+  ContractID contract_id(ContractID::Creator);
   buf >> contract_id;
 
   Contract* created_contract = nullptr;
@@ -43,8 +38,8 @@ Address Creator::create(Buffer buf)
           ed25519_vk_to_addr(Global::get().tx_hash), token_id);
       break;
     }
-    case +ContractID::Unset:
-      throw Error("TODO");
+    default:
+      throw Error("Cannot create contract {}", contract_id._to_string());
   }
 
   return created_contract->m_addr;

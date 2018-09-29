@@ -41,6 +41,8 @@ public:
 
   bool is_poll_ended(const uint256_t& poll_id) const;
 
+  ContractID contract_id() const final { return ContractID::Voting; }
+
   void debug_create() const final;
 
   void debug_save() const final;

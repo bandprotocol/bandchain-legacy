@@ -7,28 +7,26 @@
 #include "inc/essential.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
+#include "util/json.h"
+#include "util/typeid.h"
 
-class Context;
+BETTER_ENUM(ContractID, uint16_t, Creator = 0, Account = 1, Token = 2,
+            Voting = 3)
 
 class Contract
 {
-public:
+  friend class ContractStaticInit;
   friend class VotingTest;
-  virtual ~Contract() {}
-  virtual std::unique_ptr<Contract> clone() const = 0;
 
+public:
+  virtual ~Contract() {}
+
+  virtual ContractID contract_id() const = 0;
+  virtual std::unique_ptr<Contract> clone() const = 0;
   virtual void debug_create() const = 0;
   virtual void debug_save() const = 0;
 
-  void call_buf(Buffer& in_buf, Buffer* out_buf)
-  {
-    auto func_id = in_buf.read<uint16_t>();
-    if (auto it = functions.find(func_id); it != functions.end()) {
-      (it->second)(this, in_buf, out_buf);
-    } else {
-      throw Error("Invalid function ident");
-    }
-  }
+  void call_buf(Buffer& in_buf, Buffer* out_buf);
 
   template <typename T>
   T* as()
@@ -53,30 +51,62 @@ protected:
   /// Set the sender of the current message to this contract.
   void set_sender();
 
-  /// TODO: Move this to static level
-  template <typename T, typename Ret, typename... Args>
-  void add_callable(const uint16_t func_id, Ret (T::*func)(Args...))
+public:
+  const Address m_addr;
+
+  static const json& get_abi_interface();
+
+private:
+  template <typename T = void, typename... Args>
+  static void _callable_params_gen(json& obj)
   {
-    functions.emplace(
+    if constexpr (std::is_void_v<T>) {
+      return;
+    } else {
+      obj["params"].push_back(TypeID<T>::name);
+      _callable_params_gen<Args...>(obj);
+    }
+  }
+
+  template <typename T, typename Ret, typename... Args>
+  static void add_callable(ContractID contract_id, uint16_t func_id,
+                           const std::string& func_name,
+                           Ret (T::*func)(Args...))
+  {
+    all_functions[contract_id._to_integral()].emplace(
         func_id, [func](void* obj, Buffer& in_buf, Buffer* out_buf) {
           std::tuple<T*, Args...> tup{(T*)obj, in_buf.read<Args>()...};
           std::function<Ret(T*, Args...)> func_cast = func;
 
           if constexpr (!std::is_void_v<Ret>) {
             if (out_buf) {
-              (*out_buf) << std::apply(func_cast, tup);
+              auto result = std::apply(func_cast, tup);
+              (*out_buf) << result;
               return;
             }
           }
 
           std::apply(func_cast, tup);
         });
+
+    json& abi_contract = abi_interface[contract_id._to_string()];
+    abi_contract["id"] = contract_id._to_integral();
+
+    json& abi_func = abi_contract[func_name];
+    abi_func["opcode"] = func_id;
+    abi_func["result"] = TypeID<Ret>::name;
+    _callable_params_gen<Args...>(abi_func);
   }
 
-public:
-  const Address m_addr;
+  using BufferFunc = std::function<void(void*, Buffer&, Buffer*)>;
+  using BufferFuncMap = std::unordered_map<uint16_t, BufferFunc>;
 
-protected:
-  std::unordered_map<uint16_t, std::function<void(void*, Buffer&, Buffer*)>>
-      functions;
+  inline static std::array<BufferFuncMap, ContractID::_size()> all_functions;
+  inline static json abi_interface;
+};
+
+class ContractStaticInit
+{
+public:
+  ContractStaticInit();
 };

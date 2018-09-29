@@ -8,10 +8,6 @@ Token::Token(const Address& token_id, const Address& _base_token_id,
     , base_token_id(_base_token_id)
     , buy_curve(_buy_curve)
 {
-  add_callable(1, &Token::mint);
-  add_callable(2, &Token::transfer);
-  add_callable(3, &Token::buy);
-  add_callable(4, &Token::sell);
 }
 
 void Token::mint(uint256_t value)

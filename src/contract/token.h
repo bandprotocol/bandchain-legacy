@@ -24,6 +24,8 @@ public:
   uint256_t balance(const Address& address) const;
 
 public:
+  ContractID contract_id() const final { return ContractID::Token; }
+
   void debug_create() const final;
   void debug_save() const final;
   std::unique_ptr<Contract> clone() const final
@@ -37,5 +39,6 @@ public:
 private:
   std::unordered_map<Address, uint256_t> m_balances;
   uint256_t current_supply = 0;
+
   static inline auto log = logger::get("token");
 };

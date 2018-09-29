@@ -9,11 +9,11 @@ Account::Account(const VerifyKey& verify_key)
     , m_verify_key(verify_key)
     , m_nonce(0)
 {
-  add_callable(1, &Account::delegate_call);
 }
 
-void Account::delegate_call(Signature sig, Buffer buf)
+Buffer Account::delegate_call(Buffer buf)
 {
+  auto sig = buf.read<Signature>();
   if (!ed25519_verify(sig, m_verify_key, buf.as_span()))
     throw Error("Invalid Ed25519 signature");
 
@@ -22,5 +22,8 @@ void Account::delegate_call(Signature sig, Buffer buf)
   ++m_nonce;
 
   set_sender();
-  Global::get().m_ctx->call(buf);
+
+  Buffer ret;
+  Global::get().m_ctx->call(buf, &ret);
+  return ret;
 }
