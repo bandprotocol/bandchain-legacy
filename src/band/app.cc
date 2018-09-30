@@ -33,8 +33,17 @@ void BandApplication::init(const std::string& init_state)
 std::string BandApplication::query(const std::string& path,
                                    const std::string& data)
 {
-  // TODO
-  return "";
+  BOOST_SCOPE_EXIT(&ctx) { ctx.reset(); }
+  BOOST_SCOPE_EXIT_END
+
+  Buffer msg_buf(gsl::make_span(data));
+  uint64_t ts = msg_buf.read<uint64_t>();
+  (void)ts;
+
+  Buffer result;
+  ctx.call(msg_buf, &result);
+
+  return result.to_raw_string();
 }
 
 void BandApplication::check(const std::string& msg_raw)
@@ -50,7 +59,9 @@ std::string BandApplication::apply(const std::string& msg_raw)
   Buffer msg_buf(gsl::make_span(msg_raw));
   Global::get().tx_hash = sha256(gsl::make_span(msg_raw));
   uint64_t ts = msg_buf.read<uint64_t>();
-  (void)ts;
+  // Mock
+  Global::get().block_time = ts;
+  // (void)ts;
 
   Buffer result;
   ctx.call(msg_buf, &result);

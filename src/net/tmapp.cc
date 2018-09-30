@@ -70,7 +70,7 @@ void TendermintApplication::do_query(const RequestQuery& req,
 void TendermintApplication::do_begin_block(const RequestBeginBlock& req)
 {
   // TODO: Penalize missing validators
-  Global::get().block_time = req.header().time();
+  //Global::get().block_time = req.header().time();
   // Global::get().block_proposer =
   //     Address::from_raw(req.header().proposer().address());
 

@@ -76,14 +76,13 @@ void Registry::exit(uint256_t list_id)
   assert_con(is_listed(list_id), "This item isn't in list.");
 
   assert_con(!has_been_challenge(list_id), "This item have been challenged");
-
   reset_listing(list_id);
 }
 
 uint256_t Registry::challenge(uint256_t list_id, std::string data)
 {
   assert_con(app_was_made(list_id), "Item isn't created.");
-  Listing listing = m_listings.at(list_id);
+  Listing& listing = m_listings.at(list_id);
   uint256_t min_deposit = params.min_deposit;
 
   assert_con(!has_been_challenge(list_id), "This item have been challenged");
@@ -140,7 +139,7 @@ void Registry::claim_reward(uint256_t challenge_id, uint256_t salt)
   m_challenges.at(challenge_id).remaining_winning_token -= voter_tokens;
   m_challenges.at(challenge_id).remaining_reward_pool -= reward;
 
-  m_challenges.at(challenge_id).token_claimed.at(sender) = true;
+  m_challenges.at(challenge_id).token_claimed.emplace(sender, true);
 
   set_sender();
   auto& token = Global::get().m_ctx->get<Token>(token_id);
@@ -256,6 +255,10 @@ void Registry::resolve_challenge(const uint256_t& list_id)
     auto& token = Global::get().m_ctx->get<Token>(token_id);
     token.transfer(cha.challenger, reward);
   }
+
+  if (cha.remaining_winning_token == 0) {
+    cha.remaining_reward_pool = 0;
+  }
 }
 
 void Registry::set_to_list(const uint256_t& list_id)
@@ -265,7 +268,7 @@ void Registry::set_to_list(const uint256_t& list_id)
 
 void Registry::reset_listing(const uint256_t& list_id)
 {
-  Listing listing = m_listings.at(list_id);
+  Listing& listing = m_listings.at(list_id);
   Address owner = listing.owner;
   uint256_t left_deposit = listing.unstake_deposit;
 
@@ -284,40 +287,40 @@ bool Registry::challenge_exist(const uint256_t& challenge_id) const
 
 void Registry::debug_create() const
 {
-  NOCOMMIT_LOG("TRC contract created at {}", m_addr);
+  DEBUG(log, "TRC contract created at {}", m_addr);
 }
 
 void Registry::debug_save() const
 {
-  NOCOMMIT_LOG("Total Items: {}", m_listings.size());
+  DEBUG(log, "Total Items: {}", m_listings.size());
 
   for (auto& [list_id, listing] : m_listings) {
-    NOCOMMIT_LOG("  Listing {}", list_id);
-    NOCOMMIT_LOG("    app_expire_time: {}", listing.app_expire_time);
-    NOCOMMIT_LOG("    is_listed: {}", listing.is_listed);
-    NOCOMMIT_LOG("    owner: {}", listing.owner);
-    NOCOMMIT_LOG("    unstake_deposit: {}", listing.unstake_deposit);
-    NOCOMMIT_LOG("    last_challenge: {}", listing.challenge_id);
-    NOCOMMIT_LOG("    data: {}", listing.data);
+    DEBUG(log, "  ListingID {}", list_id);
+    DEBUG(log, "    app_expire_time: {}", listing.app_expire_time);
+    DEBUG(log, "    is_listed: {}", listing.is_listed);
+    DEBUG(log, "    owner: {}", listing.owner);
+    DEBUG(log, "    unstake_deposit: {}", listing.unstake_deposit);
+    DEBUG(log, "    last_challenge: {}", listing.challenge_id);
+    DEBUG(log, "    data: {}", listing.data);
   }
-  NOCOMMIT_LOG("------------------------------------------------------");
+  DEBUG(log, "------------------------------------------------------");
 
-  NOCOMMIT_LOG("Total Challenges: {}", m_challenges.size());
+  DEBUG(log, "Total Challenges: {}", m_challenges.size());
   for (auto& [challenge_id, cha] : m_challenges) {
-    NOCOMMIT_LOG("  Challenge {}", challenge_id);
-    NOCOMMIT_LOG("    poll_id: {}", cha.poll_id);
-    NOCOMMIT_LOG("    challenger: {}", cha.challenger);
-    NOCOMMIT_LOG("    is_resolved: {}", cha.is_resolved);
-    NOCOMMIT_LOG("    reward_left: {}", cha.remaining_reward_pool);
-    NOCOMMIT_LOG("    stake: {}", cha.stake);
-    NOCOMMIT_LOG("    winning_token_left: {}", cha.remaining_winning_token);
-    NOCOMMIT_LOG("    data: {}", cha.data);
-    NOCOMMIT_LOG("  Claimed voter:");
+    DEBUG(log, "  ChallengeID {}", challenge_id);
+    DEBUG(log, "    poll_id: {}", cha.poll_id);
+    DEBUG(log, "    challenger: {}", cha.challenger);
+    DEBUG(log, "    is_resolved: {}", cha.is_resolved);
+    DEBUG(log, "    reward_left: {}", cha.remaining_reward_pool);
+    DEBUG(log, "    stake: {}", cha.stake);
+    DEBUG(log, "    winning_token_left: {}", cha.remaining_winning_token);
+    DEBUG(log, "    data: {}", cha.data);
+    DEBUG(log, "  Claimed voter:");
     for (auto& addr : cha.token_claimed) {
-      NOCOMMIT_LOG("    {}", addr.first);
+      DEBUG(log, "    {}", addr.first);
     }
   }
-  NOCOMMIT_LOG("======================================================");
+  DEBUG(log, "======================================================");
 }
 
 std::unique_ptr<Contract> Registry::clone() const

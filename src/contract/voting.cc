@@ -110,7 +110,7 @@ uint256_t Voting::get_number_pass_token(const Address& address,
   assert_con(did_reveal(address, poll_id),
              "This address didn't revealed vote.");
 
-  assert_con(get_hash(is_passed(poll_id), poll_id) ==
+  assert_con(get_hash(is_passed(poll_id), salt) ==
                  get_commit_hash(address, poll_id),
              "Your vote is invalid or losing vote.");
 
@@ -245,33 +245,33 @@ Hash Voting::get_hash(bool vote, const uint256_t& salt) const
 
 void Voting::debug_create() const
 {
-  NOCOMMIT_LOG("Voting contract created at {}", m_addr);
+  DEBUG(log, "Voting contract created at {}", m_addr);
 }
 
 void Voting::debug_save() const
 {
-  NOCOMMIT_LOG("Total Poll: {}", poll_nonce);
+  DEBUG(log, "Total Poll: {}", poll_nonce);
 
   for (auto& [poll_id, poll] : m_poll) {
-    NOCOMMIT_LOG("  Result in Poll {}", poll_id);
-    NOCOMMIT_LOG("    commit_end_time: {}", poll.commit_end_time);
-    NOCOMMIT_LOG("    reveal_end_time: {}", poll.reveal_end_time);
-    NOCOMMIT_LOG("    vote quorum: {}", poll.vote_quorum);
-    NOCOMMIT_LOG("    votes for: {}", poll.votes_for);
-    NOCOMMIT_LOG("    votes against: {}", poll.votes_against);
-    NOCOMMIT_LOG("  List of voters");
+    DEBUG(log, "  Result in Poll {}", poll_id);
+    DEBUG(log, "    commit_end_time: {}", poll.commit_end_time);
+    DEBUG(log, "    reveal_end_time: {}", poll.reveal_end_time);
+    DEBUG(log, "    vote quorum: {}", poll.vote_quorum);
+    DEBUG(log, "    votes for: {}", poll.votes_for);
+    DEBUG(log, "    votes against: {}", poll.votes_against);
+    DEBUG(log, "  List of voters");
     for (auto& [addr, poll_receipt] : poll.votes) {
-      NOCOMMIT_LOG("    {}: {} voted {}", poll_receipt.status._to_string(),
-                   addr, poll_receipt.num_tokens);
+      DEBUG(log, "    {}: {} voted {}", poll_receipt.status._to_string(), addr,
+            poll_receipt.num_tokens);
     }
-    NOCOMMIT_LOG("------------------------------------------------------");
+    DEBUG(log, "------------------------------------------------------");
   }
 
-  NOCOMMIT_LOG("Total Voter: {}", voting_power.size());
+  DEBUG(log, "Total Voter: {}", voting_power.size());
   for (auto& [addr, vp] : voting_power) {
-    NOCOMMIT_LOG("  {} has {}", addr, vp);
+    DEBUG(log, "  {} has {}", addr, vp);
   }
-  NOCOMMIT_LOG("======================================================");
+  DEBUG(log, "======================================================");
 }
 
 std::unique_ptr<Contract> Voting::clone() const

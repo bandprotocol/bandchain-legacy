@@ -121,4 +121,6 @@ private:
   Parameters params;
   std::unordered_map<uint256_t, Challenge> m_challenges;
   std::unordered_map<uint256_t, Listing> m_listings;
+
+  static inline auto log = logger::get("tcr");
 };
