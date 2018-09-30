@@ -11,7 +11,7 @@
 #include "util/typeid.h"
 
 BETTER_ENUM(ContractID, uint16_t, Creator = 0, Account = 1, Token = 2,
-            Voting = 3)
+            Voting = 3, Registry = 4)
 
 class Contract
 {
@@ -51,6 +51,9 @@ protected:
   /// Set the sender of the current message to this contract.
   void set_sender();
 
+  // Assert with condition
+  void assert_con(bool condition, std::string error_msg) const;
+
 public:
   const Address m_addr;
 
@@ -68,6 +71,18 @@ private:
     }
   }
 
+  template <typename T = void, typename... Args>
+  static void _construct_params_gen(json& obj)
+  {
+    if constexpr (std::is_void_v<T>) {
+      return;
+    } else {
+      obj["constructor_params"].push_back(TypeID<T>::name);
+      _construct_params_gen<Args...>(obj);
+    }
+  }
+
+  /// TODO: Move this to static level
   template <typename T, typename Ret, typename... Args>
   static void add_callable(ContractID contract_id, uint16_t func_id,
                            const std::string& func_name,
@@ -98,6 +113,13 @@ private:
     _callable_params_gen<Args...>(abi_func);
   }
 
+  template <typename... Args>
+  static void add_constructor(ContractID contract_id)
+  {
+    json& abi_contract = abi_interface[contract_id._to_string()];
+
+    _construct_params_gen<Args...>(abi_contract);
+  }
   using BufferFunc = std::function<void(void*, Buffer&, Buffer*)>;
   using BufferFuncMap = std::unordered_map<uint16_t, BufferFunc>;
 

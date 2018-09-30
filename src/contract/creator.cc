@@ -1,6 +1,7 @@
 #include "creator.h"
 
 #include "contract/account.h"
+#include "contract/tcr.h"
 #include "contract/token.h"
 #include "contract/voting.h"
 #include "crypto/ed25519.h"
@@ -36,6 +37,14 @@ Address Creator::create(Buffer buf)
       Address token_id = buf.read<Address>();
       created_contract = &Global::get().m_ctx->create<Voting>(
           ed25519_vk_to_addr(Global::get().tx_hash), token_id);
+      break;
+    }
+
+    case +ContractID::Registry: {
+      Address token_id = buf.read<Address>();
+      Address voting_id = buf.read<Address>();
+      created_contract = &Global::get().m_ctx->create<Registry>(
+          ed25519_vk_to_addr(Global::get().tx_hash), token_id, voting_id);
       break;
     }
     default:

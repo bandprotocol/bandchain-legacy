@@ -21,6 +21,7 @@ TYPEID(uint8_t)
 TYPEID(uint16_t)
 TYPEID(uint64_t)
 TYPEID(uint256_t)
+TYPEID_CUSTOM(std::string, String)
 
 class Buffer;
 TYPEID(Buffer)

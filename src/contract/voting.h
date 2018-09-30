@@ -74,8 +74,6 @@ private:
 
   Hash get_hash(bool vote, const uint256_t& salt) const;
 
-  void assert_con(bool condition, std::string error_msg) const;
-
 public:
   const Address token_id;
   uint256_t poll_nonce = 0;

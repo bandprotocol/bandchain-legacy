@@ -243,12 +243,6 @@ Hash Voting::get_hash(bool vote, const uint256_t& salt) const
   return sha256(gsl::make_span(buf.to_raw_string()));
 }
 
-void Voting::assert_con(bool condition, std::string error_msg) const
-{
-  if (!condition)
-    throw Error(error_msg);
-}
-
 void Voting::debug_create() const
 {
   NOCOMMIT_LOG("Voting contract created at {}", m_addr);

@@ -2,10 +2,12 @@
 
 #include "contract/account.h"
 #include "contract/creator.h"
+#include "contract/tcr.h"
 #include "contract/token.h"
 #include "contract/voting.h"
 #include "store/context.h"
 #include "store/global.h"
+#include "util/typeid.h"
 
 ContractStaticInit _contract_init;
 
@@ -19,11 +21,24 @@ ContractStaticInit::ContractStaticInit()
   ADD_CALLABLE(Token, mint, 1)
   ADD_CALLABLE(Token, transfer, 2)
   ADD_CALLABLE(Token, buy, 3)
+  ADD_CALLABLE(Token, sell, 4)
   ADD_CALLABLE(Voting, request_voting_power, 1)
   ADD_CALLABLE(Voting, withdraw_voting_power, 2)
   ADD_CALLABLE(Voting, rescue_token, 3)
   ADD_CALLABLE(Voting, commit_vote, 4)
   ADD_CALLABLE(Voting, reveal_vote, 5)
+  ADD_CALLABLE(Registry, apply, 1)
+  ADD_CALLABLE(Registry, deposit, 2)
+  ADD_CALLABLE(Registry, withdraw, 3)
+  ADD_CALLABLE(Registry, exit, 4)
+  ADD_CALLABLE(Registry, challenge, 5)
+  ADD_CALLABLE(Registry, update_status, 6)
+  ADD_CALLABLE(Registry, claim_reward, 7)
+
+  Contract::add_constructor<Hash>(ContractID::Account);
+  Contract::add_constructor<Address, Buffer>(ContractID::Token);
+  Contract::add_constructor<Address>(ContractID::Voting);
+  Contract::add_constructor<Address, Address>(ContractID::Registry);
 
 #undef ADD_CALLABLE
 }
@@ -52,3 +67,9 @@ Address Contract::get_sender()
 }
 
 void Contract::set_sender() { Global::get().sender = m_addr; }
+
+void Contract::assert_con(bool condition, std::string error_msg) const
+{
+  if (!condition)
+    throw Error(error_msg);
+}
