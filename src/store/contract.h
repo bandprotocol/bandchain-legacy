@@ -110,6 +110,38 @@ private:
     json& abi_func = abi_contract[func_name];
     abi_func["opcode"] = func_id;
     abi_func["result"] = TypeID<Ret>::name;
+    abi_func["type"] = "action";
+    _callable_params_gen<Args...>(abi_func);
+  }
+
+  template <typename T, typename Ret, typename... Args>
+  static void add_callable(ContractID contract_id, uint16_t func_id,
+                           const std::string& func_name,
+                           Ret (T::*func)(Args...) const)
+  {
+    all_functions[contract_id._to_integral()].emplace(
+        func_id, [func](void* obj, Buffer& in_buf, Buffer* out_buf) {
+          std::tuple<T*, Args...> tup{(T*)obj, in_buf.read<Args>()...};
+          std::function<Ret(T*, Args...)> func_cast = func;
+
+          if constexpr (!std::is_void_v<Ret>) {
+            if (out_buf) {
+              auto result = std::apply(func_cast, tup);
+              (*out_buf) << result;
+              return;
+            }
+          }
+
+          std::apply(func_cast, tup);
+        });
+
+    json& abi_contract = abi_interface[contract_id._to_string()];
+    abi_contract["id"] = contract_id._to_integral();
+
+    json& abi_func = abi_contract[func_name];
+    abi_func["opcode"] = func_id;
+    abi_func["result"] = TypeID<Ret>::name;
+    abi_func["type"] = "query";
     _callable_params_gen<Args...>(abi_func);
   }
 

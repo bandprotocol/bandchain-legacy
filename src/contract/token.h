@@ -21,7 +21,7 @@ public:
 
   void sell(uint256_t value);
 
-  uint256_t balance(const Address& address) const;
+  uint256_t balance(Address address) const;
 
 public:
   ContractID contract_id() const final { return ContractID::Token; }

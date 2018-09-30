@@ -45,13 +45,15 @@ void Token::sell(uint256_t value)
   m_balances[get_sender()] -= value;
   current_supply -= value;
 }
-uint256_t Token::balance(const Address& address) const
+
+uint256_t Token::balance(Address address) const
 {
   if (auto it = m_balances.find(address); it == m_balances.end())
     return 0;
   else
     return m_balances.at(address);
 }
+
 void Token::debug_create() const
 {
   DEBUG(log, "token created at {} {}", m_addr, (void*)this);
