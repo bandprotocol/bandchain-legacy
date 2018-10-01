@@ -36,7 +36,7 @@ uint256_t Registry::apply(std::string data, uint256_t token_deposit)
 
 void Registry::deposit(uint256_t list_id, uint256_t token_deposit)
 {
-  assert_con(app_was_made(list_id), "Item isn't created.");
+  assert_con(list_exist(list_id), "Item not found.");
 
   assert_con(get_sender() == m_listings.at(list_id).owner,
              "You aren't owner's item.");
@@ -49,7 +49,7 @@ void Registry::deposit(uint256_t list_id, uint256_t token_deposit)
 
 void Registry::withdraw(uint256_t list_id, uint256_t token_withdraw)
 {
-  assert_con(app_was_made(list_id), "Item isn't created.");
+  assert_con(list_exist(list_id), "Item not found.");
 
   assert_con(get_sender() == m_listings.at(list_id).owner,
              "You aren't owner's item.");
@@ -69,7 +69,7 @@ void Registry::withdraw(uint256_t list_id, uint256_t token_withdraw)
 
 void Registry::exit(uint256_t list_id)
 {
-  assert_con(app_was_made(list_id), "Item isn't created.");
+  assert_con(list_exist(list_id), "Item not found.");
 
   assert_con(get_sender() == m_listings.at(list_id).owner,
              "You aren't owner's item.");
@@ -81,7 +81,7 @@ void Registry::exit(uint256_t list_id)
 
 uint256_t Registry::challenge(uint256_t list_id, std::string data)
 {
-  assert_con(app_was_made(list_id), "Item isn't created.");
+  assert_con(list_exist(list_id), "Item not found.");
   Listing& listing = m_listings.at(list_id);
   uint256_t min_deposit = params.min_deposit;
 
@@ -164,7 +164,7 @@ uint256_t Registry::voter_reward(const Address& voter,
 
 bool Registry::can_in_list(const uint256_t& list_id) const
 {
-  assert_con(app_was_made(list_id), "Item isn't created.");
+  assert_con(list_exist(list_id), "Item not found.");
 
   return (m_listings.at(list_id).app_expire_time < Global::get().block_time &&
           !is_listed(list_id) && !has_been_challenge(list_id));
@@ -172,19 +172,13 @@ bool Registry::can_in_list(const uint256_t& list_id) const
 
 bool Registry::is_listed(const uint256_t& list_id) const
 {
-  assert_con(app_was_made(list_id), "Item isn't created.");
-
+  assert_con(list_exist(list_id), "Item not found.");
   return m_listings.at(list_id).is_listed;
-}
-
-bool Registry::app_was_made(const uint256_t& list_id) const
-{
-  return m_listings.count(list_id) != 0;
 }
 
 bool Registry::has_been_challenge(const uint256_t& list_id) const
 {
-  assert_con(app_was_made(list_id), "Item isn't created.");
+  assert_con(list_exist(list_id), "Item not found.");
 
   uint256_t challenge_id = m_listings.at(list_id).challenge_id;
   return (challenge_id > 0 && !m_challenges.at(challenge_id).is_resolved);
@@ -231,6 +225,60 @@ bool Registry::token_claimed(const uint256_t& challenge_id,
     return false;
   return true;
 }
+// Callable query function
+Address Registry::get_voting_id() const { return voting_id; }
+
+uint256_t Registry::active_list_length() const { return m_listings.size(); }
+
+uint256_t Registry::active_list_id_at(uint256_t index) const
+{
+  assert_con(index < m_listings.size(), "Index is more than size.");
+  uint256_t i = 0;
+  for (auto& p : m_listings) {
+    if (i == index)
+      return p.first;
+    i++;
+  }
+  throw Failure("Index exceed size");
+}
+
+std::string Registry::get_content(uint256_t list_id) const
+{
+  assert_con(list_exist(list_id), "Item not found.");
+  return m_listings.at(list_id).data;
+}
+
+uint256_t Registry::get_deposit(uint256_t list_id) const
+{
+  assert_con(list_exist(list_id), "Item not found.");
+  return m_listings.at(list_id).unstake_deposit;
+}
+
+uint256_t Registry::get_active_challenge(uint256_t list_id) const
+{
+  assert_con(list_exist(list_id), "Item not found.");
+  if (has_been_challenge(list_id))
+    return m_listings.at(list_id).challenge_id;
+  return 0;
+}
+
+bool Registry::need_update(uint256_t list_id) const
+{
+  assert_con(list_exist(list_id), "Item not found.");
+  return can_in_list(list_id) || challenge_can_be_resolved(list_id);
+}
+
+uint256_t Registry::get_poll_id(uint256_t challenge_id) const
+{
+  assert_con(challenge_exist(challenge_id), "Item not found.");
+  return m_challenges.at(challenge_id).poll_id;
+}
+
+bool Registry::is_proposal(uint256_t list_id) const
+{
+  assert_con(list_exist(list_id), "Item not found.");
+  return !m_listings.at(list_id).is_listed;
+}
 
 // Private function
 void Registry::resolve_challenge(const uint256_t& list_id)
@@ -246,7 +294,7 @@ void Registry::resolve_challenge(const uint256_t& list_id)
   cha.remaining_winning_token = vote.get_total_winning_token(cha.poll_id);
 
   // Case challenge failed
-  if (vote.is_passed(cha.poll_id)) {
+  if (vote.get_result(cha.poll_id)) {
     m_listings.at(list_id).unstake_deposit += reward;
   } else {
     reset_listing(list_id);
@@ -278,6 +326,11 @@ void Registry::reset_listing(const uint256_t& list_id)
     auto& token = Global::get().m_ctx->get<Token>(token_id);
     token.transfer(owner, left_deposit);
   }
+}
+
+bool Registry::list_exist(const uint256_t& list_id) const
+{
+  return m_listings.count(list_id) != 0;
 }
 
 bool Registry::challenge_exist(const uint256_t& challenge_id) const

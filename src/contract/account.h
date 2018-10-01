@@ -13,6 +13,8 @@ public:
 
   Buffer delegate_call(Buffer buf);
 
+  uint256_t get_nonce() const;
+
   ContractID contract_id() const final { return ContractID::Account; }
 
   std::unique_ptr<Contract> clone() const final

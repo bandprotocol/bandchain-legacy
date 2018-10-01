@@ -64,6 +64,8 @@ private:
   static void _callable_params_gen(json& obj)
   {
     if constexpr (std::is_void_v<T>) {
+      if (obj.count("params") == 0)
+        obj["params"] = std::vector<std::string>(0);
       return;
     } else {
       obj["params"].push_back(TypeID<T>::name);

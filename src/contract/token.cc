@@ -54,6 +54,19 @@ uint256_t Token::balance(Address address) const
     return m_balances.at(address);
 }
 
+uint256_t Token::spot_price() const
+{
+  return buy_curve.apply(VarsSimple(current_supply + 1)) -
+         buy_curve.apply(VarsSimple(current_supply));
+}
+
+uint256_t Token::bulk_price(uint256_t value) const
+{
+  return (buy_curve.apply(VarsSimple(current_supply + value)) -
+          buy_curve.apply(VarsSimple(current_supply))) /
+         value;
+}
+
 void Token::debug_create() const
 {
   DEBUG(log, "token created at {} {}", m_addr, (void*)this);

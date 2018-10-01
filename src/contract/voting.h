@@ -8,13 +8,15 @@
 
 BETTER_ENUM(VotingStatus, uint8_t, Committed = 1, Revealed = 2)
 
+BETTER_ENUM(PollStatus, uint8_t, Commit = 0, Reveal = 1, End = 2)
+
 class Voting : public Contract
 {
 public:
   friend class VotingTest;
   Voting(const Address& voting_id, const Address& _token_id);
 
-  // Callable function
+  // Callable action function
 
   void request_voting_power(uint256_t value);
 
@@ -26,6 +28,16 @@ public:
 
   void reveal_vote(uint256_t poll_id, bool vote_option, uint256_t salt);
 
+  // Callable query function
+
+  uint256_t get_vote_for(uint256_t poll_id) const;
+
+  uint256_t get_vote_against(uint256_t poll_id) const;
+
+  uint8_t get_period(uint256_t poll_id) const;
+
+  bool get_result(uint256_t poll_id) const;
+
   // Call by tcr function
 
   uint256_t get_number_pass_token(const Address& address,
@@ -34,8 +46,6 @@ public:
 
   uint256_t start_poll(uint8_t vote_quorum, uint64_t commit_duration,
                        uint64_t reveal_duration);
-
-  bool is_passed(const uint256_t& poll_id) const;
 
   uint256_t get_total_winning_token(const uint256_t& poll_id) const;
 

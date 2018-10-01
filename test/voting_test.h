@@ -278,7 +278,7 @@ public:
     accountb = &ctx->get<Account>(mrB);
     token = &ctx->get<Token>(band);
     TS_ASSERT_EQUALS(955, token->balance(mrB));
-    TS_ASSERT_THROWS_ANYTHING(vote->is_passed(poll_id));
+    TS_ASSERT_THROWS_ANYTHING(vote->get_result(poll_id));
     TS_ASSERT(!vote->is_poll_ended(poll_id));
   }
 

@@ -23,6 +23,10 @@ public:
 
   uint256_t balance(Address address) const;
 
+  uint256_t spot_price() const;
+
+  uint256_t bulk_price(uint256_t value) const;
+
 public:
   ContractID contract_id() const final { return ContractID::Token; }
 

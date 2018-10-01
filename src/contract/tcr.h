@@ -36,8 +36,6 @@ public:
 
   bool is_listed(const uint256_t& list_id) const;
 
-  bool app_was_made(const uint256_t& list_id) const;
-
   bool has_been_challenge(const uint256_t& list_id) const;
 
   bool challenge_can_be_resolved(const uint256_t& list_id) const;
@@ -52,12 +50,34 @@ public:
 
   std::unique_ptr<Contract> clone() const final;
 
+  // Callable query function
+
+  Address get_voting_id() const;
+
+  uint256_t active_list_length() const;
+
+  uint256_t active_list_id_at(uint256_t index) const;
+
+  std::string get_content(uint256_t list_id) const;
+
+  uint256_t get_deposit(uint256_t list_id) const;
+
+  uint256_t get_active_challenge(uint256_t list_id) const;
+
+  bool need_update(uint256_t list_id) const;
+
+  uint256_t get_poll_id(uint256_t challenge_id) const;
+
+  bool is_proposal(uint256_t list_id) const;
+
 private:
   void resolve_challenge(const uint256_t& list_id);
 
   void set_to_list(const uint256_t& list_id);
 
   void reset_listing(const uint256_t& list_id);
+
+  bool list_exist(const uint256_t& list_id) const;
 
   bool challenge_exist(const uint256_t& challenge_id) const;
 

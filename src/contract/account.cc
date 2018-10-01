@@ -27,3 +27,5 @@ Buffer Account::delegate_call(Buffer buf)
   Global::get().m_ctx->call(buf, &ret);
   return ret;
 }
+
+uint256_t Account::get_nonce() const { return m_nonce; }

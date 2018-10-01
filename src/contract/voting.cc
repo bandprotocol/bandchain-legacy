@@ -102,6 +102,38 @@ void Voting::reveal_vote(uint256_t poll_id, bool vote_option, uint256_t salt)
   poll_list[get_sender()].erase({num_tokens, poll_id});
 }
 
+// Callable query function
+
+uint256_t Voting::get_vote_for(uint256_t poll_id) const
+{
+  assert_poll_exists(poll_id);
+  return m_poll.at(poll_id).votes_for;
+}
+
+uint256_t Voting::get_vote_against(uint256_t poll_id) const
+{
+  assert_poll_exists(poll_id);
+  return m_poll.at(poll_id).votes_against;
+}
+
+uint8_t Voting::get_period(uint256_t poll_id) const
+{
+  assert_poll_exists(poll_id);
+  if (is_commit_period(poll_id))
+    return PollStatus::Commit;
+  if (is_reveal_period(poll_id))
+    return PollStatus::Reveal;
+  return PollStatus::End;
+}
+
+bool Voting::get_result(uint256_t poll_id) const
+{
+  assert_con(is_poll_ended(poll_id), "Poll hasn't ended yet.");
+  Poll poll = m_poll.at(poll_id);
+  return (100 * poll.votes_for) >
+         (poll.vote_quorum * (poll.votes_for + poll.votes_against));
+}
+
 uint256_t Voting::get_number_pass_token(const Address& address,
                                         const uint256_t& poll_id,
                                         const uint256_t& salt) const
@@ -110,7 +142,7 @@ uint256_t Voting::get_number_pass_token(const Address& address,
   assert_con(did_reveal(address, poll_id),
              "This address didn't revealed vote.");
 
-  assert_con(get_hash(is_passed(poll_id), salt) ==
+  assert_con(get_hash(get_result(poll_id), salt) ==
                  get_commit_hash(address, poll_id),
              "Your vote is invalid or losing vote.");
 
@@ -129,21 +161,13 @@ uint256_t Voting::start_poll(uint8_t vote_quorum, uint64_t commit_duration,
   return poll_nonce;
 }
 
-bool Voting::is_passed(const uint256_t& poll_id) const
-{
-  assert_con(is_poll_ended(poll_id), "Poll hasn't ended yet.");
-  Poll poll = m_poll.at(poll_id);
-  return (100 * poll.votes_for) >
-         (poll.vote_quorum * (poll.votes_for + poll.votes_against));
-}
-
 uint256_t Voting::get_total_winning_token(const uint256_t& poll_id) const
 {
   assert_poll_exists(poll_id);
 
   assert_con(is_poll_ended(poll_id), "Poll hasn't ended yet.");
 
-  if (is_passed(poll_id))
+  if (get_result(poll_id))
     return m_poll.at(poll_id).votes_for;
   else
     return m_poll.at(poll_id).votes_against;
