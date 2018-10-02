@@ -38,6 +38,10 @@ public:
 
   bool get_result(uint256_t poll_id) const;
 
+  uint64_t get_commit_end_time(uint256_t poll_id) const;
+
+  uint64_t get_reveal_end_time(uint256_t poll_id) const;
+
   // Call by tcr function
 
   uint256_t get_number_pass_token(const Address& address,

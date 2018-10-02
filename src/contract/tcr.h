@@ -70,6 +70,12 @@ public:
 
   bool is_proposal(uint256_t list_id) const;
 
+  uint64_t get_app_expire(uint256_t list_id) const;
+
+  Address get_list_owner(uint256_t list_id) const;
+
+  Address get_challenger_id(uint256_t challenge_id) const;
+
 private:
   void resolve_challenge(const uint256_t& list_id);
 

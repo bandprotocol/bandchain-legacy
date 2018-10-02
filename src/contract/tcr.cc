@@ -270,7 +270,7 @@ bool Registry::need_update(uint256_t list_id) const
 
 uint256_t Registry::get_poll_id(uint256_t challenge_id) const
 {
-  assert_con(challenge_exist(challenge_id), "Item not found.");
+  assert_con(challenge_exist(challenge_id), "Challenge not found.");
   return m_challenges.at(challenge_id).poll_id;
 }
 
@@ -278,6 +278,24 @@ bool Registry::is_proposal(uint256_t list_id) const
 {
   assert_con(list_exist(list_id), "Item not found.");
   return !m_listings.at(list_id).is_listed;
+}
+
+uint64_t Registry::get_app_expire(uint256_t list_id) const
+{
+  assert_con(list_exist(list_id), "Item not found.");
+  return m_listings.at(list_id).app_expire_time;
+}
+
+Address Registry::get_list_owner(uint256_t list_id) const
+{
+  assert_con(list_exist(list_id), "Item not found.");
+  return m_listings.at(list_id).owner;
+}
+
+Address Registry::get_challenger_id(uint256_t challenge_id) const
+{
+  assert_con(challenge_exist(challenge_id), "Challenge not found.");
+  return m_challenges.at(challenge_id).challenger;
 }
 
 // Private function

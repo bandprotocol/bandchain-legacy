@@ -35,6 +35,8 @@ ContractStaticInit::ContractStaticInit()
   ADD_CALLABLE(Voting, get_vote_against, 7)
   ADD_CALLABLE(Voting, get_period, 8)
   ADD_CALLABLE(Voting, get_result, 9)
+  ADD_CALLABLE(Voting, get_commit_end_time, 10);
+  ADD_CALLABLE(Voting, get_reveal_end_time, 11);
   ADD_CALLABLE(Registry, apply, 1)
   ADD_CALLABLE(Registry, deposit, 2)
   ADD_CALLABLE(Registry, withdraw, 3)
@@ -51,6 +53,9 @@ ContractStaticInit::ContractStaticInit()
   ADD_CALLABLE(Registry, need_update, 14)
   ADD_CALLABLE(Registry, get_poll_id, 15)
   ADD_CALLABLE(Registry, is_proposal, 16)
+  ADD_CALLABLE(Registry, get_app_expire, 17)
+  ADD_CALLABLE(Registry, get_list_owner, 18)
+  ADD_CALLABLE(Registry, get_challenger_id, 19)
 
   Contract::add_constructor<Hash>(ContractID::Account);
   Contract::add_constructor<Address, Buffer>(ContractID::Token);

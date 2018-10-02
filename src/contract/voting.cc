@@ -134,6 +134,18 @@ bool Voting::get_result(uint256_t poll_id) const
          (poll.vote_quorum * (poll.votes_for + poll.votes_against));
 }
 
+uint64_t Voting::get_commit_end_time(uint256_t poll_id) const
+{
+  assert_poll_exists(poll_id);
+  return m_poll.at(poll_id).commit_end_time;
+}
+
+uint64_t Voting::get_reveal_end_time(uint256_t poll_id) const
+{
+  assert_poll_exists(poll_id);
+  return m_poll.at(poll_id).reveal_end_time;
+}
+
 uint256_t Voting::get_number_pass_token(const Address& address,
                                         const uint256_t& poll_id,
                                         const uint256_t& salt) const
