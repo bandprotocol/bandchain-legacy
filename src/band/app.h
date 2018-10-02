@@ -30,6 +30,7 @@ public:
 
 private:
   Context& ctx;
+  bool use_fake_time;
   // Handler handler;
   // Query qry;
 };

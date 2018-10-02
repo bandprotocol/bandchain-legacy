@@ -17,9 +17,10 @@ Buffer Account::delegate_call(Buffer buf)
   if (!ed25519_verify(sig, m_verify_key, buf.as_span()))
     throw Error("Invalid Ed25519 signature");
 
-  if (m_nonce != buf.read<uint64_t>())
+  uint64_t new_nonce = buf.read<uint64_t>();
+  if (m_nonce >= new_nonce)
     throw Error("Invalid nonce");
-  ++m_nonce;
+  m_nonce = new_nonce;
 
   set_sender();
 

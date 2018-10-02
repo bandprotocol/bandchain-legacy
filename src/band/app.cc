@@ -8,10 +8,14 @@
 #include "crypto/sha256.h"
 #include "store/contract.h"
 #include "store/global.h"
+#include "util/cli.h"
 #include "util/equation.h"
+
+CmdArg<bool> fake_time("fake_time", "use tx time as global time", 'f');
 
 BandApplication::BandApplication(Context& _ctx)
     : ctx(_ctx)
+    , use_fake_time(+fake_time)
 {
 }
 
@@ -60,7 +64,8 @@ std::string BandApplication::apply(const std::string& msg_raw)
   Global::get().tx_hash = sha256(gsl::make_span(msg_raw));
   uint64_t ts = msg_buf.read<uint64_t>();
   // Mock
-  Global::get().block_time = ts;
+  if (use_fake_time)
+    Global::get().block_time = ts;
   // (void)ts;
 
   Buffer result;
