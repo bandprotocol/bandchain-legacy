@@ -1,12 +1,19 @@
-Band Chain
-==========
+<div align="center">
+  <h1>
+    Band Chain
+  </h1>
 
-What is Band Chain?
-----------------------
+  <p>
+    <strong>Blockchain Platform for Decentralize Data Curation</strong>
 
-Band Chainis a decentralized, permissionless blockchain implementation based
-on Band Protocol to create tokenized marketplace and token-curated community. 
-For more information, see https://bandprotocol.com/.
+![C++17](https://img.shields.io/badge/language-C%2B%2B17-orange.svg?longCache=true&style=popout-square)
+![Tendermint](https://img.shields.io/badge/consensus-Tendermint-blue.svg?longCache=true&style=popout-square)
+![Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-green.svg?longCache=true&style=popout-square)
+  </p>
+</div>
+
+Band Chain is a decentralized, permissionless blockchain implementation based
+on Band Protocol for decentralised data curation. We incentivise trusted, high-quality data sharing in online community via token staking and bonding curve mechanism., see https://bandprotocol.com/.
 
 Build
 -----
@@ -47,7 +54,7 @@ Be sure to have them available in your local system (versions as listed in
 - [libsodium](https://github.com/jedisct1/libsodium)
 - [CxxTest](https://cxxtest.com/)
 
-Install rocksdb.
+#### Install rocksdb.
 
 * **OS X**:
     * Install via [homebrew](http://brew.sh/).
