@@ -11,7 +11,10 @@ public:
   ContractID contract_id() const final { return ContractID::Registry; }
 
   Registry(const Address& registry_id, const Address& _token_id,
-           const Address& _voting_id);
+           const Address& _voting_id, uint8_t _vote_quorum,
+           uint8_t _dispensation_percentage, const uint256_t& _min_deposit,
+           uint64_t _apply_duration, uint64_t _commit_duration,
+           uint64_t _reveal_duration);
 
   // Callable function
   uint256_t apply(std::string data, uint256_t token_deposit);
@@ -136,12 +139,12 @@ private:
   };
 
   struct Parameters {
-    uint256_t min_deposit = 100;
-    uint64_t apply_duration = 100;
-    uint64_t commit_duration = 100;
-    uint64_t reveal_duration = 100;
-    uint8_t dispensation_percentage = 50;
-    uint8_t vote_quorum = 50;
+    uint8_t vote_quorum;
+    uint8_t dispensation_percentage;
+    uint256_t min_deposit;
+    uint64_t apply_duration;
+    uint64_t commit_duration;
+    uint64_t reveal_duration;
   };
 
   Parameters params;

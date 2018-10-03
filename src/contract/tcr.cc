@@ -5,10 +5,16 @@
 #include "store/global.h"
 
 Registry::Registry(const Address& registry_id, const Address& _token_id,
-                   const Address& _voting_id)
+                   const Address& _voting_id, uint8_t _vote_quorum,
+                   uint8_t _dispensation_percentage,
+                   const uint256_t& _min_deposit, uint64_t _apply_duration,
+                   uint64_t _commit_duration, uint64_t _reveal_duration)
     : Contract(registry_id)
     , token_id(_token_id)
     , voting_id(_voting_id)
+    , params({_vote_quorum, _dispensation_percentage, _min_deposit,
+              _apply_duration, _commit_duration, _reveal_duration})
+
 {
   auto& vote = Global::get().m_ctx->get<Voting>(voting_id);
   if (vote.token_id != token_id) {

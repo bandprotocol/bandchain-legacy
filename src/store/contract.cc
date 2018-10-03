@@ -60,7 +60,8 @@ ContractStaticInit::ContractStaticInit()
   Contract::add_constructor<Hash>(ContractID::Account);
   Contract::add_constructor<Address, Buffer>(ContractID::Token);
   Contract::add_constructor<Address>(ContractID::Voting);
-  Contract::add_constructor<Address, Address>(ContractID::Registry);
+  Contract::add_constructor<Address, Address, uint8_t, uint8_t, uint256_t,
+                            uint64_t, uint64_t, uint64_t>(ContractID::Registry);
 
 #undef ADD_CALLABLE
 }
