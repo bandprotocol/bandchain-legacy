@@ -13,7 +13,7 @@
 </div>
 
 Band Chain is a decentralized, permissionless blockchain implementation based
-on Band Protocol for decentralised data curation. We incentivise trusted, high-quality data sharing in online community via token staking and bonding curve mechanism., see https://bandprotocol.com/.
+on Band Protocol for decentralised data curation. We incentivise trusted, high-quality data sharing in online community via token staking and bonding curve mechanism. See https://bandprotocol.com for more info.
 
 Build
 -----
