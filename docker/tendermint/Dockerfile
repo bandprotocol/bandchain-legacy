@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 MAINTAINER Band Protocol <dev@bandprotocol.com>
 
-EXPOSE 26656 26657 26658
+EXPOSE 26656 26657
 
 # Use your best mirror
 ARG country_code=us
@@ -17,4 +17,4 @@ RUN wget https://github.com/tendermint/tendermint/releases/download/v0.22.3/tend
 RUN unzip tendermint_0.22.3_linux_amd64.zip tendermint
 
 RUN ./tendermint init
-CMD ./tendermint node
+CMD ./tendermint node --proxy_app=tcp://172.28.0.2:26658

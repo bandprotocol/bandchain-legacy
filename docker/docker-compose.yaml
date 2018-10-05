@@ -6,9 +6,13 @@ services:
       args:
         - country_code=th
     image: bandprotocol/bandchain:dev
+    ports: 
+      - "26658:26658"
     volumes:
       - ..:/bandprotocol
-    network_mode: "host"
+    networks:
+      bandprotocol-network:
+        ipv4_address: 172.28.0.2
     container_name: bandchain
     stdin_open: true
     tty: true
@@ -18,7 +22,18 @@ services:
       args:
         - country_code=th
     image: bandprotocol/tendermint:dev
-    network_mode: "host"
+    ports: 
+      - "26657:26657"
+    networks:
+      bandprotocol-network:
+        ipv4_address: 172.28.0.3
     container_name: tendermint
     stdin_open: true
     tty: true
+
+networks:
+    bandprotocol-network:
+      ipam:
+        driver: default
+        config:
+          - subnet: 172.28.0.0/24
