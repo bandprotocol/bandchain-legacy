@@ -21,3 +21,6 @@ RUN apt-get install -y libsodium-dev
 RUN apt-get install -y git libgflags-dev libsnappy-dev zlib1g-dev liblz4-dev libzstd-dev
 RUN git clone https://github.com/facebook/rocksdb.git
 RUN cd rocksdb && make shared_lib && make install-shared && cd ~
+
+# Build & Run Band Chain on Container Run
+CMD cd bandprotocol && protoc --cpp_out=. abci/abci.proto && mkdir -p build && cd build && cmake .. && make -j4 && ./band -v

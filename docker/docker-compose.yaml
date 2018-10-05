@@ -1,0 +1,24 @@
+version: '3'
+services:
+  bandchain:
+    build:
+      context: ./bandchain
+      args:
+        - country_code=th
+    image: bandprotocol/bandchain:dev
+    volumes:
+      - ..:/bandprotocol
+    network_mode: "host"
+    container_name: bandchain
+    stdin_open: true
+    tty: true
+  tendermint:
+    build:
+      context: ./tendermint
+      args:
+        - country_code=th
+    image: bandprotocol/tendermint:dev
+    network_mode: "host"
+    container_name: tendermint
+    stdin_open: true
+    tty: true
