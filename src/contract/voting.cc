@@ -146,6 +146,13 @@ uint64_t Voting::get_reveal_end_time(uint256_t poll_id) const
   return m_poll.at(poll_id).reveal_end_time;
 }
 
+uint256_t Voting::get_voting_power(Address addr) const
+{
+  if (auto it = voting_power.find(addr); it != voting_power.end())
+    return it->second;
+  return 0;
+}
+
 uint256_t Voting::get_number_pass_token(const Address& address,
                                         const uint256_t& poll_id,
                                         const uint256_t& salt) const

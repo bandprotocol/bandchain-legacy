@@ -37,6 +37,7 @@ ContractStaticInit::ContractStaticInit()
   ADD_CALLABLE(Voting, get_result, 9)
   ADD_CALLABLE(Voting, get_commit_end_time, 10);
   ADD_CALLABLE(Voting, get_reveal_end_time, 11);
+  ADD_CALLABLE(Voting, get_voting_power, 12);
   ADD_CALLABLE(Registry, apply, 1)
   ADD_CALLABLE(Registry, deposit, 2)
   ADD_CALLABLE(Registry, withdraw, 3)
