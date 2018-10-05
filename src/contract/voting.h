@@ -42,6 +42,8 @@ public:
 
   uint64_t get_reveal_end_time(uint256_t poll_id) const;
 
+  uint256_t get_voting_power(Address addr) const;
+
   // Call by tcr function
 
   uint256_t get_number_pass_token(const Address& address,
