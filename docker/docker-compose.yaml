@@ -39,6 +39,7 @@ services:
         ipv4_address: 172.28.0.4
     ports: 
       - "80:80"
+    container_name: nginx
 
 networks:
     bandprotocol-network:
