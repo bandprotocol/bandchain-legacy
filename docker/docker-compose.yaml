@@ -30,6 +30,15 @@ services:
     container_name: tendermint
     stdin_open: true
     tty: true
+  nginx:
+    image: blacklabelops/nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf 
+    networks:
+      bandprotocol-network:
+        ipv4_address: 172.28.0.4
+    ports: 
+      - "80:80"
 
 networks:
     bandprotocol-network:
