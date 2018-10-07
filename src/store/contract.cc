@@ -57,6 +57,7 @@ ContractStaticInit::ContractStaticInit()
   ADD_CALLABLE(Registry, get_app_expire, 17)
   ADD_CALLABLE(Registry, get_list_owner, 18)
   ADD_CALLABLE(Registry, get_challenger_id, 19)
+  ADD_CALLABLE(Registry, get_reason, 20)
 
   Contract::add_constructor<Hash>(ContractID::Account);
   Contract::add_constructor<Address, Buffer>(ContractID::Token);

@@ -304,6 +304,12 @@ Address Registry::get_challenger_id(uint256_t challenge_id) const
   return m_challenges.at(challenge_id).challenger;
 }
 
+std::string Registry::get_reason(uint256_t challenge_id) const
+{
+  assert_con(challenge_exist(challenge_id), "Challenge not found.");
+  return m_challenges.at(challenge_id).data;
+}
+
 // Private function
 void Registry::resolve_challenge(const uint256_t& list_id)
 {

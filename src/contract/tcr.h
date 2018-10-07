@@ -79,6 +79,8 @@ public:
 
   Address get_challenger_id(uint256_t challenge_id) const;
 
+  std::string get_reason(uint256_t challenge_id) const;
+
 private:
   void resolve_challenge(const uint256_t& list_id);
 
