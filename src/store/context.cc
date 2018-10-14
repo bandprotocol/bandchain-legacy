@@ -26,7 +26,6 @@ void Context::flush()
     obj.second->debug_save();
     add_impl(std::move(obj.second));
   }
-
   cache.clear();
   Global::get().reset_per_tx();
 

@@ -126,12 +126,19 @@ uint8_t Voting::get_period(uint256_t poll_id) const
   return PollStatus::End;
 }
 
-bool Voting::get_result(uint256_t poll_id) const
+uint8_t Voting::get_result(uint256_t poll_id) const
 {
   assert_con(is_poll_ended(poll_id), "Poll hasn't ended yet.");
   Poll poll = m_poll.at(poll_id);
-  return (100 * poll.votes_for) >
-         (poll.vote_quorum * (poll.votes_for + poll.votes_against));
+  if (poll.votes_for + poll.votes_against == 0)
+    return VoteResult::Reject;
+  uint256_t percent =
+      (100 * poll.votes_for) / (poll.votes_for + poll.votes_against);
+  if (percent < poll.losing_threshold)
+    return VoteResult::Reject;
+  if (percent < poll.winning_threshold)
+    return VoteResult::NoVote;
+  return VoteResult::Approve;
 }
 
 uint64_t Voting::get_commit_end_time(uint256_t poll_id) const
@@ -168,14 +175,16 @@ uint256_t Voting::get_number_pass_token(const Address& address,
   return get_num_tokens(address, poll_id);
 }
 
-uint256_t Voting::start_poll(uint8_t vote_quorum, uint64_t commit_duration,
-                             uint64_t reveal_duration)
+uint256_t Voting::start_poll(uint8_t losing_threshold,
+                             uint8_t winning_threahold,
+                             uint64_t commit_duration, uint64_t reveal_duration)
 {
   poll_nonce++;
   uint64_t commit_end_time = Global::get().block_time + commit_duration;
   uint64_t reveal_end_time = commit_end_time + reveal_duration;
 
-  Poll poll(commit_end_time, reveal_end_time, vote_quorum);
+  Poll poll(commit_end_time, reveal_end_time, losing_threshold,
+            winning_threahold);
   m_poll.insert({poll_nonce, poll});
   return poll_nonce;
 }
@@ -299,7 +308,8 @@ void Voting::debug_save() const
     DEBUG(log, "  Result in Poll {}", poll_id);
     DEBUG(log, "    commit_end_time: {}", poll.commit_end_time);
     DEBUG(log, "    reveal_end_time: {}", poll.reveal_end_time);
-    DEBUG(log, "    vote quorum: {}", poll.vote_quorum);
+    DEBUG(log, "    losing_threshold: {}", poll.losing_threshold);
+    DEBUG(log, "    winning_threshold: {}", poll.winning_threshold);
     DEBUG(log, "    votes for: {}", poll.votes_for);
     DEBUG(log, "    votes against: {}", poll.votes_against);
     DEBUG(log, "  List of voters");

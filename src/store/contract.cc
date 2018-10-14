@@ -2,6 +2,8 @@
 
 #include "contract/account.h"
 #include "contract/creator.h"
+#include "contract/governance.h"
+#include "contract/stake.h"
 #include "contract/tcr.h"
 #include "contract/token.h"
 #include "contract/voting.h"
@@ -58,13 +60,24 @@ ContractStaticInit::ContractStaticInit()
   ADD_CALLABLE(Registry, get_list_owner, 18)
   ADD_CALLABLE(Registry, get_challenger_id, 19)
   ADD_CALLABLE(Registry, get_reason, 20)
+  ADD_CALLABLE(Stake, stake, 1);
+  ADD_CALLABLE(Stake, withdraw, 2);
+  ADD_CALLABLE(Stake, create_party, 3);
+  ADD_CALLABLE(Stake, claim_reward, 4);
+  ADD_CALLABLE(Stake, reactivate_party, 5);
+  // ADD_CALLABLE(Stake, topx, 6);
+  ADD_CALLABLE(Governance, propose_new_parameter, 1);
+  ADD_CALLABLE(Governance, resolve_proposal, 2);
 
   Contract::add_constructor<Hash>(ContractID::Account);
   Contract::add_constructor<Address, Buffer>(ContractID::Token);
   Contract::add_constructor<Address>(ContractID::Voting);
+  Contract::add_constructor<Address, Address, Address, uint8_t, uint8_t,
+                            uint256_t, uint64_t, uint64_t, uint64_t>(
+      ContractID::Registry);
+  Contract::add_constructor<Address, Address>(ContractID::Stake);
   Contract::add_constructor<Address, Address, uint8_t, uint8_t, uint256_t,
-                            uint64_t, uint64_t, uint64_t>(ContractID::Registry);
-
+                            uint64_t, uint64_t>(ContractID::Governance);
 #undef ADD_CALLABLE
 }
 

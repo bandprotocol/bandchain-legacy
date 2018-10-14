@@ -10,10 +10,14 @@ BETTER_ENUM(VotingStatus, uint8_t, Committed = 1, Revealed = 2)
 
 BETTER_ENUM(PollStatus, uint8_t, Commit = 0, Reveal = 1, End = 2)
 
+BETTER_ENUM(VoteResult, uint8_t, Reject = 0, Approve = 1, NoVote = 2)
+
 class Voting : public Contract
 {
 public:
   friend class VotingTest;
+  friend class GovernanceTest;
+
   Voting(const Address& voting_id, const Address& _token_id);
 
   // Callable action function
@@ -36,7 +40,7 @@ public:
 
   uint8_t get_period(uint256_t poll_id) const;
 
-  bool get_result(uint256_t poll_id) const;
+  uint8_t get_result(uint256_t poll_id) const;
 
   uint64_t get_commit_end_time(uint256_t poll_id) const;
 
@@ -50,8 +54,8 @@ public:
                                   const uint256_t& poll_id,
                                   const uint256_t& salt) const;
 
-  uint256_t start_poll(uint8_t vote_quorum, uint64_t commit_duration,
-                       uint64_t reveal_duration);
+  uint256_t start_poll(uint8_t losing_threshold, uint8_t winning_threahold,
+                       uint64_t commit_duration, uint64_t reveal_duration);
 
   uint256_t get_total_winning_token(const uint256_t& poll_id) const;
 
@@ -109,15 +113,17 @@ private:
     const Hash commit_hash;
   };
   struct Poll {
-    Poll(uint64_t cet, uint64_t ret, uint8_t vq)
+    Poll(uint64_t cet, uint64_t ret, uint8_t lt, uint8_t wt)
         : commit_end_time(cet)
         , reveal_end_time(ret)
-        , vote_quorum(vq)
+        , losing_threshold(lt)
+        , winning_threshold(wt)
     {
     }
     const uint64_t commit_end_time;
     const uint64_t reveal_end_time;
-    const uint8_t vote_quorum;
+    const uint8_t losing_threshold;
+    const uint8_t winning_threshold;
     uint256_t votes_for = 0;
     uint256_t votes_against = 0;
     std::unordered_map<Address, PollReceipt> votes;

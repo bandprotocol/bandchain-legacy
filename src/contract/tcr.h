@@ -4,17 +4,48 @@
 
 #include "inc/essential.h"
 #include "store/contract.h"
+#include "store/upgradable.h"
 
-class Registry : public Contract
+struct RegistryParameters {
+  uint8_t vote_quorum;
+  uint8_t dispensation_percentage;
+  uint256_t min_deposit;
+  uint64_t apply_duration;
+  uint64_t commit_duration;
+  uint64_t reveal_duration;
+
+  std::string to_string() const
+  {
+    return "vote_quorum: {}, dispensation_percentage: {}, min_deposit: {}, apply_duration: {}, commit_duration: {}, reveal_duration: {}"_format(
+        vote_quorum, dispensation_percentage, min_deposit, apply_duration,
+        commit_duration, reveal_duration);
+  }
+};
+
+inline Buffer& operator>>(Buffer& buf, RegistryParameters& params)
+{
+  return buf >> params.vote_quorum >> params.dispensation_percentage >>
+         params.min_deposit >> params.apply_duration >>
+         params.commit_duration >> params.reveal_duration;
+}
+inline Buffer& operator<<(Buffer& buf, const RegistryParameters& params)
+{
+  return buf << params.vote_quorum << params.dispensation_percentage
+             << params.min_deposit << params.apply_duration
+             << params.commit_duration << params.reveal_duration;
+}
+
+class Registry : public Contract, public UpgradableImpl<RegistryParameters>
 {
 public:
+  friend class GovernanceTest;
   ContractID contract_id() const final { return ContractID::Registry; }
 
   Registry(const Address& registry_id, const Address& _token_id,
-           const Address& _voting_id, uint8_t _vote_quorum,
-           uint8_t _dispensation_percentage, const uint256_t& _min_deposit,
-           uint64_t _apply_duration, uint64_t _commit_duration,
-           uint64_t _reveal_duration);
+           const Address& _voting_id, const Address& _governance_id,
+           uint8_t _vote_quorum, uint8_t _dispensation_percentage,
+           const uint256_t& _min_deposit, uint64_t _apply_duration,
+           uint64_t _commit_duration, uint64_t _reveal_duration);
 
   // Callable function
   uint256_t apply(std::string data, uint256_t token_deposit);
@@ -95,6 +126,7 @@ private:
 public:
   const Address token_id;
   const Address voting_id;
+  const Address governance_id;
 
 private:
   uint256_t listing_nonce = 0;
@@ -140,18 +172,8 @@ private:
     std::unordered_map<Address, bool> token_claimed;
   };
 
-  struct Parameters {
-    uint8_t vote_quorum;
-    uint8_t dispensation_percentage;
-    uint256_t min_deposit;
-    uint64_t apply_duration;
-    uint64_t commit_duration;
-    uint64_t reveal_duration;
-  };
-
-  Parameters params;
   std::unordered_map<uint256_t, Challenge> m_challenges;
   std::unordered_map<uint256_t, Listing> m_listings;
 
-  static inline auto log = logger::get("tcr");
+  static inline auto log = logger::get("registry");
 };

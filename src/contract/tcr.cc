@@ -5,15 +5,18 @@
 #include "store/global.h"
 
 Registry::Registry(const Address& registry_id, const Address& _token_id,
-                   const Address& _voting_id, uint8_t _vote_quorum,
-                   uint8_t _dispensation_percentage,
+                   const Address& _voting_id, const Address& _governance_id,
+                   uint8_t _vote_quorum, uint8_t _dispensation_percentage,
                    const uint256_t& _min_deposit, uint64_t _apply_duration,
                    uint64_t _commit_duration, uint64_t _reveal_duration)
     : Contract(registry_id)
+    , UpgradableImpl<RegistryParameters>(
+          {_vote_quorum, _dispensation_percentage, _min_deposit,
+           _apply_duration, _commit_duration, _reveal_duration},
+          _governance_id)
     , token_id(_token_id)
     , voting_id(_voting_id)
-    , params({_vote_quorum, _dispensation_percentage, _min_deposit,
-              _apply_duration, _commit_duration, _reveal_duration})
+    , governance_id(_governance_id)
 
 {
   auto& vote = Global::get().m_ctx->get<Voting>(voting_id);
@@ -102,8 +105,9 @@ uint256_t Registry::challenge(uint256_t list_id, std::string data)
 
   auto& vote = Global::get().m_ctx->get<Voting>(voting_id);
 
-  uint256_t poll_id = vote.start_poll(
-      params.vote_quorum, params.commit_duration, params.reveal_duration);
+  uint256_t poll_id =
+      vote.start_poll(params.vote_quorum, params.vote_quorum,
+                      params.commit_duration, params.reveal_duration);
 
   uint256_t reward =
       ((100 - params.dispensation_percentage) * min_deposit) / 100;

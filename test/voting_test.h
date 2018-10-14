@@ -27,7 +27,7 @@ public:
     ctx->flush();
 
     auto vote = &ctx->get<Voting>(voting);
-    auto poll_id = vote->start_poll(50, 10, 10);
+    auto poll_id = vote->start_poll(50, 50, 10, 10);
     TS_ASSERT_EQUALS(1, poll_id);
     ctx->flush();
   }
@@ -120,14 +120,14 @@ public:
     vote = &ctx->get<Voting>(voting);
     account = &ctx->get<Account>(mrA);
     token = &ctx->get<Token>(band);
-    auto poll_id = vote->start_poll(50, 10, 10);
+    auto poll_id = vote->start_poll(50, 50, 10, 10);
     ctx->flush();
 
     vote = &ctx->get<Voting>(voting);
     account = &ctx->get<Account>(mrA);
     token = &ctx->get<Token>(band);
     account->set_sender();
-    vote->commit_vote(1, get_hash(true, 12), 100);
+    vote->commit_vote(poll_id, get_hash(true, 12), 100);
     ctx->flush();
 
     // vote = &ctx->get<Voting>(voting);
@@ -149,7 +149,7 @@ public:
     account = &ctx->get<Account>(mrA);
     token = &ctx->get<Token>(band);
     account->set_sender();
-    vote->commit_vote(1, get_hash(true, 72), 149);
+    vote->commit_vote(poll_id, get_hash(true, 72), 149);
     ctx->flush();
 
     // Another account join vote
@@ -171,7 +171,7 @@ public:
     accountb = &ctx->get<Account>(mrB);
     token = &ctx->get<Token>(band);
     accountb->set_sender();
-    vote->commit_vote(1, get_hash(false, 999), 300);
+    vote->commit_vote(poll_id, get_hash(false, 999), 300);
     ctx->flush();
 
     vote = &ctx->get<Voting>(voting);
@@ -187,7 +187,7 @@ public:
   {
     std::unique_ptr<ContextMap> ctx = std::make_unique<ContextMap>();
     Global::get().m_ctx = ctx.get();
-
+    Global::get().block_time = 0;
     Address band =
         Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
     Curve linear = Curve(std::make_unique<EqVar>());
@@ -227,14 +227,14 @@ public:
     vote = &ctx->get<Voting>(voting);
     account = &ctx->get<Account>(mrA);
     token = &ctx->get<Token>(band);
-    auto poll_id = vote->start_poll(50, 10, 10);
+    auto poll_id = vote->start_poll(50, 50, 10, 10);
     ctx->flush();
 
     vote = &ctx->get<Voting>(voting);
     account = &ctx->get<Account>(mrA);
     token = &ctx->get<Token>(band);
     account->set_sender();
-    vote->commit_vote(1, get_hash(true, 72), 149);
+    vote->commit_vote(poll_id, get_hash(true, 72), 149);
     ctx->flush();
 
     vote = &ctx->get<Voting>(voting);
@@ -248,7 +248,7 @@ public:
     account = &ctx->get<Account>(mrA);
     token = &ctx->get<Token>(band);
     account->set_sender();
-    TS_ASSERT_THROWS_ANYTHING(vote->reveal_vote(1, true, 12));
+    TS_ASSERT_THROWS_ANYTHING(vote->reveal_vote(poll_id, true, 12));
     ctx->reset();
 
     Global::get().block_time = 15;
@@ -256,7 +256,7 @@ public:
     account = &ctx->get<Account>(mrA);
     token = &ctx->get<Token>(band);
     account->set_sender();
-    vote->reveal_vote(1, true, 72);
+    vote->reveal_vote(poll_id, true, 72);
     ctx->flush();
 
     Global::get().block_time = 17;
@@ -264,7 +264,7 @@ public:
     accountb = &ctx->get<Account>(mrB);
     token = &ctx->get<Token>(band);
     accountb->set_sender();
-    vote->reveal_vote(1, false, 999);
+    vote->reveal_vote(poll_id, false, 999);
     ctx->flush();
 
     vote = &ctx->get<Voting>(voting);

@@ -4,6 +4,7 @@
 
 #include "inc/essential.h"
 #include "store/contract.h"
+#include "store/upgradable.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
 

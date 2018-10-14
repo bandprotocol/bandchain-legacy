@@ -11,12 +11,14 @@
 #include "util/typeid.h"
 
 BETTER_ENUM(ContractID, uint16_t, Creator = 0, Account = 1, Token = 2,
-            Voting = 3, Registry = 4)
+            Voting = 3, Registry = 4, Stake = 5, Governance = 6)
 
 class Contract
 {
   friend class ContractStaticInit;
   friend class VotingTest;
+  friend class StakeTest;
+  friend class GovernanceTest;
 
 public:
   virtual ~Contract() {}
