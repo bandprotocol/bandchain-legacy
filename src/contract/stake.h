@@ -13,8 +13,6 @@ public:
   friend class StakeTest;
   Stake(const Address& stake_id, const Address& _base_token);
 
-  ContractID contract_id() const final { return ContractID::Stake; }
-
   // Callable functions
   // Stake token to dest (Validator) and create a new receipt.
   uint256_t stake(uint256_t party_id, uint256_t value);
@@ -43,7 +41,6 @@ public:
 
   void destroy_party(uint256_t party_id);
 
-  std::unique_ptr<Contract> clone() const final;
   void debug_create() const final;
   void debug_save() const final;
 

@@ -39,7 +39,6 @@ class Registry : public Contract, public UpgradableImpl<RegistryParameters>
 {
 public:
   friend class GovernanceTest;
-  ContractID contract_id() const final { return ContractID::Registry; }
 
   Registry(const Address& registry_id, const Address& _token_id,
            const Address& _voting_id, const Address& _governance_id,
@@ -81,8 +80,6 @@ public:
   void debug_create() const final;
 
   void debug_save() const final;
-
-  std::unique_ptr<Contract> clone() const final;
 
   // Callable query function
 

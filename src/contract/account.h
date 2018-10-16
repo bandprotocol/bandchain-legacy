@@ -4,38 +4,34 @@
 
 #include "inc/essential.h"
 #include "store/contract.h"
+#include "store/wrapper.h"
 #include "util/bytes.h"
 
 class Account final : public Contract
 {
 public:
-  Account(const VerifyKey& verify_key);
+  Account(const Address& address);
+
+  void init(const VerifyKey& verify_key);
 
   Buffer delegate_call(Buffer buf);
 
   uint256_t get_nonce() const;
 
-  ContractID contract_id() const final { return ContractID::Account; }
-
-  std::unique_ptr<Contract> clone() const final
-  {
-    return std::make_unique<Account>(*this);
-  }
-
   void debug_create() const final
   {
-    DEBUG(log, "account created at {} nonce = {} {}", m_addr, m_nonce,
+    DEBUG(log, "account created at {} nonce = {} {}", m_addr, m_nonce.get(),
           (void*)this);
   }
 
   void debug_save() const final
   {
-    DEBUG(log, "account saved at {} nonce = {} {}", m_addr, m_nonce,
+    DEBUG(log, "account saved at {} nonce = {} {}", m_addr, m_nonce.get(),
           (void*)this);
   }
 
 private:
-  const VerifyKey m_verify_key;
-  uint64_t m_nonce = 0;
+  Wrapper<VerifyKey> m_verify_key{*this};
+  Wrapper<uint64_t> m_nonce{*this};
   static inline auto log = logger::get("account");
 };

@@ -2,12 +2,16 @@
 
 #include "store/global.h"
 
-Token::Token(const Address& token_id, const Address& _base_token_id,
-             const Curve& _buy_curve)
-    : Contract(token_id)
-    , base_token_id(_base_token_id)
-    , buy_curve(_buy_curve)
+Token::Token(const Address& token_id)
+    : Contract(token_id, ContractID::Token)
 {
+}
+
+void Token::init(const Address& _base_token_id, const Curve& _buy_curve)
+{
+  base_token_id.set(_base_token_id);
+  buy_curve.set(_buy_curve);
+  current_supply.set(0);
 }
 
 void Token::mint(uint256_t value)
@@ -24,64 +28,61 @@ void Token::transfer(Address dest, uint256_t value)
 
 void Token::buy(uint256_t value)
 {
-  uint256_t buy_price = buy_curve.apply(VarsSimple(current_supply + value)) -
-                        buy_curve.apply(VarsSimple(current_supply));
+  uint256_t buy_price =
+      buy_curve.get().apply(VarsSimple(current_supply.get() + value)) -
+      buy_curve.get().apply(VarsSimple(current_supply.get()));
 
-  auto& base_contract = Global::get().m_ctx->get<Token>(base_token_id);
+  auto& base_contract = Global::get().m_ctx->get<Token>(base_token_id.get());
 
   base_contract.m_balances[get_sender()] -= buy_price;
   m_balances[get_sender()] += value;
-  current_supply += value;
+  current_supply.set(current_supply.get() + value);
 }
 
 void Token::sell(uint256_t value)
 {
-  uint256_t sell_price = buy_curve.apply(VarsSimple(current_supply)) -
-                         buy_curve.apply(VarsSimple(current_supply - value));
+  uint256_t sell_price =
+      buy_curve.get().apply(VarsSimple(current_supply.get())) -
+      buy_curve.get().apply(VarsSimple(current_supply.get() - value));
 
-  auto& base_contract = Global::get().m_ctx->get<Token>(base_token_id);
+  auto& base_contract = Global::get().m_ctx->get<Token>(base_token_id.get());
 
   base_contract.m_balances[get_sender()] += sell_price;
   m_balances[get_sender()] -= value;
-  current_supply -= value;
+  current_supply.set(current_supply.get() - value);
 }
 
 uint256_t Token::balance(Address address) const
 {
-  if (auto it = m_balances.find(address); it == m_balances.end())
-    return 0;
+  auto data = m_balances.try_at(address);
+  if (data)
+    return *data;
   else
-    return m_balances.at(address);
+    return 0;
 }
 
 uint256_t Token::spot_price() const
 {
-  return buy_curve.apply(VarsSimple(current_supply + 1)) -
-         buy_curve.apply(VarsSimple(current_supply));
+  return buy_curve.get().apply(VarsSimple(current_supply.get() + 1)) -
+         buy_curve.get().apply(VarsSimple(current_supply.get()));
 }
 
 uint256_t Token::bulk_price(uint256_t value) const
 {
-  return (buy_curve.apply(VarsSimple(current_supply + value)) -
-          buy_curve.apply(VarsSimple(current_supply))) /
+  return (buy_curve.get().apply(VarsSimple(current_supply.get() + value)) -
+          buy_curve.get().apply(VarsSimple(current_supply.get()))) /
          value;
 }
 
 void Token::debug_create() const
 {
   DEBUG(log, "token created at {} {}", m_addr, (void*)this);
-  DEBUG(log, "Base token id: {}", base_token_id);
-  DEBUG(log, "Buy curve: {}", buy_curve);
-  for (auto& [addr, val] : m_balances) {
-    DEBUG(log, "  {} has {}", addr, val);
-  }
+  DEBUG(log, "Base token id: {}", base_token_id.get());
+  DEBUG(log, "Buy curve: {}", buy_curve.get());
 }
 
 void Token::debug_save() const
 {
   DEBUG(log, "token saved at {} {}", m_addr, (void*)this);
-  DEBUG(log, "Supply {}", current_supply);
-  for (auto& [addr, val] : m_balances) {
-    DEBUG(log, "  {} has {}", addr, val);
-  }
+  DEBUG(log, "Supply {}", current_supply.get());
 }

@@ -50,10 +50,6 @@ public:
 
   void resolve_proposal(uint256_t proposal_id);
 
-  ContractID contract_id() const final { return ContractID::Governance; }
-
-  std::unique_ptr<Contract> clone() const final;
-
   void debug_create() const final;
 
   void debug_save() const final;

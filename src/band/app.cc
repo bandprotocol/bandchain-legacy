@@ -17,6 +17,7 @@ BandApplication::BandApplication(Context& _ctx)
     : ctx(_ctx)
     , use_fake_time(+fake_time)
 {
+  Global::get().m_ctx = &ctx;
 }
 
 std::string BandApplication::get_current_app_hash() const
@@ -27,10 +28,11 @@ std::string BandApplication::get_current_app_hash() const
 
 void BandApplication::init(const std::string& init_state)
 {
-  ctx.create<Creator>();
+  ctx.create<Creator>(Address{});
   Address band = Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
   Curve linear = Curve(std::make_unique<EqVar>());
-  ctx.create<Token>(band, band, linear);
+  auto& token = ctx.create<Token>(band);
+  token.init(band, linear);
   ctx.flush();
 }
 

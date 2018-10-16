@@ -6,7 +6,7 @@
 #include "store/global.h"
 
 Stake::Stake(const Address& stake_id, const Address& _base_token)
-    : Contract(stake_id)
+    : Contract(stake_id, ContractID::Stake)
     , base_token(_base_token)
 {
 }
@@ -248,9 +248,4 @@ void Stake::debug_save() const
     DEBUG(log, "    last_update_time: {}", receipt.last_update_time);
   }
   DEBUG(log, "======================================================");
-}
-
-std::unique_ptr<Contract> Stake::clone() const
-{
-  return std::make_unique<Stake>(*this);
 }

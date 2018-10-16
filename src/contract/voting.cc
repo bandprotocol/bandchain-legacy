@@ -5,7 +5,7 @@
 #include "store/global.h"
 
 Voting::Voting(const Address& voting_id, const Address& _token_id)
-    : Contract(voting_id)
+    : Contract(voting_id, ContractID::Voting)
     , token_id(_token_id)
 {
 }
@@ -325,9 +325,4 @@ void Voting::debug_save() const
     DEBUG(log, "  {} has {}", addr, vp);
   }
   DEBUG(log, "======================================================");
-}
-
-std::unique_ptr<Contract> Voting::clone() const
-{
-  return std::make_unique<Voting>(*this);
 }

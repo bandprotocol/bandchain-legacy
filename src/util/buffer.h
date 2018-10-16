@@ -208,6 +208,15 @@ void varint_decode(Buffer& buf, T& val)
   throw Error("Invalid varint decode");
 }
 
+template <typename T, typename... Args>
+void add_buffer(Buffer& buf, T value, Args... others)
+{
+  buf << value;
+  if constexpr (sizeof...(Args) > 0) {
+    add_buffer(buf, others...);
+  }
+}
+
 Buffer& operator<<(Buffer& buf, bool val);
 Buffer& operator>>(Buffer& buf, bool& val);
 

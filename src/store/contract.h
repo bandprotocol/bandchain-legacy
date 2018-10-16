@@ -21,10 +21,8 @@ class Contract
   friend class GovernanceTest;
 
 public:
-  virtual ~Contract() {}
+  virtual ~Contract();
 
-  virtual ContractID contract_id() const = 0;
-  virtual std::unique_ptr<Contract> clone() const = 0;
   virtual void debug_create() const = 0;
   virtual void debug_save() const = 0;
 
@@ -41,8 +39,9 @@ public:
   }
 
 protected:
-  Contract(const Address& addr)
+  Contract(const Address& addr, const ContractID _contract_id)
       : m_addr(addr)
+      , contract_id(_contract_id)
   {
   }
 
@@ -58,8 +57,19 @@ protected:
 
 public:
   const Address m_addr;
+  const ContractID contract_id;
 
+  bool flush;
+
+  uint256_t increment_then_get()
+  {
+    nonce_counter++;
+    return nonce_counter;
+  }
   static const json& get_abi_interface();
+
+private:
+  uint256_t nonce_counter = 0;
 
 private:
   template <typename T = void, typename... Args>

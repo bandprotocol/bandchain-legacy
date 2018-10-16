@@ -9,7 +9,7 @@ Governance::Governance(const Address& governance_id, const Address& _token_id,
                        uint8_t _winning_threshold,
                        const uint256_t& _min_deposit, uint64_t _commit_duration,
                        uint64_t _reveal_duration)
-    : Contract(governance_id)
+    : Contract(governance_id, ContractID::Governance)
     , UpgradableImpl<GovernanceParameters>({_losing_threshold,
                                             _winning_threshold, _min_deposit,
                                             _commit_duration, _reveal_duration},
@@ -126,9 +126,4 @@ void Governance::debug_save() const
     DEBUG(log, "  Address: ", addr.first);
   }
   DEBUG(log, "======================================================");
-}
-
-std::unique_ptr<Contract> Governance::clone() const
-{
-  return std::make_unique<Governance>(*this);
 }

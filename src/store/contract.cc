@@ -83,10 +83,18 @@ ContractStaticInit::ContractStaticInit()
 
 const json& Contract::get_abi_interface() { return abi_interface; }
 
+Contract::~Contract()
+{
+  if (flush) {
+    Global::get().m_ctx->store.put(sha256(m_addr),
+                                   Buffer::serialize<ContractID>(contract_id));
+  }
+}
+
 void Contract::call_buf(Buffer& in_buf, Buffer* out_buf)
 {
   auto func_id = in_buf.read<uint16_t>();
-  auto& functions = all_functions[contract_id()._to_integral()];
+  auto& functions = all_functions[contract_id._to_integral()];
 
   if (auto it = functions.find(func_id); it != functions.end()) {
     (it->second)(this, in_buf, out_buf);
