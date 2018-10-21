@@ -4,8 +4,8 @@
 
 #include "inc/essential.h"
 #include "store/contract.h"
-#include "store/wrapper.h"
-#include "store/wrapper_map.h"
+#include "store/data.h"
+#include "store/mapping.h"
 #include "util/bytes.h"
 #include "util/equation.h"
 
@@ -34,12 +34,12 @@ public:
   void debug_create() const final;
   void debug_save() const final;
 
-  Wrapper<Address> base_token_id{*this};
-  Wrapper<Curve> buy_curve{*this};
+  Data<Address> base_token_id{sha256(m_addr, uint16_t(1))};
+  Data<Curve> buy_curve{sha256(m_addr, uint16_t(2))};
 
 private:
-  WrapperMap<Address, uint256_t> m_balances{*this};
-  Wrapper<uint256_t> current_supply{*this};
+  Mapping<Address, Data<uint256_t>> m_balances{sha256(m_addr, uint16_t(3))};
+  Data<uint256_t> current_supply{sha256(m_addr, uint16_t(4))};
 
   static inline auto log = logger::get("token");
 };

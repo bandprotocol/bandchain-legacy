@@ -1,6 +1,8 @@
 #pragma once
 
 #include "inc/essential.h"
+#include "store/contract.h"
+#include "store/data.h"
 #include "util/buffer.h"
 
 class Upgradable
@@ -13,25 +15,22 @@ public:
 };
 
 template <typename T>
-class UpgradableImpl : public Upgradable
+class UpgradableContract : public Contract, public Upgradable
 {
 public:
-  UpgradableImpl(T _params, const Address& _governance_id)
-      : params(_params)
-      , governance_id(_governance_id)
+  UpgradableContract(const Address& address, ContractID _contract_id)
+      : Contract(address, _contract_id)
   {
   }
 
-  Address get_governance_id() const final { return governance_id; }
-  void upgrade(Buffer buf) final { buf >> params; }
+  Address get_governance_id() const final { return +governance_id; }
+  void upgrade(Buffer buf) final { params.upgrade(buf); }
   std::string to_string(Buffer buf) const final
   {
-    T tmp_params;
-    buf >> tmp_params;
-    return tmp_params.to_string();
+    return params.parse_buffer(buf);
   }
 
 protected:
-  T params;
-  const Address governance_id;
+  T params{sha256(m_addr, uint16_t(0), uint16_t(1))};
+  Data<Address> governance_id{sha256(m_addr, uint16_t(0), uint16_t(2))};
 };

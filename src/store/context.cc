@@ -49,18 +49,18 @@ Contract* Context::get_contract_ptr(const Address& key)
     case +ContractID::Token:
       cache.emplace(key, std::make_unique<Token>(key));
       break;
-    // case +ContractID::Voting:
-    //   cache.emplace(key, std::make_unique<Voting>(key));
-    //   break;
-    // case +ContractID::Registry:
-    //   cache.emplace(key, std::make_unique<Registry>(key));
-    //   break;
+    case +ContractID::Voting:
+      cache.emplace(key, std::make_unique<Voting>(key));
+      break;
+    case +ContractID::Registry:
+      cache.emplace(key, std::make_unique<Registry>(key));
+      break;
     // case +ContractID::Stake:
     //   cache.emplace(key, std::make_unique<Stake>(key));
     //   break;
-    // case +ContractID::Governance:
-    //   cache.emplace(key, std::make_unique<Governance>(key));
-    //   break;
+    case +ContractID::Governance:
+      cache.emplace(key, std::make_unique<Governance>(key));
+      break;
     default:
       throw Error("Contract id {} doesn't support.", contract_id);
   }
@@ -76,10 +76,7 @@ void Context::reset()
 
 void Context::flush()
 {
-  for (auto& obj : cache) {
-    obj.second->debug_save();
-    obj.second->flush = true;
-  }
+  Global::get().flush = true;
 
   cache.clear();
   Global::get().reset_per_tx();

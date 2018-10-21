@@ -27,8 +27,8 @@ public:
     throw Error("Address {} does not exist", key);
   }
 
-  template <typename T>
-  T& create(const Address& key)
+  template <typename T, typename... Args>
+  T& create(const Address& key, Args&&... args)
   {
     auto raw_data = store.get(sha256(key));
     if (raw_data)
@@ -38,6 +38,8 @@ public:
     auto raw = uniq.get();
     cache[key] = std::move(uniq);
 
+    raw->init(std::forward<Args>(args)...);
+    raw->debug_create();
     return *raw;
   }
 

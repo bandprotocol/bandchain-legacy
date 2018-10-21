@@ -4,7 +4,7 @@
 
 #include "inc/essential.h"
 #include "store/contract.h"
-#include "store/wrapper.h"
+#include "store/data.h"
 #include "util/bytes.h"
 
 class Account final : public Contract
@@ -20,18 +20,19 @@ public:
 
   void debug_create() const final
   {
-    DEBUG(log, "account created at {} nonce = {} {}", m_addr, m_nonce.get(),
+    DEBUG(log, "account created at {} nonce = {} {}", m_addr, +m_nonce,
           (void*)this);
   }
 
   void debug_save() const final
   {
-    DEBUG(log, "account saved at {} nonce = {} {}", m_addr, m_nonce.get(),
+    DEBUG(log, "account saved at {} nonce = {} {}", m_addr, +m_nonce,
           (void*)this);
   }
 
 private:
-  Wrapper<VerifyKey> m_verify_key{*this};
-  Wrapper<uint64_t> m_nonce{*this};
+  Data<VerifyKey> m_verify_key{sha256(m_addr, uint16_t(1))};
+  Data<uint64_t> m_nonce{sha256(m_addr, uint16_t(2))};
+
   static inline auto log = logger::get("account");
 };

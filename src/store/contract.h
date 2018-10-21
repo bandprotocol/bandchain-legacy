@@ -59,8 +59,6 @@ public:
   const Address m_addr;
   const ContractID contract_id;
 
-  bool flush;
-
   uint256_t increment_then_get()
   {
     nonce_counter++;

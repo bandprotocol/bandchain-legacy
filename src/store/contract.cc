@@ -85,7 +85,7 @@ const json& Contract::get_abi_interface() { return abi_interface; }
 
 Contract::~Contract()
 {
-  if (flush) {
+  if (Global::get().flush) {
     Global::get().m_ctx->store.put(sha256(m_addr),
                                    Buffer::serialize<ContractID>(contract_id));
   }

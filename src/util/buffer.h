@@ -58,7 +58,7 @@ public:
     return *this;
   }
 
-  Buffer& operator<<(Buffer& data)
+  Buffer& operator<<(const Buffer& data)
   {
     buf.insert(buf.end(), data.buf.begin(), data.buf.end());
     return *this;
@@ -237,3 +237,14 @@ Buffer& operator>>(Buffer& buf, uint256_t& val);
 
 Buffer& operator<<(Buffer& buf, const std::string& val);
 Buffer& operator>>(Buffer& buf, std::string& val);
+
+template <typename P1, typename P2>
+Buffer& operator<<(Buffer& buf, const std::pair<P1, P2>& val)
+{
+  return buf << val.first << val.second;
+}
+template <typename P1, typename P2>
+Buffer& operator>>(Buffer& buf, std::pair<P1, P2>& val)
+{
+  return buf >> val.first >> val.second;
+}

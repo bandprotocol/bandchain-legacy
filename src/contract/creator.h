@@ -6,7 +6,7 @@ class Creator final : public Contract
 {
 public:
   Creator(const Address& address);
-
+  void init() {}
   Address create(Buffer buf);
 
 public:

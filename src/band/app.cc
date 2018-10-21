@@ -31,8 +31,7 @@ void BandApplication::init(const std::string& init_state)
   ctx.create<Creator>(Address{});
   Address band = Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
   Curve linear = Curve(std::make_unique<EqVar>());
-  auto& token = ctx.create<Token>(band);
-  token.init(band, linear);
+  ctx.create<Token>(band, band, linear);
   ctx.flush();
 }
 

@@ -12,6 +12,7 @@ public:
   uint64_t block_time{};
   Address block_proposer{};
   Hash tx_hash{};
+  bool flush = false;
 
   static Global& get()
   {
@@ -24,6 +25,7 @@ public:
   {
     sender = Address();
     tx_hash = Hash();
+    flush = false;
   }
 
 private:
