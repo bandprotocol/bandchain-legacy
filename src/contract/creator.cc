@@ -62,12 +62,12 @@ Address Creator::create(Buffer buf)
       break;
     }
 
-      // case +ContractID::Stake: {
-      //   Address token_id = buf.read<Address>();
-      //   created_contract = &Global::get().m_ctx->create<Stake>(
-      //       ed25519_vk_to_addr(Global::get().tx_hash), token_id);
-      //   break;
-      // }
+    case +ContractID::Stake: {
+      Address token_id = buf.read<Address>();
+      created_contract = &Global::get().m_ctx->create<Stake>(
+          ed25519_vk_to_addr(Global::get().tx_hash), token_id);
+      break;
+    }
 
     case +ContractID::Governance: {
       Address token_id = buf.read<Address>();

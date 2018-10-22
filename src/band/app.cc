@@ -18,6 +18,16 @@ BandApplication::BandApplication(Context& _ctx)
     , use_fake_time(+fake_time)
 {
   Global::get().m_ctx = &ctx;
+
+  NOCOMMIT_LOG("Start");
+  // get block height from storage
+  auto result = ctx.store.get_protected_key("Band Protocol Block Height");
+  if (result) {
+    last_block_height = Buffer::deserialize<uint64_t>(*result);
+  } else {
+    last_block_height = 0;
+  }
+  NOCOMMIT_LOG("{}", last_block_height);
 }
 
 std::string BandApplication::get_current_app_hash() const
@@ -28,11 +38,13 @@ std::string BandApplication::get_current_app_hash() const
 
 void BandApplication::init(const std::string& init_state)
 {
+  ctx.store.start_block();
   ctx.create<Creator>(Address{});
   Address band = Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
   Curve linear = Curve(std::make_unique<EqVar>());
   ctx.create<Token>(band, band, linear);
   ctx.flush();
+  ctx.store.end_block();
 }
 
 std::string BandApplication::query(const std::string& path,

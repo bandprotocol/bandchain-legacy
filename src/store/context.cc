@@ -55,9 +55,9 @@ Contract* Context::get_contract_ptr(const Address& key)
     case +ContractID::Registry:
       cache.emplace(key, std::make_unique<Registry>(key));
       break;
-    // case +ContractID::Stake:
-    //   cache.emplace(key, std::make_unique<Stake>(key));
-    //   break;
+    case +ContractID::Stake:
+      cache.emplace(key, std::make_unique<Stake>(key));
+      break;
     case +ContractID::Governance:
       cache.emplace(key, std::make_unique<Governance>(key));
       break;

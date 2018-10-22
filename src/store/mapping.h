@@ -4,8 +4,6 @@
 #include <unordered_map>
 
 #include "inc/essential.h"
-#include "store/contract.h"
-#include "store/global.h"
 
 template <typename Key, typename Value>
 class Mapping

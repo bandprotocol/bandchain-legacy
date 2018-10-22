@@ -193,7 +193,7 @@ public:
     }
   }
 
-  uint256_t size() { return m_size; }
+  uint256_t size() const { return m_size; }
 
 private:
   struct Node;

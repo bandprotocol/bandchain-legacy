@@ -6,12 +6,18 @@
 
 #include "inc/essential.h"
 #include "store/contract.h"
+#include "store/data.h"
+#include "store/mapping.h"
+#include "store/set.h"
+#include "store/vector.h"
 
 class Stake : public Contract
 {
 public:
   friend class StakeTest;
-  Stake(const Address& stake_id, const Address& _base_token);
+  Stake(const Address& stake_id);
+
+  void init(const Address& _base_token);
 
   // Callable functions
   // Stake token to dest (Validator) and create a new receipt.
@@ -44,34 +50,102 @@ public:
   void debug_create() const final;
   void debug_save() const final;
 
-  const Address base_token;
+public:
+  Data<Address> base_token{sha256(m_addr, uint16_t(1))};
 
 private:
   struct Receipt {
-    uint64_t last_update_time;
-    const Address owner;
-    const uint256_t party_id;
-    const uint256_t value;
+
+    Receipt(const Hash& _parent_hash)
+        : parent_hash(_parent_hash)
+    {
+    }
+
+    void init(uint64_t _last_update_time, const Address& _owner,
+              const uint256_t& _party_id, const uint256_t& _value)
+    {
+      _exist = true;
+      last_update_time = _last_update_time;
+      owner = _owner;
+      party_id = _party_id;
+      value = _value;
+    }
+
+    void erase()
+    {
+      _exist.erase();
+      last_update_time.erase();
+      owner.erase();
+      party_id.erase();
+      value.erase();
+    }
+
+    bool exist() { return _exist.exist(); }
+
+    const Hash parent_hash;
+
+    Data<bool> _exist{parent_hash};
+    Data<uint64_t> last_update_time{sha256(parent_hash, uint(1))};
+    Data<Address> owner{sha256(parent_hash, uint(2))};
+    Data<uint256_t> party_id{sha256(parent_hash, uint(3))};
+    Data<uint256_t> value{sha256(parent_hash, uint(4))};
   };
 
   struct Party {
-    uint256_t last_checkpoint_stake;
-    uint256_t current_stake;
-    const Address leader;
-    const uint256_t numerator;
-    const uint256_t denominator;
-    bool is_active;
-    std::vector<std::pair<uint64_t, uint256_t>> sum_reward;
+    Party(const Hash _parent_hash)
+        : parent_hash(_parent_hash)
+    {
+    }
+
+    const Hash parent_hash;
+
+    void init(const uint256_t& _last_checkpoint_stake,
+              const uint256_t& _current_stake, const Address& _leader,
+              const uint256_t& _numerator, const uint256_t& _denominator)
+    {
+      _exist = true;
+      last_checkpoint_stake = _last_checkpoint_stake;
+      current_stake = _current_stake;
+      leader = _leader;
+      numerator = _numerator;
+      denominator = _denominator;
+      is_active = true;
+    }
+
+    void erase()
+    {
+      _exist.erase();
+      last_checkpoint_stake.erase();
+      current_stake.erase();
+      leader.erase();
+      numerator.erase();
+      denominator.erase();
+      is_active.erase();
+      sum_reward.destroy();
+    }
+
+    bool exist() { return _exist.exist(); }
+
+    Data<bool> _exist{parent_hash};
+    Data<uint256_t> last_checkpoint_stake{sha256(parent_hash, uint16_t(1))};
+    Data<uint256_t> current_stake{sha256(parent_hash, uint16_t(2))};
+    Data<Address> leader{sha256(parent_hash, uint16_t(3))};
+    Data<uint256_t> numerator{sha256(parent_hash, uint16_t(4))};
+    Data<uint256_t> denominator{sha256(parent_hash, uint16_t(5))};
+    Data<bool> is_active{sha256(parent_hash, uint16_t(6))};
+    Vector<std::pair<uint64_t, uint256_t>> sum_reward{
+        sha256(parent_hash, uint16_t(7))};
   };
 
-  uint256_t receipt_nonce = 0;
-  uint256_t party_nonce = 0;
+  Data<uint256_t> receipt_nonce{sha256(m_addr, uint16_t(2))};
+  Data<uint256_t> party_nonce{sha256(m_addr, uint16_t(3))};
 
   const uint256_t magnitude{"100000000000000000000000000000000000"};
 
-  std::unordered_map<uint256_t, Receipt> m_receipts;
-  std::unordered_map<uint256_t, Party> m_parties;
-  std::set<std::pair<uint256_t, uint256_t>> active_party_list;
+  Mapping<uint256_t, Receipt> m_receipts{sha256(m_addr, uint16_t(4))};
+  Mapping<uint256_t, Party> m_parties{sha256(m_addr, uint16_t(5))};
+  Set<std::pair<uint256_t, uint256_t>> active_party_list{
+      sha256(m_addr, uint16_t(6))};
 
   static inline auto log = logger::get("stake");
 };
