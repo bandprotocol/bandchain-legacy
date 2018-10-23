@@ -72,7 +72,6 @@ void TendermintApplication::do_begin_block(const RequestBeginBlock& req)
 {
   // TODO: Penalize missing validators
   Global::get().block_time = req.header().time();
-  Global::get().m_ctx->store.start_block();
   // Global::get().block_proposer =
   //     Address::from_raw(req.header().proposer().address());
 
@@ -137,7 +136,7 @@ void TendermintApplication::do_commit(ResponseCommit& res)
   // TODO: Notify the application to flush the blockchain state
   ++last_block_height;
 
-  Global::get().m_ctx->store.end_block();
+  Global::get().m_ctx->store.commit_block();
   Global::get().m_ctx->store.save_protected_key(
       "Band Protocol Block Height",
       Buffer::serialize<uint64_t>(last_block_height));

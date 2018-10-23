@@ -19,7 +19,6 @@ BandApplication::BandApplication(Context& _ctx)
 {
   Global::get().m_ctx = &ctx;
 
-  NOCOMMIT_LOG("Start");
   // get block height from storage
   auto result = ctx.store.get_protected_key("Band Protocol Block Height");
   if (result) {
@@ -27,7 +26,6 @@ BandApplication::BandApplication(Context& _ctx)
   } else {
     last_block_height = 0;
   }
-  NOCOMMIT_LOG("{}", last_block_height);
 }
 
 std::string BandApplication::get_current_app_hash() const
@@ -38,13 +36,12 @@ std::string BandApplication::get_current_app_hash() const
 
 void BandApplication::init(const std::string& init_state)
 {
-  ctx.store.start_block();
   ctx.create<Creator>(Address{});
   Address band = Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
   Curve linear = Curve(std::make_unique<EqVar>());
   ctx.create<Token>(band, band, linear);
   ctx.flush();
-  ctx.store.end_block();
+  ctx.store.commit_block();
 }
 
 std::string BandApplication::query(const std::string& path,
@@ -52,6 +49,13 @@ std::string BandApplication::query(const std::string& path,
 {
   BOOST_SCOPE_EXIT(&ctx) { ctx.reset(); }
   BOOST_SCOPE_EXIT_END
+
+  Global::get().m_ctx->store.switch_to_query();
+
+  NOCOMMIT_LOG("{}", path);
+  if (path == "abi") {
+    return Contract::get_abi_interface().dump(4);
+  }
 
   Buffer msg_buf(gsl::make_span(data));
   uint64_t ts = msg_buf.read<uint64_t>();
@@ -73,6 +77,7 @@ std::string BandApplication::apply(const std::string& msg_raw)
   BOOST_SCOPE_EXIT(&ctx) { ctx.reset(); }
   BOOST_SCOPE_EXIT_END
 
+  Global::get().m_ctx->store.switch_to_tx();
   Buffer msg_buf(gsl::make_span(msg_raw));
   Global::get().tx_hash = sha256(gsl::make_span(msg_raw));
   uint64_t ts = msg_buf.read<uint64_t>();

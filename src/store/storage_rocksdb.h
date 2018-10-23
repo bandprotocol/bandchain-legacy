@@ -18,12 +18,19 @@ public:
   nonstd::optional<std::string> get(const Hash& key) const final;
   void del(const Hash& key) final;
 
-  void start_block() final;
-  void end_block() final;
+  void commit_block() final;
+
+  void switch_to_tx() final;
+  void switch_to_check() final;
+  void switch_to_query() final;
+
   void save_protected_key(const std::string& key, const std::string& val) final;
   nonstd::optional<std::string> get_protected_key(const std::string& key) final;
 
 public:
   std::unique_ptr<rocksdb::OptimisticTransactionDB> txn_db;
-  std::unique_ptr<rocksdb::Transaction> txn;
+  std::unique_ptr<rocksdb::Transaction> tx_transaction;
+  std::unique_ptr<rocksdb::Transaction> check_transaction;
+  std::unique_ptr<rocksdb::Transaction> query_transaction;
+  rocksdb::Transaction* current_transaction = nullptr;
 };

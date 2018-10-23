@@ -22,18 +22,27 @@ StorageDB::StorageDB()
       rocksdb::OptimisticTransactionDB::Open(options, +db_path, &db);
   assert(s.ok());
   txn_db.reset(db);
+  rocksdb::OptimisticTransactionOptions txn_options;
+  tx_transaction.reset(
+      txn_db->BeginTransaction(rocksdb::WriteOptions(), txn_options));
+  check_transaction.reset(
+      txn_db->BeginTransaction(rocksdb::WriteOptions(), txn_options));
+  query_transaction.reset(
+      txn_db->BeginTransaction(rocksdb::WriteOptions(), txn_options));
+  current_transaction = tx_transaction.get();
 }
 
 void StorageDB::put(const Hash& key, const std::string& val)
 {
-  rocksdb::Status s = txn->Put(get_slice_from_hash(key), val);
+  rocksdb::Status s = current_transaction->Put(get_slice_from_hash(key), val);
 }
 
 nonstd::optional<std::string> StorageDB::get(const Hash& key) const
 {
   std::string value;
   auto slice_key = get_slice_from_hash(key);
-  rocksdb::Status s = txn->Get(rocksdb::ReadOptions(), slice_key, &value);
+  rocksdb::Status s =
+      current_transaction->Get(rocksdb::ReadOptions(), slice_key, &value);
   if (s.IsNotFound()) {
     return nonstd::nullopt;
   } else {
@@ -43,22 +52,35 @@ nonstd::optional<std::string> StorageDB::get(const Hash& key) const
 
 void StorageDB::del(const Hash& key)
 {
-  rocksdb::Status s = txn->Delete(get_slice_from_hash(key));
+  rocksdb::Status s = current_transaction->Delete(get_slice_from_hash(key));
 }
 
-void StorageDB::start_block()
+void StorageDB::commit_block()
 {
-  rocksdb::OptimisticTransactionOptions txn_options;
-  txn.reset(txn_db->BeginTransaction(rocksdb::WriteOptions(), txn_options));
-}
-
-void StorageDB::end_block()
-{
-  rocksdb::Status s = txn->Commit();
+  rocksdb::Status s = tx_transaction->Commit();
   if (!s.ok()) {
     throw Failure("Cannot save data to DB.");
   }
-  txn.reset();
+
+  rocksdb::OptimisticTransactionOptions txn_options;
+  tx_transaction.reset(
+      txn_db->BeginTransaction(rocksdb::WriteOptions(), txn_options));
+  check_transaction.reset(
+      txn_db->BeginTransaction(rocksdb::WriteOptions(), txn_options));
+  query_transaction.reset(
+      txn_db->BeginTransaction(rocksdb::WriteOptions(), txn_options));
+}
+
+void StorageDB::switch_to_tx() { current_transaction = tx_transaction.get(); }
+
+void StorageDB::switch_to_check()
+{
+  current_transaction = check_transaction.get();
+}
+
+void StorageDB::switch_to_query()
+{
+  current_transaction = query_transaction.get();
 }
 
 void StorageDB::save_protected_key(const std::string& key,

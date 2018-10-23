@@ -19,11 +19,12 @@ public:
   // Delete key from storage.
   virtual void del(const Hash& key) = 0;
 
-  // Start block for open transaction
-  virtual void start_block() = 0;
+  // Commit tx_transaction
+  virtual void commit_block() = 0;
 
-  // Commit block save all change to DB
-  virtual void end_block() = 0;
+  virtual void switch_to_tx() = 0;
+  virtual void switch_to_check() = 0;
+  virtual void switch_to_query() = 0;
 
   virtual void save_protected_key(const std::string& key,
                                   const std::string& val) = 0;
