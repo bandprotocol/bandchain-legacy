@@ -1,5 +1,4 @@
 ---
-Language: Cpp
 BasedOnStyle: LLVM
 BreakBeforeBraces: Linux
 PointerAlignment: Left
