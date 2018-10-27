@@ -46,8 +46,8 @@ void Token::transfer(Address dest, uint256_t value)
 void Token::buy(uint256_t value)
 {
   Curve real_curve = +buy_curve;
-  uint256_t buy_price = real_curve.apply(VarsSimple(+current_supply + value)) -
-                        real_curve.apply(VarsSimple(+current_supply));
+  uint256_t buy_price = real_curve.apply(+current_supply + value) -
+                        real_curve.apply(+current_supply);
 
   auto& base_contract = Global::get().m_ctx->get<Token>(+base_token_id);
 
@@ -60,8 +60,8 @@ void Token::buy(uint256_t value)
 void Token::sell(uint256_t value)
 {
   Curve real_curve = +buy_curve;
-  uint256_t sell_price = real_curve.apply(VarsSimple(+current_supply)) -
-                         real_curve.apply(VarsSimple(+current_supply - value));
+  uint256_t sell_price = real_curve.apply(+current_supply) -
+                         real_curve.apply(+current_supply - value);
 
   auto& base_contract = Global::get().m_ctx->get<Token>(+base_token_id);
 
@@ -76,16 +76,15 @@ uint256_t Token::balance(Address address) const { return +m_balances[address]; }
 uint256_t Token::spot_price() const
 {
   Curve real_curve = +buy_curve;
-  return real_curve.apply(VarsSimple(+current_supply + 1)) -
-         real_curve.apply(VarsSimple(+current_supply));
+  return real_curve.apply(+current_supply + 1) -
+         real_curve.apply(+current_supply);
 }
 
 uint256_t Token::bulk_price(uint256_t value) const
 {
   Curve real_curve = +buy_curve;
-  return (real_curve.apply(VarsSimple(+current_supply + value)) -
-          real_curve.apply(VarsSimple(+current_supply))) /
-         value;
+  return real_curve.apply(+current_supply + value) -
+         real_curve.apply(+current_supply);
 }
 
 void Token::debug_create() const

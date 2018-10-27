@@ -43,11 +43,11 @@ Curve& Curve::operator=(const Curve& _curve)
   return *this;
 }
 
-uint256_t Curve::apply(const Vars& vars) const
+uint256_t Curve::apply(const uint256_t& x_value) const
 {
   if (!equation)
     throw Error("Equation hasn't been set");
-  return equation->apply(vars);
+  return equation->apply(x_value);
 }
 
 std::string Curve::to_string() const
@@ -71,37 +71,6 @@ Buffer& operator>>(Buffer& buf, Curve& curve)
   curve.equation = Eq::parse(buf);
   return buf;
 }
-
-// uint256_t PriceSpread::get_sell_price(const uint256_t& price,
-//                                       const uint256_t& supply) const
-// {
-//   // Check type constant
-//   switch (spread_type) {
-//     case +SpreadType::Constant: {
-//       uint256_t dif = spread_value * supply;
-//       if (price > dif)
-//         return price - dif;
-//       else
-//         return 0;
-//     }
-//     case +SpreadType::Rational:
-//       return spread_value * price / PriceSpread::ratio;
-//     case +SpreadType::Unset:
-//       throw Error("Invalid price spread type");
-//   }
-// }
-
-// Buffer& operator<<(Buffer& buf, const PriceSpread& price_spread)
-// {
-//   buf << price_spread.spread_type << price_spread.spread_value;
-//   return buf;
-// }
-
-// Buffer& operator>>(Buffer& buf, PriceSpread& price_spread)
-// {
-//   buf >> price_spread.spread_type >> price_spread.spread_value;
-//   return buf;
-// }
 
 std::unique_ptr<Eq> Eq::parse(Buffer& buf)
 {
@@ -129,16 +98,6 @@ std::unique_ptr<Eq> Eq::parse(Buffer& buf)
     }
     case +OpCode::Variable:
       return std::make_unique<EqVar>();
-    case +OpCode::Contract: {
-      auto eq_contract = std::make_unique<EqContract>();
-      buf >> eq_contract->contract_id;
-      return std::move(eq_contract);
-    }
-    case +OpCode::Price: {
-      auto eq_price = std::make_unique<EqPrice>();
-      buf >> eq_price->price_id;
-      return std::move(eq_price);
-    }
     case +OpCode::Unset:
       throw Error("Unexpected Opcode");
   }
@@ -153,63 +112,41 @@ std::string EqVar::to_string() const
   return "x";
 }
 
-std::string EqPrice::to_string() const
+uint256_t EqAdd::apply(const uint256_t& x_value) const
 {
-  // TODO
-  return price_id.to_string();
+  return left->apply(x_value) + right->apply(x_value);
 }
 
-std::string EqContract::to_string() const
+uint256_t EqSub::apply(const uint256_t& x_value) const
 {
-  // TODO
-  return contract_id.to_string();
+  return left->apply(x_value) - right->apply(x_value);
 }
 
-uint256_t EqAdd::apply(const Vars& vars) const
+uint256_t EqMul::apply(const uint256_t& x_value) const
 {
-  return left->apply(vars) + right->apply(vars);
+  return left->apply(x_value) * right->apply(x_value);
 }
 
-uint256_t EqSub::apply(const Vars& vars) const
+uint256_t EqDiv::apply(const uint256_t& x_value) const
 {
-  return left->apply(vars) - right->apply(vars);
+  return left->apply(x_value) / right->apply(x_value);
 }
 
-uint256_t EqMul::apply(const Vars& vars) const
+uint256_t EqMod::apply(const uint256_t& x_value) const
 {
-  return left->apply(vars) * right->apply(vars);
+  return left->apply(x_value) % right->apply(x_value);
 }
 
-uint256_t EqDiv::apply(const Vars& vars) const
+uint256_t EqExp::apply(const uint256_t& x_value) const
 {
-  return left->apply(vars) / right->apply(vars);
-}
-
-uint256_t EqMod::apply(const Vars& vars) const
-{
-  return left->apply(vars) % right->apply(vars);
-}
-
-uint256_t EqExp::apply(const Vars& vars) const
-{
-  uint256_t l = left->apply(vars);
-  uint256_t r = right->apply(vars);
+  uint256_t l = left->apply(x_value);
+  uint256_t r = right->apply(x_value);
   return pow(l, r);
 }
 
-uint256_t EqConstant::apply(const Vars& vars) const { return constant; }
+uint256_t EqConstant::apply(const uint256_t& x_value) const { return constant; }
 
-uint256_t EqVar::apply(const Vars& vars) const { return vars.get_x(); }
-
-uint256_t EqPrice::apply(const Vars& vars) const
-{
-  return vars.get_external_price(price_id);
-}
-
-uint256_t EqContract::apply(const Vars& vars) const
-{
-  return vars.get_contract_price(contract_id);
-}
+uint256_t EqVar::apply(const uint256_t& x_value) const { return x_value; }
 
 std::unique_ptr<Eq> EqConstant::clone() const
 {
@@ -218,16 +155,6 @@ std::unique_ptr<Eq> EqConstant::clone() const
 
 std::unique_ptr<Eq> EqVar::clone() const { return std::make_unique<EqVar>(); }
 
-std::unique_ptr<Eq> EqPrice::clone() const
-{
-  return std::make_unique<EqPrice>(price_id);
-}
-
-std::unique_ptr<Eq> EqContract::clone() const
-{
-  return std::make_unique<EqContract>(contract_id);
-}
-
 void EqConstant::dump(Buffer& buf) const
 {
   buf << OpCode::Constant;
@@ -235,15 +162,3 @@ void EqConstant::dump(Buffer& buf) const
 }
 
 void EqVar::dump(Buffer& buf) const { buf << OpCode::Variable; }
-
-void EqPrice::dump(Buffer& buf) const
-{
-  buf << OpCode::Price;
-  buf << price_id;
-}
-
-void EqContract::dump(Buffer& buf) const
-{
-  buf << OpCode::Contract;
-  buf << contract_id;
-}

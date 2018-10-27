@@ -22,7 +22,6 @@
 #include "inc/essential.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
-#include "util/variable.h"
 
 BETTER_ENUM(OpCode, uint16_t, Unset = 0, Add = 1, Sub = 2, Mul = 3, Div = 4,
             Mod = 5, Exp = 6, Constant = 7, Variable = 8, Price = 9,
@@ -79,7 +78,8 @@ public:
   friend Buffer& operator>>(Buffer& buf, Curve& curve);
   friend Buffer& operator<<(Buffer& buf, const Curve& curve);
 
-  uint256_t apply(const Vars& vars) const;
+  /// TODO
+  uint256_t apply(const uint256_t& x_value) const;
 
   std::string to_string() const;
 
@@ -91,7 +91,7 @@ class Eq
 {
 public:
   virtual ~Eq() {}
-  virtual uint256_t apply(const Vars& vars) const = 0;
+  virtual uint256_t apply(const uint256_t& x_value) const = 0;
   virtual std::string to_string() const = 0;
   virtual void dump(Buffer& buf) const = 0;
   virtual std::unique_ptr<Eq> clone() const = 0;
@@ -139,42 +139,42 @@ class EqAdd : public EqBinary<EqAdd, OpCode::Add, '+'>
 {
 public:
   using EqBinary<EqAdd, OpCode::Add, '+'>::EqBinary;
-  uint256_t apply(const Vars& vars) const final;
+  uint256_t apply(const uint256_t& x_value) const final;
 };
 
 class EqSub : public EqBinary<EqSub, OpCode::Sub, '-'>
 {
 public:
   using EqBinary<EqSub, OpCode::Sub, '-'>::EqBinary;
-  uint256_t apply(const Vars& vars) const final;
+  uint256_t apply(const uint256_t& x_value) const final;
 };
 
 class EqMul : public EqBinary<EqMul, OpCode::Mul, '*'>
 {
 public:
   using EqBinary<EqMul, OpCode::Mul, '*'>::EqBinary;
-  uint256_t apply(const Vars& vars) const final;
+  uint256_t apply(const uint256_t& x_value) const final;
 };
 
 class EqDiv : public EqBinary<EqDiv, OpCode::Div, '/'>
 {
 public:
   using EqBinary<EqDiv, OpCode::Div, '/'>::EqBinary;
-  uint256_t apply(const Vars& vars) const final;
+  uint256_t apply(const uint256_t& x_value) const final;
 };
 
 class EqMod : public EqBinary<EqMod, OpCode::Mod, '%'>
 {
 public:
   using EqBinary<EqMod, OpCode::Mod, '%'>::EqBinary;
-  uint256_t apply(const Vars& vars) const final;
+  uint256_t apply(const uint256_t& x_value) const final;
 };
 
 class EqExp : public EqBinary<EqExp, OpCode::Exp, '^'>
 {
 public:
   using EqBinary<EqExp, OpCode::Exp, '^'>::EqBinary;
-  uint256_t apply(const Vars& vars) const final;
+  uint256_t apply(const uint256_t& x_value) const final;
 };
 
 class EqConstant : public Eq
@@ -184,7 +184,7 @@ public:
       : constant(_constant)
   {
   }
-  uint256_t apply(const Vars& vars) const final;
+  uint256_t apply(const uint256_t& x_value) const final;
   std::string to_string() const final;
   void dump(Buffer& buf) const final;
   std::unique_ptr<Eq> clone() const final;
@@ -197,40 +197,8 @@ class EqVar : public Eq
 {
 public:
   EqVar() {}
-  uint256_t apply(const Vars& vars) const final;
+  uint256_t apply(const uint256_t& x_value) const final;
   std::string to_string() const final;
   void dump(Buffer& buf) const final;
   std::unique_ptr<Eq> clone() const final;
-};
-
-class EqPrice : public Eq
-{
-public:
-  EqPrice() {}
-  EqPrice(const Address& _price_id)
-      : price_id(_price_id)
-  {
-  }
-  uint256_t apply(const Vars& vars) const final;
-  std::string to_string() const final;
-  void dump(Buffer& buf) const final;
-  std::unique_ptr<Eq> clone() const final;
-
-  Address price_id;
-};
-
-class EqContract : public Eq
-{
-public:
-  EqContract() {}
-  EqContract(const Address& _contract_id)
-      : contract_id(_contract_id)
-  {
-  }
-  uint256_t apply(const Vars& vars) const final;
-  std::string to_string() const final;
-  void dump(Buffer& buf) const final;
-  std::unique_ptr<Eq> clone() const final;
-
-  Address contract_id;
 };
