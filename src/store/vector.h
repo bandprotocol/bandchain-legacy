@@ -93,11 +93,20 @@ public:
     m_size++;
   }
 
-  void destroy() { is_destroyed = true; }
+  void destroy()
+  {
+    is_destroyed = true;
+  }
 
-  uint256_t size() const { return m_size; }
+  uint256_t size() const
+  {
+    return m_size;
+  }
 
-  T back() const { return operator[](m_size - 1); }
+  T back() const
+  {
+    return operator[](m_size - 1);
+  }
 
   uint256_t lower_bound_index(const T& value) const
   {

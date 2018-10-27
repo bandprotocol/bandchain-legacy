@@ -26,8 +26,14 @@ class BandApplication : public TendermintApplication
 public:
   BandApplication(Context& _ctx);
 
-  std::string get_name() const final { return "band"; }
-  std::string get_version() const final { return "latest"; }
+  std::string get_name() const final
+  {
+    return "band";
+  }
+  std::string get_version() const final
+  {
+    return "latest";
+  }
 
   /// Return the current application merkle tree hash.
   std::string get_current_app_hash() const final;

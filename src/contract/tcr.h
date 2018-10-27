@@ -75,7 +75,10 @@ struct RegistryParameters {
         _commit_duration, _reveal_duration);
   }
 
-  bool exist() { return _exist.exist(); }
+  bool exist()
+  {
+    return _exist.exist();
+  }
 
   const Hash parent_hash;
 
@@ -233,7 +236,10 @@ private:
       data.erase();
     }
 
-    bool exist() { return _exist.exist(); }
+    bool exist()
+    {
+      return _exist.exist();
+    }
 
     const Hash parent_hash;
 
@@ -265,7 +271,10 @@ private:
       stake = _stake;
       remaining_winning_token = 0;
     }
-    bool exist() { return _exist.exist(); }
+    bool exist()
+    {
+      return _exist.exist();
+    }
 
     const Hash parent_hash;
 

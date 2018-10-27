@@ -26,7 +26,10 @@ Voting::Voting(const Address& voting_id)
 {
 }
 
-void Voting::init(const Address& _token_id) { token_id = _token_id; }
+void Voting::init(const Address& _token_id)
+{
+  token_id = _token_id;
+}
 
 void Voting::request_voting_power(uint256_t value)
 {

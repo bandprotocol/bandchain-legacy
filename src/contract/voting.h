@@ -143,7 +143,10 @@ private:
       commit_hash.erase();
     }
 
-    bool exist() { return _exist.exist(); }
+    bool exist()
+    {
+      return _exist.exist();
+    }
 
     const Hash parent_hash;
 
@@ -182,7 +185,10 @@ private:
       votes_against.erase();
     }
 
-    bool exist() { return _exist.exist(); }
+    bool exist()
+    {
+      return _exist.exist();
+    }
 
     const Hash parent_hash;
 

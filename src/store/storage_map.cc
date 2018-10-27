@@ -32,7 +32,10 @@ nonstd::optional<std::string> StorageMap::get(const Hash& key) const
     return nonstd::nullopt;
 }
 
-void StorageMap::del(const Hash& key) { data.erase(key); }
+void StorageMap::del(const Hash& key)
+{
+  data.erase(key);
+}
 
 void StorageMap::save_protected_key(const std::string& key,
                                     const std::string& val)

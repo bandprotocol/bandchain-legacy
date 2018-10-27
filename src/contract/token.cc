@@ -71,7 +71,10 @@ void Token::sell(uint256_t value)
   current_supply = +current_supply - value;
 }
 
-uint256_t Token::balance(Address address) const { return +m_balances[address]; }
+uint256_t Token::balance(Address address) const
+{
+  return +m_balances[address];
+}
 
 uint256_t Token::spot_price() const
 {

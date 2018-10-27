@@ -97,7 +97,10 @@ private:
       value.erase();
     }
 
-    bool exist() { return _exist.exist(); }
+    bool exist()
+    {
+      return _exist.exist();
+    }
 
     const Hash parent_hash;
 
@@ -141,7 +144,10 @@ private:
       sum_reward.destroy();
     }
 
-    bool exist() { return _exist.exist(); }
+    bool exist()
+    {
+      return _exist.exist();
+    }
 
     Data<bool> _exist{parent_hash};
     Data<uint256_t> last_checkpoint_stake{sha256(parent_hash, uint16_t(1))};

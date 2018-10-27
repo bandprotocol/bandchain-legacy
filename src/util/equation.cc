@@ -35,7 +35,9 @@ Curve::Curve(const Curve& _curve)
 {
 }
 
-Curve::~Curve() {}
+Curve::~Curve()
+{
+}
 
 Curve& Curve::operator=(const Curve& _curve)
 {
@@ -104,7 +106,10 @@ std::unique_ptr<Eq> Eq::parse(Buffer& buf)
 
   throw Failure("Invalid Opcode");
 }
-std::string EqConstant::to_string() const { return "{}"_format(constant); }
+std::string EqConstant::to_string() const
+{
+  return "{}"_format(constant);
+}
 
 std::string EqVar::to_string() const
 {
@@ -144,16 +149,25 @@ uint256_t EqExp::apply(const uint256_t& x_value) const
   return pow(l, r);
 }
 
-uint256_t EqConstant::apply(const uint256_t& x_value) const { return constant; }
+uint256_t EqConstant::apply(const uint256_t& x_value) const
+{
+  return constant;
+}
 
-uint256_t EqVar::apply(const uint256_t& x_value) const { return x_value; }
+uint256_t EqVar::apply(const uint256_t& x_value) const
+{
+  return x_value;
+}
 
 std::unique_ptr<Eq> EqConstant::clone() const
 {
   return std::make_unique<EqConstant>(constant);
 }
 
-std::unique_ptr<Eq> EqVar::clone() const { return std::make_unique<EqVar>(); }
+std::unique_ptr<Eq> EqVar::clone() const
+{
+  return std::make_unique<EqVar>();
+}
 
 void EqConstant::dump(Buffer& buf) const
 {
@@ -161,4 +175,7 @@ void EqConstant::dump(Buffer& buf) const
   buf << constant;
 }
 
-void EqVar::dump(Buffer& buf) const { buf << OpCode::Variable; }
+void EqVar::dump(Buffer& buf) const
+{
+  buf << OpCode::Variable;
+}

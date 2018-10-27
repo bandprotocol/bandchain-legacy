@@ -206,7 +206,10 @@ public:
     }
   }
 
-  uint64_t size() const { return m_size; }
+  uint64_t size() const
+  {
+    return m_size;
+  }
 
   void pre_order(uint64_t current_nonce)
   {

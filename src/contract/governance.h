@@ -68,7 +68,10 @@ struct GovernanceParameters {
         +losing_threshold, +winning_threshold, +min_deposit, +commit_duration,
         +reveal_duration);
   }
-  bool exist() { return _exist.exist(); }
+  bool exist()
+  {
+    return _exist.exist();
+  }
 
   const Hash parent_hash;
 
@@ -140,7 +143,10 @@ private:
       is_resolved = false;
     }
 
-    bool exist() { return _exist.exist(); }
+    bool exist()
+    {
+      return _exist.exist();
+    }
 
     Hash parent_hash;
 

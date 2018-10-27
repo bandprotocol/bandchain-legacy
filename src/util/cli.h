@@ -53,7 +53,10 @@ public:
   std::string help() const;
 
   /// Whether this cmd is given.
-  bool given() { return passed; }
+  bool given()
+  {
+    return passed;
+  }
 
 public:
   bool passed = false; //< Whether this cmd arg is passed from cli
@@ -72,10 +75,16 @@ public:
   using CmdArgBase::CmdArgBase;
 
   /// Get the cmd arg as the templated type.
-  T get() { return value; }
+  T get()
+  {
+    return value;
+  }
 
   /// Convenient operator to return the content of this cmd arg.
-  T operator+() { return value; }
+  T operator+()
+  {
+    return value;
+  }
 
 protected:
   T value;
@@ -103,7 +112,10 @@ private:
       throw Failure("Invalid bool value. Must be true or false");
   }
 
-  std::string get_type() const final { return "bool"; }
+  std::string get_type() const final
+  {
+    return "bool";
+  }
 };
 
 template <>
@@ -113,7 +125,13 @@ public:
   using CmdArgT::CmdArgT;
 
 private:
-  void parse(const std::string& data) final { value = data; }
+  void parse(const std::string& data) final
+  {
+    value = data;
+  }
 
-  std::string get_type() const final { return "string"; }
+  std::string get_type() const final
+  {
+    return "string";
+  }
 };

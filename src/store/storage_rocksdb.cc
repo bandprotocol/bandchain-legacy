@@ -88,7 +88,10 @@ void StorageDB::commit_block()
       txn_db->BeginTransaction(rocksdb::WriteOptions(), txn_options));
 }
 
-void StorageDB::switch_to_tx() { current_transaction = tx_transaction.get(); }
+void StorageDB::switch_to_tx()
+{
+  current_transaction = tx_transaction.get();
+}
 
 void StorageDB::switch_to_check()
 {

@@ -263,9 +263,15 @@ bool Registry::token_claimed(const uint256_t& challenge_id,
   return cha.token_claimed[voter].exist();
 }
 // Callable query function
-Address Registry::get_voting_id() const { return +voting_id; }
+Address Registry::get_voting_id() const
+{
+  return +voting_id;
+}
 
-uint256_t Registry::active_list_length() const { return 0; }
+uint256_t Registry::active_list_length() const
+{
+  return 0;
+}
 
 uint256_t Registry::active_list_id_at(uint256_t index) const
 {

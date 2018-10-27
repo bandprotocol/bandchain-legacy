@@ -24,8 +24,7 @@
 #include "util/bytes.h"
 
 BETTER_ENUM(OpCode, uint16_t, Unset = 0, Add = 1, Sub = 2, Mul = 3, Div = 4,
-            Mod = 5, Exp = 6, Constant = 7, Variable = 8, Price = 9,
-            Contract = 10)
+            Mod = 5, Exp = 6, Constant = 7, Variable = 8)
 
 BETTER_ENUM(SpreadType, uint8_t, Unset = 0, Constant = 1, Rational = 2)
 
@@ -45,8 +44,14 @@ public:
   {
   }
 
-  SpreadType get_spread_type() const { return spread_type; }
-  uint256_t get_spread_value() const { return spread_value; }
+  SpreadType get_spread_type() const
+  {
+    return spread_type;
+  }
+  uint256_t get_spread_value() const
+  {
+    return spread_value;
+  }
 
   friend Buffer& operator>>(Buffer& buf, PriceSpread& price_spread);
   friend Buffer& operator<<(Buffer& buf, const PriceSpread& price_spread);
@@ -63,7 +68,9 @@ private:
 class Curve
 {
 public:
-  Curve() {}
+  Curve()
+  {
+  }
   Curve(const Curve& _curve);
   Curve(std::unique_ptr<Eq> _equation)
       : equation(std::move(_equation))
@@ -90,7 +97,9 @@ private:
 class Eq
 {
 public:
-  virtual ~Eq() {}
+  virtual ~Eq()
+  {
+  }
   virtual uint256_t apply(const uint256_t& x_value) const = 0;
   virtual std::string to_string() const = 0;
   virtual void dump(Buffer& buf) const = 0;
@@ -196,7 +205,9 @@ private:
 class EqVar : public Eq
 {
 public:
-  EqVar() {}
+  EqVar()
+  {
+  }
   uint256_t apply(const uint256_t& x_value) const final;
   std::string to_string() const final;
   void dump(Buffer& buf) const final;

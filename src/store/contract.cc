@@ -98,7 +98,10 @@ ContractStaticInit::ContractStaticInit()
 #undef ADD_CALLABLE
 }
 
-const json& Contract::get_abi_interface() { return abi_interface; }
+const json& Contract::get_abi_interface()
+{
+  return abi_interface;
+}
 
 Contract::~Contract()
 {
@@ -129,7 +132,10 @@ Address Contract::get_sender()
   return sender;
 }
 
-void Contract::set_sender() { Global::get().sender = m_addr; }
+void Contract::set_sender()
+{
+  Global::get().sender = m_addr;
+}
 
 void Contract::assert_con(bool condition, std::string error_msg) const
 {

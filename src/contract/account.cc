@@ -50,4 +50,7 @@ Buffer Account::delegate_call(Buffer buf)
   return ret;
 }
 
-uint256_t Account::get_nonce() const { return +m_nonce; }
+uint256_t Account::get_nonce() const
+{
+  return +m_nonce;
+}

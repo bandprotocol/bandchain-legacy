@@ -30,7 +30,10 @@ Server::Server(boost::asio::io_service& _service, NetApplication& _app,
 {
 }
 
-void Server::start() { accept_connection(); }
+void Server::start()
+{
+  accept_connection();
+}
 
 void Server::accept_connection()
 {

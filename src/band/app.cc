@@ -64,7 +64,10 @@ void BandApplication::init(const std::string& init_state)
 std::string BandApplication::query(const std::string& path,
                                    const std::string& data)
 {
-  BOOST_SCOPE_EXIT(&ctx) { ctx.reset(); }
+  BOOST_SCOPE_EXIT(&ctx)
+  {
+    ctx.reset();
+  }
   BOOST_SCOPE_EXIT_END
 
   Global::get().m_ctx->store.switch_to_query();
@@ -91,7 +94,10 @@ void BandApplication::check(const std::string& msg_raw)
 
 std::string BandApplication::apply(const std::string& msg_raw)
 {
-  BOOST_SCOPE_EXIT(&ctx) { ctx.reset(); }
+  BOOST_SCOPE_EXIT(&ctx)
+  {
+    ctx.reset();
+  }
   BOOST_SCOPE_EXIT_END
 
   Global::get().m_ctx->store.switch_to_tx();

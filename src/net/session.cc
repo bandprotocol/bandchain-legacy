@@ -23,7 +23,10 @@ Session::Session(boost::asio::ip::tcp::socket _socket, NetApplication& _app)
 {
 }
 
-void Session::serve() { async_read(); }
+void Session::serve()
+{
+  async_read();
+}
 
 void Session::process_read(size_t length)
 {

@@ -60,7 +60,10 @@ public:
 
   /// Expose this data as a read-only span. Note that if this is destroyed,
   /// the span will become invalid.
-  gsl::span<const std::byte> as_span() const { return gsl::make_span(buf); }
+  gsl::span<const std::byte> as_span() const
+  {
+    return gsl::make_span(buf);
+  }
 
   Buffer& operator<<(std::byte val)
   {
@@ -106,7 +109,10 @@ public:
   }
 
   /// Return whether this buffer is empty
-  bool empty() const { return buf.empty(); }
+  bool empty() const
+  {
+    return buf.empty();
+  }
 
   /// Return the size of this buffer in bytes.
   gsl::span<const std::byte>::size_type size_bytes() const
@@ -115,7 +121,10 @@ public:
   }
 
   /// Clear the content in this buffer.
-  void clear() { buf.clear(); }
+  void clear()
+  {
+    buf.clear();
+  }
 
   /// Consume the first length bytes of this buffer.
   void consume(size_t length)
@@ -124,7 +133,10 @@ public:
     buf.erase(buf.begin(), buf.begin() + length);
   }
 
-  std::string to_string() const { return bytes_to_hex(as_span()); }
+  std::string to_string() const
+  {
+    return bytes_to_hex(as_span());
+  }
 
   std::string to_raw_string() const
   {

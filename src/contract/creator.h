@@ -23,12 +23,20 @@ class Creator final : public Contract
 {
 public:
   Creator(const Address& address);
-  void init() {}
+  void init()
+  {
+  }
   Address create(Buffer buf);
 
 public:
-  void debug_create() const final { DEBUG(log, "create created"); }
-  void debug_save() const final { DEBUG(log, "creator saved"); }
+  void debug_create() const final
+  {
+    DEBUG(log, "create created");
+  }
+  void debug_save() const final
+  {
+    DEBUG(log, "creator saved");
+  }
 
   static inline auto log = logger::get("creator");
 };

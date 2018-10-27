@@ -45,14 +45,23 @@ public:
 
   /// Expose this data as a read-only span. Note that if this is destroyed,
   /// the span will become invalid.
-  gsl::span<const std::byte> as_span() const { return gsl::make_span(rawdata); }
+  gsl::span<const std::byte> as_span() const
+  {
+    return gsl::make_span(rawdata);
+  }
 
   /// Simple comparison operators.
   bool operator==(const Bytes& rhs) const;
-  bool operator!=(const Bytes& rhs) const { return !operator==(rhs); }
+  bool operator!=(const Bytes& rhs) const
+  {
+    return !operator==(rhs);
+  }
 
   /// Convinient function to check if all bits are zeroes.
-  bool is_empty() const { return operator==(Bytes()); }
+  bool is_empty() const
+  {
+    return operator==(Bytes());
+  }
 
   /// Concat this bytes with another.
   template <int RHS_SIZE>
@@ -67,16 +76,28 @@ public:
   Bytes<RET_SIZE> suffix() const;
 
   /// Return the idx^th byte of this structure.
-  std::byte& operator[](size_t idx) { return rawdata[idx]; }
+  std::byte& operator[](size_t idx)
+  {
+    return rawdata[idx];
+  }
 
   /// Similar to above, but for const variant.
-  const std::byte& operator[](size_t idx) const { return rawdata[idx]; }
+  const std::byte& operator[](size_t idx) const
+  {
+    return rawdata[idx];
+  }
 
   /// Return the raw representation.
-  std::byte* data() { return rawdata.data(); }
+  std::byte* data()
+  {
+    return rawdata.data();
+  }
 
   /// Similar to above, but for const variant.
-  const std::byte* data() const { return rawdata.data(); }
+  const std::byte* data() const
+  {
+    return rawdata.data();
+  }
 
   /// Return a friendly hex representation of this bytes value.
   std::string to_string() const;
