@@ -37,7 +37,7 @@ public:
   void reactivate_party(uint256_t party_id);
 
   // Query
-  std::vector<Address> topx(uint16_t value) const;
+  std::vector<Address> topx(uint16_t value);
 
   // Add reward from block that dest proposed block. (Store for claiming reward)
   void add_reward(uint256_t party_id, uint256_t value);

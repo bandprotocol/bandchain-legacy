@@ -391,142 +391,135 @@ public:
     // already
   }
 
-  // void testTopx()
-  // {
-  //   std::unique_ptr<ContextMap> ctx = std::make_unique<ContextMap>();
+  void testTopx()
+  {
+    std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
+    Context ctx(*store);
+    Global::get().m_ctx = &ctx;
+    Global::get().flush = true;
+    Global::get().block_time = 0;
 
-  //   Global::get().m_ctx = ctx.get();
+    Address band =
+        Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    Curve linear = Curve(std::make_unique<EqVar>());
 
-  //   Address band =
-  //       Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-  //   Curve linear = Curve(std::make_unique<EqVar>());
+    ctx.create<Token>(band, band, linear);
+    Address stake_id = Address::rand();
+    ctx.create<Stake>(stake_id, band);
 
-  //   ctx.create<Token>(band, band, linear);
-  //   Address stake_id = Address::rand();
-  //   ctx.create<Stake>(stake_id, band);
-  //   ctx.flush();
+    auto stake = &ctx.get<Stake>(stake_id);
+    std::array<Address, 10> leaders;
 
-  //   auto stake = &ctx.get<Stake>(stake_id);
-  //   std::array<Address, 10> leaders;
+    uint256_t i = 100;
+    for (auto& x : leaders) {
+      x = createAccount();
+      mint_band(x, 2000);
+      auto& acc = ctx.get<Account>(x);
+      acc.set_sender();
+      stake->create_party(i, 1, 1000);
+      i += 100;
+    }
 
-  //   uint256_t i = 100;
-  //   for (auto& x : leaders) {
-  //     x = createAccount();
-  //     mint_band(x, 2000);
-  //     auto acc = ctx.get<Account>(x);
-  //     acc.set_sender();
-  //     stake->create_party(i, 1, 1000);
-  //     i += 100;
-  //   }
+    stake = &ctx.get<Stake>(stake_id);
+    auto top3 = stake->topx(3);
 
-  //   ctx.flush();
-  //   stake = &ctx.get<Stake>(stake_id);
-  //   auto top3 = stake->topx(3);
+    TS_ASSERT_EQUALS(3, top3.size());
+    for (int ii = 0; ii < 3; ++ii) {
+      TS_ASSERT_EQUALS(leaders[9 - ii], top3[ii]);
+    }
 
-  //   TS_ASSERT_EQUALS(3, top3.size());
-  //   for (int ii = 0; ii < 3; ++ii) {
-  //     TS_ASSERT_EQUALS(leaders[9 - ii], top3[ii]);
-  //   }
+    // Stake more on party 4
+    auto tmp_acc = &ctx.get<Account>(leaders[3]);
+    tmp_acc->set_sender();
+    stake->stake(4, 1500);
 
-  //   // Stake more on party 4
-  //   auto tmp_acc = &ctx.get<Account>(leaders[3]);
-  //   tmp_acc->set_sender();
-  //   stake->stake(4, 1500);
-  //   ctx.flush();
+    stake = &ctx.get<Stake>(stake_id);
+    auto top5 = stake->topx(5);
+    TS_ASSERT_EQUALS(leaders[3], top5[0]);
+    for (int ii = 0; ii < 4; ++ii) {
+      TS_ASSERT_EQUALS(leaders[9 - ii], top5[ii + 1]);
+    }
+  }
 
-  //   stake = &ctx.get<Stake>(stake_id);
-  //   auto top5 = stake->topx(5);
-  //   TS_ASSERT_EQUALS(leaders[3], top5[0]);
-  //   for (int ii = 0; ii < 4; ++ii) {
-  //     TS_ASSERT_EQUALS(leaders[9 - ii], top5[ii + 1]);
-  //   }
-  // }
+  void testActivateAndDestroy()
+  {
+    std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
+    Context ctx(*store);
+    Global::get().m_ctx = &ctx;
+    Global::get().flush = true;
+    Global::get().block_time = 0;
 
-  // void testActivateAndDestroy()
-  // {
-  //   std::unique_ptr<ContextMap> ctx = std::make_unique<ContextMap>();
+    Address band =
+        Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    Curve linear = Curve(std::make_unique<EqVar>());
 
-  //   Global::get().m_ctx = ctx.get();
+    ctx.create<Token>(band, band, linear);
+    Address stake_id = Address::rand();
+    ctx.create<Stake>(stake_id, band);
 
-  //   Address band =
-  //       Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-  //   Curve linear = Curve(std::make_unique<EqVar>());
+    auto stake = &ctx.get<Stake>(stake_id);
+    std::array<Address, 10> leaders;
 
-  //   ctx.create<Token>(band, band, linear);
-  //   Address stake_id = Address::rand();
-  //   ctx.create<Stake>(stake_id, band);
-  //   ctx.flush();
+    uint256_t i = 100;
+    for (auto& x : leaders) {
+      x = createAccount();
+      mint_band(x, 2000);
+      auto& acc = ctx.get<Account>(x);
+      acc.set_sender();
+      stake->create_party(i, 1, 1000);
+      i += 100;
+    }
 
-  //   auto stake = &ctx.get<Stake>(stake_id);
-  //   std::array<Address, 10> leaders;
+    stake = &ctx.get<Stake>(stake_id);
+    stake->deactivate_party(9);
 
-  //   uint256_t i = 100;
-  //   for (auto& x : leaders) {
-  //     x = createAccount();
-  //     mint_band(x, 2000);
-  //     auto acc = ctx.get<Account>(x);
-  //     acc.set_sender();
-  //     stake->create_party(i, 1, 1000);
-  //     i += 100;
-  //   }
+    stake = &ctx.get<Stake>(stake_id);
+    auto top3 = stake->topx(3);
 
-  //   ctx.flush();
+    TS_ASSERT_EQUALS(leaders[9], top3[0]);
+    TS_ASSERT_EQUALS(leaders[7], top3[1]);
+    TS_ASSERT_EQUALS(leaders[6], top3[2]);
 
-  //   stake = &ctx.get<Stake>(stake_id);
-  //   stake->deactivate_party(9);
-  //   ctx.flush();
-  //   stake = &ctx.get<Stake>(stake_id);
-  //   auto top3 = stake->topx(3);
+    stake = &ctx.get<Stake>(stake_id);
+    auto tmp_acc = &ctx.get<Account>(leaders[8]);
+    tmp_acc->set_sender();
+    stake->withdraw(9);
 
-  //   TS_ASSERT_EQUALS(leaders[9], top3[0]);
-  //   TS_ASSERT_EQUALS(leaders[7], top3[1]);
-  //   TS_ASSERT_EQUALS(leaders[6], top3[2]);
+    stake = &ctx.get<Stake>(stake_id);
+    tmp_acc = &ctx.get<Account>(leaders[8]);
+    tmp_acc->set_sender();
+    stake->stake(9, 1500);
 
-  //   stake = &ctx.get<Stake>(stake_id);
-  //   auto tmp_acc = &ctx.get<Account>(leaders[8]);
-  //   tmp_acc->set_sender();
-  //   stake->withdraw(9);
-  //   ctx.flush();
+    stake = &ctx.get<Stake>(stake_id);
+    top3 = stake->topx(3);
 
-  //   stake = &ctx.get<Stake>(stake_id);
-  //   tmp_acc = &ctx.get<Account>(leaders[8]);
-  //   tmp_acc->set_sender();
-  //   stake->stake(9, 1500);
-  //   ctx.flush();
+    TS_ASSERT_EQUALS(leaders[9], top3[0]);
+    TS_ASSERT_EQUALS(leaders[7], top3[1]);
+    TS_ASSERT_EQUALS(leaders[6], top3[2]);
 
-  //   stake = &ctx.get<Stake>(stake_id);
-  //   top3 = stake->topx(3);
+    tmp_acc->set_sender();
+    stake->reactivate_party(9);
 
-  //   TS_ASSERT_EQUALS(leaders[9], top3[0]);
-  //   TS_ASSERT_EQUALS(leaders[7], top3[1]);
-  //   TS_ASSERT_EQUALS(leaders[6], top3[2]);
+    stake = &ctx.get<Stake>(stake_id);
+    top3 = stake->topx(3);
 
-  //   tmp_acc->set_sender();
-  //   stake->reactivate_party(9);
-  //   ctx.flush();
+    TS_ASSERT_EQUALS(leaders[8], top3[0]);
+    TS_ASSERT_EQUALS(leaders[9], top3[1]);
+    TS_ASSERT_EQUALS(leaders[7], top3[2]);
 
-  //   stake = &ctx.get<Stake>(stake_id);
-  //   top3 = stake->topx(3);
+    stake->destroy_party(8);
 
-  //   TS_ASSERT_EQUALS(leaders[8], top3[0]);
-  //   TS_ASSERT_EQUALS(leaders[9], top3[1]);
-  //   TS_ASSERT_EQUALS(leaders[7], top3[2]);
+    stake = &ctx.get<Stake>(stake_id);
+    top3 = stake->topx(3);
 
-  //   stake->destroy_party(8);
-  //   ctx.flush();
+    TS_ASSERT_EQUALS(leaders[8], top3[0]);
+    TS_ASSERT_EQUALS(leaders[9], top3[1]);
+    TS_ASSERT_EQUALS(leaders[6], top3[2]);
 
-  //   stake = &ctx.get<Stake>(stake_id);
-  //   top3 = stake->topx(3);
-
-  //   TS_ASSERT_EQUALS(leaders[8], top3[0]);
-  //   TS_ASSERT_EQUALS(leaders[9], top3[1]);
-  //   TS_ASSERT_EQUALS(leaders[6], top3[2]);
-
-  //   tmp_acc = &ctx.get<Account>(leaders[7]);
-  //   tmp_acc->set_sender();
-  //   TS_ASSERT_THROWS_ANYTHING(stake->withdraw(8));
-  //   ctx.flush();
-  // }
+    tmp_acc = &ctx.get<Account>(leaders[7]);
+    tmp_acc->set_sender();
+    TS_ASSERT_THROWS_ANYTHING(stake->withdraw(8));
+  }
 
   Address createAccount(VerifyKey vk = VerifyKey::rand())
   {

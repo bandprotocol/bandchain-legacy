@@ -183,20 +183,19 @@ void Stake::add_reward(uint256_t party_id, uint256_t value)
   party.last_checkpoint_stake = +party.current_stake;
 }
 
-std::vector<Address> Stake::topx(uint16_t value) const
+std::vector<Address> Stake::topx(uint16_t value)
 {
   assert_con(value <= active_party_list.size(),
              "Party size is less than value");
-  // TODO
-  // std::vector<Address> top_x;
-  // auto it = active_party_list.rbegin();
-  // for (int i = 0; i < value; i++, it++) {
-  //   uint256_t party_id = it->second;
-  //   assert_con(m_parties.count(party_id) == 1, "Party doesn't exist.");
-  //   const Party& party = m_parties.at(party_id);
-  // top_x.push_back(party.leader);
-  // }
-  return std::vector<Address>();
+  std::vector<Address> top_x;
+  auto it = active_party_list.last();
+  for (int i = 0; i < value; i++, --it) {
+    uint256_t party_id = (*it).second;
+    assert_con(m_parties[party_id].exist(), "Party doesn't exist.");
+    const Party& party = m_parties[party_id];
+    top_x.push_back(+party.leader);
+  }
+  return top_x;
 }
 
 void Stake::deactivate_party(uint256_t party_id)
