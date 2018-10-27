@@ -86,14 +86,15 @@ void StorageDB::switch_to_query()
 void StorageDB::save_protected_key(const std::string& key,
                                    const std::string& val)
 {
-  rocksdb::Status s = txn_db->Put(rocksdb::WriteOptions(), key, val);
+  txn_db->GetBaseDB()->Put(rocksdb::WriteOptions(), key, val);
 }
 
 nonstd::optional<std::string>
 StorageDB::get_protected_key(const std::string& key)
 {
   std::string value;
-  rocksdb::Status s = txn_db->Get(rocksdb::ReadOptions(), key, &value);
+  rocksdb::Status s =
+      txn_db->GetBaseDB()->Get(rocksdb::ReadOptions(), key, &value);
   if (s.IsNotFound()) {
     return nonstd::nullopt;
   } else {
