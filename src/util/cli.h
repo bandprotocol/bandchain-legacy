@@ -39,7 +39,7 @@ public:
 class CmdArgBase
 {
 public:
-  CmdArgBase(std::string _name, std::string _desc, char _abbrev = '\0');
+  CmdArgBase(std::string _name, std::string _desc, char _abbrev);
 
   const std::string name;   //< The full name of this cmd flag
   const std::string desc;   //< The description of this flag
@@ -72,7 +72,12 @@ template <typename T>
 class CmdArgT : public CmdArgBase
 {
 public:
-  using CmdArgBase::CmdArgBase;
+  CmdArgT(std::string _name, std::string _desc, char _abbrev = '\0',
+          T _default = T{})
+      : CmdArgBase(std::move(_name), std::move(_desc), _abbrev)
+      , value(_default)
+  {
+  }
 
   /// Get the cmd arg as the templated type.
   T get()
@@ -134,4 +139,16 @@ private:
   {
     return "string";
   }
+};
+
+template <>
+class CmdArg<int> : public CmdArgT<int>
+{
+public:
+  using CmdArgT::CmdArgT;
+
+private:
+  void parse(const std::string& data) final { value = std::stoi(data); }
+
+  std::string get_type() const final { return "int"; }
 };

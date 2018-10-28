@@ -72,7 +72,6 @@ std::string BandApplication::query(const std::string& path,
 
   Global::get().m_ctx->store.switch_to_query();
 
-  NOCOMMIT_LOG("{}", path);
   if (path == "abi") {
     return Contract::get_abi_interface().dump(4);
   }

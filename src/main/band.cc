@@ -24,6 +24,7 @@
 #include "util/cli.h"
 
 CmdArg<bool> use_db("use-db", "set this flag to use rocksdb");
+CmdArg<int> port("port", "the port on which tmapp connects", 'p', 26658);
 
 int main(int argc, char* argv[])
 {
@@ -40,7 +41,7 @@ int main(int argc, char* argv[])
   BandApplication app(ctx);
   boost::asio::io_service service;
 
-  Server server(service, app, 26658);
+  Server server(service, app, +port);
   server.start();
 
   service.run();
