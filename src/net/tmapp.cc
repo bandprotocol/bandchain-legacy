@@ -88,16 +88,10 @@ void TendermintApplication::do_query(const RequestQuery& req,
 void TendermintApplication::do_begin_block(const RequestBeginBlock& req)
 {
   // TODO: Penalize missing validators
-  Global::get().block_time = req.header().time();
-  // Global::get().block_proposer =
-  //     Address::from_raw(req.header().proposer().address());
-
-  // auto addr = Address::from_raw(req.header().validators_hash());
-  // // COMMIT_LOG("{}", req.header().validators_hash());
-  //   // NOCOMMIT_LOG("{}", addr);
-  //   NOCOMMIT_LOG("{}", req.header().proposer().pub_key().data());
-  //   NOCOMMIT_LOG("Size: {}",
-  //   req.header().proposer().pub_key().data().size());
+  Global::get().block_time = req.header().time().seconds();
+  Global::get().block_proposer =
+      Address::from_hex(string_to_hex(req.header().proposer_address()));
+  NOCOMMIT_LOG("Proposer = {}", Global::get().block_proposer);
 }
 
 void TendermintApplication::do_check_tx(const RequestCheckTx& req,
