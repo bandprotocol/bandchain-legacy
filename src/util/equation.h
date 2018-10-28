@@ -23,10 +23,10 @@
 #include "util/buffer.h"
 #include "util/bytes.h"
 
-BETTER_ENUM(OpCode, uint16_t, Unset = 0, Add = 1, Sub = 2, Mul = 3, Div = 4,
-            Mod = 5, Exp = 6, Constant = 7, Variable = 8)
+ENUM(OpCode, uint16_t, Unset = 0, Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5,
+     Exp = 6, Constant = 7, Variable = 8)
 
-BETTER_ENUM(SpreadType, uint8_t, Unset = 0, Constant = 1, Rational = 2)
+ENUM(SpreadType, uint8_t, Unset = 0, Constant = 1, Rational = 2)
 
 class Eq;
 

@@ -26,3 +26,9 @@
 #include "inc/string.h"
 
 using uint256_t = boost::multiprecision::checked_uint256_t;
+
+#define BETTER_ENUMS_DEFAULT_CONSTRUCTOR(Enum)                                 \
+public:                                                                        \
+  Enum() = default;
+
+#define ENUM BETTER_ENUM

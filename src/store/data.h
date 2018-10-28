@@ -22,7 +22,7 @@
 #include "store/contract.h"
 #include "store/global.h"
 
-BETTER_ENUM(CacheStatus, uint16_t, Unchanged = 0, Changed = 1, Erased = 2)
+ENUM(CacheStatus, uint16_t, Unchanged = 0, Changed = 1, Erased = 2)
 
 template <typename T>
 class Data
@@ -34,8 +34,8 @@ public:
   {
   }
 
-  Data(const Data& w) = delete;
-  Data(Data&& w) = delete;
+  Data(const Data& data) = delete;
+  Data(Data&& data) = delete;
 
   ~Data()
   {
@@ -57,14 +57,13 @@ public:
     } else {
       auto result = Global::get().m_ctx->store.get(key);
       if (result) {
-        // cache = Buffer::deserialize<T>(*result);
-        Buffer buf{gsl::make_span(*result)};
-        buf >> *cache;
+        cache = Buffer::deserialize<T>(*result);
       } else {
-        if constexpr (std::is_default_constructible_v<T>) {
+        if constexpr (!std::is_enum_v<T>) {
           cache = T{};
-        } else
+        } else {
           throw Error("Cannot create default constructor");
+        }
       }
       return *cache;
     }
@@ -98,9 +97,7 @@ public:
     } else {
       auto result = Global::get().m_ctx->store.get(key);
       if (result) {
-        // cache = Buffer::deserialize<T>(*result);
-        Buffer buf{gsl::make_span(*result)};
-        buf >> *cache;
+        cache = Buffer::deserialize<T>(*result);
         return true;
       } else {
         return false;

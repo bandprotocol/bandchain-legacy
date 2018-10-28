@@ -22,8 +22,8 @@
 #include "inc/essential.h"
 #include "util/buffer.h"
 
-BETTER_ENUM(TimeUnit, uint8_t, Second = 1, Minute = 2, Hour = 3, Day = 4,
-            Week = 5, Month = 6, Year = 7)
+ENUM(TimeUnit, uint8_t, Second = 1, Minute = 2, Hour = 3, Day = 4, Week = 5,
+     Month = 6, Year = 7)
 
 class TimePeriod
 {

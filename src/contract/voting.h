@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <enum/enum.h>
 #include <set>
 #include <unordered_map>
 
@@ -26,11 +27,9 @@
 #include "store/mapping.h"
 #include "store/set.h"
 
-BETTER_ENUM(VotingStatus, uint8_t, Committed = 1, Revealed = 2)
-
-BETTER_ENUM(PollStatus, uint8_t, Commit = 0, Reveal = 1, End = 2)
-
-BETTER_ENUM(VoteResult, uint8_t, Reject = 0, Approve = 1, NoVote = 2)
+ENUM(VotingStatus, uint8_t, Committed = 1, Revealed = 2);
+ENUM(PollStatus, uint8_t, Commit = 0, Reveal = 1, End = 2);
+ENUM(VoteResult, uint8_t, Reject = 0, Approve = 1, NoVote = 2);
 
 class Voting : public Contract
 {

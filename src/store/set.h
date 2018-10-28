@@ -279,7 +279,7 @@ private:
 
     auto result = Global::get().m_ctx->store.get(sha256(key, node_id));
     if (!result)
-      throw("Node not found.");
+      throw Error("Node not found.");
     return cache.emplace(node_id, Buffer::deserialize<Node>(*result))
         .first->second;
   }

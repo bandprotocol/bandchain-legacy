@@ -27,8 +27,8 @@
 #include "util/json.h"
 #include "util/typeid.h"
 
-BETTER_ENUM(ContractID, uint16_t, Creator = 0, Account = 1, Token = 2,
-            Voting = 3, Registry = 4, Stake = 5, Governance = 6)
+ENUM(ContractID, uint16_t, Creator = 0, Account = 1, Token = 2, Voting = 3,
+     Registry = 4, Stake = 5, Governance = 6)
 
 class Contract
 {
