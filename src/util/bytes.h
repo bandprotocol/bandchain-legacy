@@ -25,6 +25,9 @@
 #include "util/buffer.h"
 #include "util/string.h"
 
+/// Bytes is a stack-only data structure that encapsulates an array of raw
+/// bytes. The structure is templated over the size of the container and
+/// provides useful methods. Bytes should be passed by reference for efficiency.
 template <int SIZE>
 class Bytes
 {
@@ -57,7 +60,7 @@ public:
     return !operator==(rhs);
   }
 
-  /// Convinient function to check if all bits are zeroes.
+  /// Convenient function to check if all bits are zeroes.
   bool is_empty() const
   {
     return operator==(Bytes());
@@ -143,7 +146,7 @@ static inline std::byte hex_to_byte(char hex_digit)
   } else if ('A' <= hex_digit && hex_digit <= 'F') {
     return std::byte(hex_digit - 'A' + 10);
   } else {
-    throw Error("Invalid hex digit character");
+    throw Error("hex_to_bytes: Invalid hex digit character");
   }
 }
 
@@ -151,8 +154,10 @@ template <int SIZE>
 Bytes<SIZE> Bytes<SIZE>::from_raw(const std::string& raw_string)
 {
   if (raw_string.size() != SIZE) {
-    throw Error("Invalid hex string length");
+    throw Error("Bytes<{}>::from_raw: Invalid raw string length {}", SIZE,
+                raw_string.size());
   }
+
   Bytes<SIZE> ret;
   std::memcpy(ret.data(), raw_string.c_str(), SIZE);
   return ret;
@@ -162,8 +167,10 @@ template <int SIZE>
 Bytes<SIZE> Bytes<SIZE>::from_hex(const std::string& hex_string)
 {
   if (hex_string.size() != 2 * SIZE) {
-    throw Error("Invalid hex string length");
+    throw Error("Bytes<{}>::from_raw: Invalid hex string length {}", SIZE,
+                hex_string.size());
   }
+
   Bytes<SIZE> ret;
   for (size_t i = 0; i < SIZE; ++i) {
     ret.rawdata[i] = (hex_to_byte(hex_string[2 * i + 0]) << 4) |
