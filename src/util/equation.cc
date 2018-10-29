@@ -27,11 +27,19 @@ uint256_t pow(const uint256_t& l, const uint256_t& r)
   }
   return v;
 }
-
 } // namespace
 
-Curve::Curve(const Curve& _curve)
-    : equation(_curve.equation->clone())
+Curve::Curve()
+{
+}
+
+Curve::Curve(const Curve& curve)
+    : equation(curve.equation->clone())
+{
+}
+
+Curve::Curve(std::unique_ptr<Eq> _equation)
+    : equation(std::move(_equation))
 {
 }
 
@@ -39,31 +47,33 @@ Curve::~Curve()
 {
 }
 
-Curve& Curve::operator=(const Curve& _curve)
+Curve& Curve::operator=(const Curve& curve)
 {
-  equation = _curve.equation->clone();
+  equation = curve.equation->clone();
   return *this;
 }
 
 uint256_t Curve::apply(const uint256_t& x_value) const
 {
   if (!equation)
-    throw Error("Equation hasn't been set");
+    throw Error("Curve::apply: Equation does not exist");
+
   return equation->apply(x_value);
 }
 
 std::string Curve::to_string() const
 {
-  if (equation)
-    return equation->to_string();
-  else
-    return "Null equation";
+  if (!equation)
+    return "[NULL_CURVE]";
+
+  return equation->to_string();
 }
 
 Buffer& operator<<(Buffer& buf, const Curve& curve)
 {
   if (!curve.equation)
-    throw Failure("Dump on null equation");
+    throw Failure("Buffer<<(Curve): Equation does not exist");
+
   curve.equation->dump(buf);
   return buf;
 }
@@ -76,9 +86,7 @@ Buffer& operator>>(Buffer& buf, Curve& curve)
 
 std::unique_ptr<Eq> Eq::parse(Buffer& buf)
 {
-  OpCode opcode(OpCode::Unset);
-
-  buf >> opcode;
+  OpCode opcode = buf.read<OpCode>();
 
   switch (opcode) {
     case +OpCode::Add:
@@ -93,19 +101,50 @@ std::unique_ptr<Eq> Eq::parse(Buffer& buf)
       return std::make_unique<EqMod>(buf);
     case +OpCode::Exp:
       return std::make_unique<EqExp>(buf);
-    case +OpCode::Constant: {
-      uint256_t constant;
-      buf >> constant;
-      return std::make_unique<EqConstant>(constant);
-    }
+    case +OpCode::Constant:
+      return std::make_unique<EqConstant>(buf.read<uint256_t>());
     case +OpCode::Variable:
       return std::make_unique<EqVar>();
-    case +OpCode::Unset:
-      throw Error("Unexpected Opcode");
   }
 
-  throw Failure("Invalid Opcode");
+  throw Failure("Eq::parse: Invalid Opcode {}", opcode._to_integral());
 }
+
+template <typename T, OpCode::_enumerated op, char op_char>
+EqBinary<T, op, op_char>::EqBinary(std::unique_ptr<Eq> _left_expr,
+                                   std::unique_ptr<Eq> _right_expr)
+    : left_expr(std::move(_left_expr))
+    , right_expr(std::move(_right_expr))
+{
+}
+
+template <typename T, OpCode::_enumerated op, char op_char>
+EqBinary<T, op, op_char>::EqBinary(Buffer& buf)
+    : left_expr(Eq::parse(buf))
+    , right_expr(Eq::parse(buf))
+{
+}
+
+template <typename T, OpCode::_enumerated op, char op_char>
+std::unique_ptr<Eq> EqBinary<T, op, op_char>::clone() const
+{
+  return std::make_unique<T>(left_expr->clone(), right_expr->clone());
+}
+
+template <typename T, OpCode::_enumerated op, char op_char>
+std::string EqBinary<T, op, op_char>::to_string() const
+{
+  return "({} {} {})"_format(*left_expr, op_char, *right_expr);
+}
+
+template <typename T, OpCode::_enumerated op, char op_char>
+void EqBinary<T, op, op_char>::dump(Buffer& buf) const
+{
+  buf << op;
+  left_expr->dump(buf);
+  right_expr->dump(buf);
+}
+
 std::string EqConstant::to_string() const
 {
   return "{}"_format(constant);
@@ -113,40 +152,44 @@ std::string EqConstant::to_string() const
 
 std::string EqVar::to_string() const
 {
-  // TODO
-  return "x";
+  return "X";
 }
 
 uint256_t EqAdd::apply(const uint256_t& x_value) const
 {
-  return left->apply(x_value) + right->apply(x_value);
+  return left_expr->apply(x_value) + right_expr->apply(x_value);
 }
 
 uint256_t EqSub::apply(const uint256_t& x_value) const
 {
-  return left->apply(x_value) - right->apply(x_value);
+  return left_expr->apply(x_value) - right_expr->apply(x_value);
 }
 
 uint256_t EqMul::apply(const uint256_t& x_value) const
 {
-  return left->apply(x_value) * right->apply(x_value);
+  return left_expr->apply(x_value) * right_expr->apply(x_value);
 }
 
 uint256_t EqDiv::apply(const uint256_t& x_value) const
 {
-  return left->apply(x_value) / right->apply(x_value);
+  return left_expr->apply(x_value) / right_expr->apply(x_value);
 }
 
 uint256_t EqMod::apply(const uint256_t& x_value) const
 {
-  return left->apply(x_value) % right->apply(x_value);
+  return left_expr->apply(x_value) % right_expr->apply(x_value);
 }
 
 uint256_t EqExp::apply(const uint256_t& x_value) const
 {
-  uint256_t l = left->apply(x_value);
-  uint256_t r = right->apply(x_value);
+  uint256_t l = left_expr->apply(x_value);
+  uint256_t r = right_expr->apply(x_value);
   return pow(l, r);
+}
+
+EqConstant::EqConstant(const uint256_t& _constant)
+    : constant(_constant)
+{
 }
 
 uint256_t EqConstant::apply(const uint256_t& x_value) const

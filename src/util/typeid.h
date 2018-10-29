@@ -19,6 +19,9 @@
 
 #include "inc/essential.h"
 
+/// TypeID allows reversed type lookups at compile time, allowing abi interface
+/// to be programmatically generated. For instance, TypeID<bool>::name yields
+/// C++ string "bool".
 template <typename T>
 struct TypeID {
   static const char* name;

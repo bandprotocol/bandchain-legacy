@@ -17,6 +17,7 @@
 
 #pragma once
 
+/// Converts the given span of raw data into its hex representation
 template <typename T>
 inline std::string bytes_to_hex(gsl::span<T> data)
 {
@@ -28,6 +29,7 @@ inline std::string bytes_to_hex(gsl::span<T> data)
   return hex;
 }
 
+/// Converts the given raw string into its hex representation
 inline std::string string_to_hex(const std::string& data)
 {
   return bytes_to_hex(gsl::make_span(data));
