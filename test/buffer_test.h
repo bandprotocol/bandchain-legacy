@@ -153,4 +153,20 @@ public:
     // Size must remain 17 no pop execute
     TS_ASSERT_EQUALS(17, buf.size_bytes());
   }
+
+  void testVector()
+  {
+    Buffer buf;
+    std::vector<uint256_t> A;
+    A.push_back(1234431234);
+    A.push_back(3);
+    A.push_back(67);
+
+    buf << A;
+
+    std::vector<uint256_t> B;
+
+    buf >> B;
+    TS_ASSERT_EQUALS(A, B);
+  }
 };

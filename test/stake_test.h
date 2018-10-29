@@ -210,7 +210,7 @@ public:
 
     stake = &ctx.get<Stake>(stake_id);
     token = &ctx.get<Token>(band);
-    stake->add_reward(1, 1000);
+    stake->add_reward(mrA, 1000);
 
     stake = &ctx.get<Stake>(stake_id);
     account = &ctx.get<Account>(mrA);
@@ -263,7 +263,7 @@ public:
 
     stake = &ctx.get<Stake>(stake_id);
     token = &ctx.get<Token>(band);
-    stake->add_reward(1, 3000);
+    stake->add_reward(mrA, 3000);
     ctx.flush();
 
     stake = &ctx.get<Stake>(stake_id);
@@ -308,7 +308,7 @@ public:
 
     stake = &ctx.get<Stake>(stake_id);
     token = &ctx.get<Token>(band);
-    stake->add_reward(1, 5000);
+    stake->add_reward(mrA, 5000);
     ctx.flush();
 
     stake = &ctx.get<Stake>(stake_id);
