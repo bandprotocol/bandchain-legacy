@@ -35,6 +35,7 @@ void Token::mint(uint256_t value)
 {
   // TODO
   m_balances[get_sender()] = +m_balances[get_sender()] + value;
+  current_supply = +current_supply + value;
 }
 
 void Token::transfer(Address dest, uint256_t value)
@@ -88,6 +89,11 @@ uint256_t Token::bulk_price(uint256_t value) const
   Curve real_curve = +buy_curve;
   return real_curve.apply(+current_supply + value) -
          real_curve.apply(+current_supply);
+}
+
+uint256_t Token::get_current_supply() const
+{
+  return +current_supply;
 }
 
 void Token::debug_create() const

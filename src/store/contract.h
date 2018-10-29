@@ -55,19 +55,19 @@ public:
     return result;
   }
 
-protected:
-  Contract(const Address& addr, const ContractID _contract_id)
-      : m_addr(addr)
-      , contract_id(_contract_id)
-  {
-  }
-
   /// Get the sender of the current message. Throws if the sender has not
   /// been set.
   Address get_sender();
 
   /// Set the sender of the current message to this contract.
   void set_sender();
+
+protected:
+  Contract(const Address& addr, const ContractID _contract_id)
+      : m_addr(addr)
+      , contract_id(_contract_id)
+  {
+  }
 
   // Assert with condition
   void assert_con(bool condition, std::string error_msg) const;

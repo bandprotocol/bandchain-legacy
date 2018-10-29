@@ -95,6 +95,9 @@ void Context::flush()
 {
   Global::get().flush = true;
 
+  for (auto& p : cache) {
+    p.second->debug_save();
+  }
   cache.clear();
   Global::get().reset_per_tx();
 

@@ -21,7 +21,9 @@
 
 #include "contract/account.h"
 #include "contract/creator.h"
+#include "contract/stake.h"
 #include "contract/token.h"
+#include "crypto/ed25519.h"
 #include "crypto/sha256.h"
 #include "store/contract.h"
 #include "store/global.h"
@@ -51,12 +53,29 @@ std::string BandApplication::get_current_app_hash() const
   return "";
 }
 
-void BandApplication::init(const std::string& init_state)
+void BandApplication::init(
+    const std::vector<std::pair<VerifyKey, uint64_t>>& validators,
+    const std::string& init_state)
 {
   ctx.create<Creator>(Address{});
   Address band = Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
   Curve linear = Curve(std::make_unique<EqVar>());
   ctx.create<Token>(band, band, linear);
+  Address stake_id =
+      Address::from_hex("1313131313131313131313131313131313131313");
+  Stake& stake = ctx.create<Stake>(stake_id, band);
+
+  Token& band_token = ctx.get<Token>(band);
+  for (auto& [vk, power] : validators) {
+    // for now mint token to new proposer for create party
+    Address validator_address = ed25519_vk_to_addr(vk);
+    Account& account = ctx.create<Account>(validator_address, vk);
+    account.set_sender();
+    band_token.mint(power);
+
+    // Default party share all reward to every delegated
+    stake.create_party(power, 0, 1);
+  }
   ctx.flush();
   ctx.store.commit_block();
 }
@@ -113,4 +132,33 @@ std::string BandApplication::apply(const std::string& msg_raw)
   ctx.flush();
 
   return result.to_raw_string();
+}
+
+void BandApplication::begin_block(uint64_t block_time,
+                                  const Address& block_proposer)
+{
+  Global::get().block_time = block_time;
+  Global::get().block_proposer = block_proposer;
+
+  // Add reward to proposer
+  Address stake_id =
+      Address::from_hex("1313131313131313131313131313131313131313");
+  Stake& stake = ctx.get<Stake>(stake_id);
+  stake.add_reward(block_proposer, 100);
+  ctx.flush();
+}
+
+std::vector<std::pair<VerifyKey, uint64_t>> BandApplication::end_block()
+{
+  Global::get().m_ctx->store.save_protected_key(
+      "Band Protocol Block Height",
+      Buffer::serialize<uint64_t>(last_block_height));
+  // TODO: Update the set of validators
+  return std::vector<std::pair<VerifyKey, uint64_t>>{};
+}
+
+void BandApplication::commit_block()
+{
+  NOCOMMIT_LOG("Commit now!");
+  Global::get().m_ctx->store.commit_block();
 }

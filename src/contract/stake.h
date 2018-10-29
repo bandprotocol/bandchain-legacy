@@ -57,7 +57,7 @@ public:
   std::vector<Address> topx(uint16_t value);
 
   // Add reward from block that dest proposed block. (Store for claiming reward)
-  void add_reward(uint256_t party_id, uint256_t value);
+  void add_reward(const Address& party_leader, uint256_t value);
 
   // Deactivate party that didn't voted
   void deactivate_party(uint256_t party_id);
@@ -169,6 +169,7 @@ private:
   Mapping<uint256_t, Party> m_parties{sha256(m_addr, uint16_t(5))};
   Set<std::pair<uint256_t, uint256_t>> active_party_list{
       sha256(m_addr, uint16_t(6))};
-
+  Mapping<Address, Data<uint256_t>> leader_to_party{
+      sha256(m_addr, uint16_t(7))};
   static inline auto log = logger::get("stake");
 };

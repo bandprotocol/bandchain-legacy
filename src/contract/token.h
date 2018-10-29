@@ -47,6 +47,8 @@ public:
 
   uint256_t bulk_price(uint256_t value) const;
 
+  uint256_t get_current_supply() const;
+
 public:
   void debug_create() const final;
   void debug_save() const final;

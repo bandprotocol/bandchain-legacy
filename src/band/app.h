@@ -39,7 +39,8 @@ public:
   std::string get_current_app_hash() const final;
 
   /// Initialize the blockchain according to the genesis information.
-  void init(const std::string& init_state) final;
+  void init(const std::vector<std::pair<VerifyKey, uint64_t>>& validators,
+            const std::string& init_state) final;
 
   /// Query the blockchain information. Data must be a JSON-serialized string
   /// following BAND RPC specification.
@@ -50,6 +51,12 @@ public:
 
   /// Apply the transaction to the blockchain.
   std::string apply(const std::string& msg_raw) final;
+
+  void begin_block(uint64_t block_time, const Address& block_proposer) final;
+
+  std::vector<std::pair<VerifyKey, uint64_t>> end_block() final;
+
+  void commit_block() final;
 
 private:
   Context& ctx;

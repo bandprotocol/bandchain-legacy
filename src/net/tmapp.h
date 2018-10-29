@@ -17,9 +17,12 @@
 
 #pragma once
 
+#include <vector>
+
 #include "abci/abci.h"
 #include "inc/essential.h"
 #include "net/netapp.h"
+#include "util/bytes.h"
 
 class TendermintApplication : public NetApplication
 {
@@ -34,7 +37,9 @@ public:
   virtual std::string get_current_app_hash() const = 0;
 
   /// Initialize the blockchain based on the given app data.
-  virtual void init(const std::string& init_state) = 0;
+  virtual void
+  init(const std::vector<std::pair<VerifyKey, uint64_t>>& validators,
+       const std::string& init_state) = 0;
 
   /// Query blockchain state.
   virtual std::string query(const std::string& path,
@@ -46,11 +51,15 @@ public:
   /// Apply an incoming message to the blockchain.
   virtual std::string apply(const std::string& msg_raw) = 0;
 
+  virtual void begin_block(uint64_t block_time,
+                           const Address& block_proposer) = 0;
+
+  virtual std::vector<std::pair<VerifyKey, uint64_t>> end_block() = 0;
+
+  virtual void commit_block() = 0;
+
 protected:
   uint64_t last_block_height = 0;
-
-  /// The timestamp of the current block to apply, as provided by Tendermint.
-  int64_t current_timestamp = 0;
 
 private:
   /// Return Tendermint version that this app supports.

@@ -18,7 +18,6 @@
 #include "tmapp.h"
 
 #include "store/contract.h"
-#include "store/global.h"
 #include "util/buffer.h"
 #include "util/cli.h"
 
@@ -63,7 +62,12 @@ void TendermintApplication::do_info(const RequestInfo& req, ResponseInfo& res)
 
 void TendermintApplication::do_init_chain(const RequestInitChain& req)
 {
-  init(req.app_state_bytes());
+  std::vector<std::pair<VerifyKey, uint64_t>> validators;
+  for (auto& validator : req.validators()) {
+    validators.emplace_back(VerifyKey::from_raw(validator.pub_key().data()),
+                            validator.power());
+  }
+  init(validators, req.app_state_bytes());
 }
 
 void TendermintApplication::do_query(const RequestQuery& req,
@@ -88,10 +92,8 @@ void TendermintApplication::do_query(const RequestQuery& req,
 void TendermintApplication::do_begin_block(const RequestBeginBlock& req)
 {
   // TODO: Penalize missing validators
-  Global::get().block_time = req.header().time().seconds();
-  Global::get().block_proposer =
-      Address::from_hex(string_to_hex(req.header().proposer_address()));
-  NOCOMMIT_LOG("Proposer = {}", Global::get().block_proposer);
+  begin_block(req.header().time().seconds(),
+              Address::from_raw(req.header().proposer_address()));
 }
 
 void TendermintApplication::do_check_tx(const RequestCheckTx& req,
@@ -146,11 +148,7 @@ void TendermintApplication::do_commit(ResponseCommit& res)
 {
   // TODO: Notify the application to flush the blockchain state
   ++last_block_height;
-
-  Global::get().m_ctx->store.commit_block();
-  Global::get().m_ctx->store.save_protected_key(
-      "Band Protocol Block Height",
-      Buffer::serialize<uint64_t>(last_block_height));
+  commit_block();
   res.set_data(get_current_app_hash());
 }
 

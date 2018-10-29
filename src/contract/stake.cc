@@ -50,6 +50,8 @@ uint256_t Stake::stake(uint256_t party_id, uint256_t value)
   // Create receipt
   Receipt& receipt = m_receipts[+receipt_nonce];
   receipt.init(Global::get().block_time, get_sender(), party_id, value);
+  DEBUG(log, "Create new receipt id : {} owner: {}", +receipt_nonce,
+        get_sender());
 
   // Update set
   if (active_party_list.contains({old_stake, party_id})) {
@@ -101,6 +103,9 @@ uint256_t Stake::create_party(uint256_t value, uint256_t numerator,
 
   Party& party = m_parties[+party_nonce];
   party.init(0, 0, get_sender(), numerator, denominator);
+
+  // Create map leader to party_id
+  leader_to_party[get_sender()] = +party_nonce;
 
   // Create receipt for first stake in this party.
   stake(+party_nonce, value);
@@ -161,13 +166,18 @@ void Stake::reactivate_party(uint256_t party_id)
   active_party_list.insert({+party.current_stake, party_id});
 }
 
-void Stake::add_reward(uint256_t party_id, uint256_t value)
+void Stake::add_reward(const Address& party_leader, uint256_t value)
 {
   // TODO: How token come to contract?
   Token& token = Global::get().m_ctx->get<Token>(+base_token);
   set_sender();
   token.mint(value);
 
+  // find party_id from address
+  assert_con(leader_to_party[party_leader].exist(),
+             "This address isn't any party's leader.");
+
+  uint256_t party_id = +leader_to_party[party_leader];
   // Send some token direct to leader
   assert_con(m_parties[party_id].exist(), "Party doesn't exist.");
   Party& party = m_parties[party_id];
@@ -195,7 +205,7 @@ void Stake::add_reward(uint256_t party_id, uint256_t value)
   else
     sum = party.sum_reward.back().second + shared_reward;
   party.sum_reward.push_back({Global::get().block_time, sum});
-
+  NOCOMMIT_LOG("Now reward : {} sum reward :{}", shared_reward, sum);
   // Save current stake to checkpoint stake
   party.last_checkpoint_stake = +party.current_stake;
 }
@@ -231,9 +241,11 @@ void Stake::destroy_party(uint256_t party_id)
 {
   assert_con(m_parties[party_id].exist(), "Party doesn't exist.");
   Party& party = m_parties[party_id];
+  Address leader = +party.leader;
   if (active_party_list.contains({+party.current_stake, party_id}))
     active_party_list.erase({+party.current_stake, party_id});
   m_parties[party_id].erase();
+  leader_to_party[leader].erase();
 }
 void Stake::debug_create() const
 {
