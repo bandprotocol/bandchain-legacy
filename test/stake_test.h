@@ -442,7 +442,7 @@ public:
 
     TS_ASSERT_EQUALS(3, top3.size());
     for (int ii = 0; ii < 3; ++ii) {
-      TS_ASSERT_EQUALS(leaders[9 - ii], top3[ii]);
+      TS_ASSERT_EQUALS(leaders[9 - ii], top3[ii].first);
     }
 
     // Stake more on party 4
@@ -452,9 +452,9 @@ public:
 
     stake = &ctx.get<Stake>(stake_id);
     auto top5 = stake->topx(5);
-    TS_ASSERT_EQUALS(leaders[3], top5[0]);
+    TS_ASSERT_EQUALS(leaders[3], top5[0].first);
     for (int ii = 0; ii < 4; ++ii) {
-      TS_ASSERT_EQUALS(leaders[9 - ii], top5[ii + 1]);
+      TS_ASSERT_EQUALS(leaders[9 - ii], top5[ii + 1].first);
     }
   }
 
@@ -493,9 +493,9 @@ public:
     stake = &ctx.get<Stake>(stake_id);
     auto top3 = stake->topx(3);
 
-    TS_ASSERT_EQUALS(leaders[9], top3[0]);
-    TS_ASSERT_EQUALS(leaders[7], top3[1]);
-    TS_ASSERT_EQUALS(leaders[6], top3[2]);
+    TS_ASSERT_EQUALS(leaders[9], top3[0].first);
+    TS_ASSERT_EQUALS(leaders[7], top3[1].first);
+    TS_ASSERT_EQUALS(leaders[6], top3[2].first);
 
     stake = &ctx.get<Stake>(stake_id);
     auto tmp_acc = &ctx.get<Account>(leaders[8]);
@@ -510,9 +510,9 @@ public:
     stake = &ctx.get<Stake>(stake_id);
     top3 = stake->topx(3);
 
-    TS_ASSERT_EQUALS(leaders[9], top3[0]);
-    TS_ASSERT_EQUALS(leaders[7], top3[1]);
-    TS_ASSERT_EQUALS(leaders[6], top3[2]);
+    TS_ASSERT_EQUALS(leaders[9], top3[0].first);
+    TS_ASSERT_EQUALS(leaders[7], top3[1].first);
+    TS_ASSERT_EQUALS(leaders[6], top3[2].first);
 
     tmp_acc->set_sender();
     stake->reactivate_party(9);
@@ -520,18 +520,18 @@ public:
     stake = &ctx.get<Stake>(stake_id);
     top3 = stake->topx(3);
 
-    TS_ASSERT_EQUALS(leaders[8], top3[0]);
-    TS_ASSERT_EQUALS(leaders[9], top3[1]);
-    TS_ASSERT_EQUALS(leaders[7], top3[2]);
+    TS_ASSERT_EQUALS(leaders[8], top3[0].first);
+    TS_ASSERT_EQUALS(leaders[9], top3[1].first);
+    TS_ASSERT_EQUALS(leaders[7], top3[2].first);
 
     stake->destroy_party(8);
 
     stake = &ctx.get<Stake>(stake_id);
     top3 = stake->topx(3);
 
-    TS_ASSERT_EQUALS(leaders[8], top3[0]);
-    TS_ASSERT_EQUALS(leaders[9], top3[1]);
-    TS_ASSERT_EQUALS(leaders[6], top3[2]);
+    TS_ASSERT_EQUALS(leaders[8], top3[0].first);
+    TS_ASSERT_EQUALS(leaders[9], top3[1].first);
+    TS_ASSERT_EQUALS(leaders[6], top3[2].first);
 
     tmp_acc = &ctx.get<Account>(leaders[7]);
     tmp_acc->set_sender();

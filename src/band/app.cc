@@ -39,11 +39,20 @@ BandApplication::BandApplication(Context& _ctx)
   Global::get().m_ctx = &ctx;
 
   // get block height from storage
-  auto result = ctx.store.get_protected_key("Band Protocol Block Height");
-  if (result) {
-    last_block_height = Buffer::deserialize<uint64_t>(*result);
+  auto height_raw = ctx.store.get_protected_key("Band Protocol Block Height");
+  if (height_raw) {
+    last_block_height = Buffer::deserialize<uint64_t>(*height_raw);
   } else {
     last_block_height = 0;
+  }
+
+  auto vector_raw = ctx.store.get_protected_key("Validator Set");
+  if (vector_raw) {
+    validators =
+        Buffer::deserialize<std::vector<std::pair<VerifyKey, uint64_t>>>(
+            *vector_raw);
+  } else {
+    validators = std::vector<std::pair<VerifyKey, uint64_t>>{};
   }
 }
 
@@ -145,16 +154,77 @@ void BandApplication::begin_block(uint64_t block_time,
       Address::from_hex("1313131313131313131313131313131313131313");
   Stake& stake = ctx.get<Stake>(stake_id);
   stake.add_reward(block_proposer, 100);
+  NOCOMMIT_LOG("{} propose by {}", last_block_height + 1, block_proposer);
   ctx.flush();
 }
 
 std::vector<std::pair<VerifyKey, uint64_t>> BandApplication::end_block()
 {
+  Address stake_id =
+      Address::from_hex("1313131313131313131313131313131313131313");
+  Stake& stake = ctx.get<Stake>(stake_id);
+
+  std::vector<std::pair<VerifyKey, uint64_t>> new_validators;
+
+  auto topx = stake.topx(number_validators);
+  for (auto& [addr, power] : topx) {
+    new_validators.emplace_back(ctx.get<Account>(addr).get_vk(), power);
+  }
+
+  std::vector<std::pair<VerifyKey, uint64_t>> updated_validators;
+
+  for (auto& old_validator : validators) {
+    bool found = false;
+    for (auto& new_validator : new_validators) {
+      if (new_validator.first == old_validator.first) {
+        if (new_validator.second != old_validator.second) {
+          // Update existing validator
+          updated_validators.push_back(new_validator);
+        }
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      // Remove old validator
+      updated_validators.emplace_back(old_validator.first, 0);
+    }
+  }
+
+  for (auto& new_validator : new_validators) {
+    bool found = false;
+    for (auto& old : validators) {
+      if (new_validator.first == old.first) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      // Add new validator
+      updated_validators.push_back(new_validator);
+    }
+  }
+
   Global::get().m_ctx->store.save_protected_key(
       "Band Protocol Block Height",
       Buffer::serialize<uint64_t>(last_block_height));
-  // TODO: Update the set of validators
-  return std::vector<std::pair<VerifyKey, uint64_t>>{};
+
+  // TODO: get updated validator vector (need to compare with old validator)
+  // validators vs new_validators
+  Global::get().m_ctx->store.save_protected_key(
+      "Validator Set",
+      Buffer::serialize<std::vector<std::pair<VerifyKey, uint64_t>>>(
+          new_validators));
+
+  NOCOMMIT_LOG("Old validator set");
+  for (auto& old : validators) {
+    NOCOMMIT_LOG("{} {}", old.first, old.second);
+  }
+  for (auto& new_validator : new_validators) {
+    NOCOMMIT_LOG("{} {}", new_validator.first, new_validator.second);
+  }
+  validators = new_validators;
+  return updated_validators;
 }
 
 void BandApplication::commit_block()

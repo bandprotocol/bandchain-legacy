@@ -210,17 +210,17 @@ void Stake::add_reward(const Address& party_leader, uint256_t value)
   party.last_checkpoint_stake = +party.current_stake;
 }
 
-std::vector<Address> Stake::topx(uint16_t value)
+std::vector<std::pair<Address, uint256_t>> Stake::topx(uint16_t value)
 {
   assert_con(value <= active_party_list.size(),
              "Party size is less than value");
-  std::vector<Address> top_x;
+  std::vector<std::pair<Address, uint256_t>> top_x;
   auto it = active_party_list.last();
   for (int i = 0; i < value; i++, --it) {
     uint256_t party_id = (*it).second;
     assert_con(m_parties[party_id].exist(), "Party doesn't exist.");
     const Party& party = m_parties[party_id];
-    top_x.push_back(+party.leader);
+    top_x.emplace_back(+party.leader, +party.current_stake);
   }
   return top_x;
 }

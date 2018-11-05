@@ -35,6 +35,7 @@ public:
 
   uint256_t get_nonce() const;
 
+  VerifyKey get_vk() const;
   void debug_create() const final
   {
     DEBUG(log, "account created at {} nonce = {} {}", m_addr, +m_nonce,

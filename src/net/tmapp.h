@@ -61,6 +61,9 @@ public:
 protected:
   uint64_t last_block_height = 0;
 
+  const uint16_t number_validators = 2;
+  std::vector<std::pair<VerifyKey, uint64_t>> validators;
+
 private:
   /// Return Tendermint version that this app supports.
   std::string get_tm_version()

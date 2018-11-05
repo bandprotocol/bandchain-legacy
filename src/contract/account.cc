@@ -54,3 +54,8 @@ uint256_t Account::get_nonce() const
 {
   return +m_nonce;
 }
+
+VerifyKey Account::get_vk() const
+{
+  return +m_verify_key;
+}
