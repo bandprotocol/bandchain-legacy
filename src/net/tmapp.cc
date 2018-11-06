@@ -143,7 +143,7 @@ void TendermintApplication::do_end_block(const RequestEndBlock&,
 {
   // TODO: Update the set of validators
   std::vector<std::pair<VerifyKey, uint64_t>> update_validators = end_block();
-  NOCOMMIT_LOG("Ending block");
+  DEBUG(log, "Ending block update validators list");
   for (auto& [vk, power] : update_validators) {
     auto new_v = res.add_validator_updates();
     new_v->set_power(power);
@@ -151,13 +151,7 @@ void TendermintApplication::do_end_block(const RequestEndBlock&,
     auto new_pk = new_v->mutable_pub_key();
     new_pk->set_data(Buffer::serialize<VerifyKey>(vk));
     new_pk->set_type("ed25519");
-    NOCOMMIT_LOG(" {} {}", vk, power);
-  }
-
-  NOCOMMIT_LOG("Update Size {}", res.validator_updates().size());
-  for (const auto& uv : res.validator_updates()) {
-    NOCOMMIT_LOG(" {} {}", VerifyKey::from_raw(uv.pub_key().data()),
-                 uv.power());
+    DEBUG(log, "{} have {}", vk, power);
   }
 }
 

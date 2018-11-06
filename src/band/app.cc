@@ -63,16 +63,19 @@ std::string BandApplication::get_current_app_hash() const
 }
 
 void BandApplication::init(
-    const std::vector<std::pair<VerifyKey, uint64_t>>& validators,
+    const std::vector<std::pair<VerifyKey, uint64_t>>& _validators,
     const std::string& init_state)
 {
   ctx.create<Creator>(Address{});
+  ctx.store.switch_to_tx();
   Address band = Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
   Curve linear = Curve(std::make_unique<EqVar>());
   ctx.create<Token>(band, band, linear);
   Address stake_id =
       Address::from_hex("1313131313131313131313131313131313131313");
   Stake& stake = ctx.create<Stake>(stake_id, band);
+
+  validators = _validators;
 
   Token& band_token = ctx.get<Token>(band);
   for (auto& [vk, power] : validators) {
@@ -86,6 +89,10 @@ void BandApplication::init(
     stake.create_party(power, 0, 1);
   }
   ctx.flush();
+  ctx.store.save_protected_key(
+      "Validator Set",
+      Buffer::serialize<std::vector<std::pair<VerifyKey, uint64_t>>>(
+          validators));
   ctx.store.commit_block();
 }
 
@@ -152,9 +159,10 @@ void BandApplication::begin_block(uint64_t block_time,
   // Add reward to proposer
   Address stake_id =
       Address::from_hex("1313131313131313131313131313131313131313");
+  ctx.store.switch_to_tx();
   Stake& stake = ctx.get<Stake>(stake_id);
   stake.add_reward(block_proposer, 100);
-  NOCOMMIT_LOG("{} propose by {}", last_block_height + 1, block_proposer);
+  // NOCOMMIT_LOG("{} propose by {}", last_block_height + 1, block_proposer);
   ctx.flush();
 }
 
@@ -205,9 +213,8 @@ std::vector<std::pair<VerifyKey, uint64_t>> BandApplication::end_block()
     }
   }
 
-  Global::get().m_ctx->store.save_protected_key(
-      "Band Protocol Block Height",
-      Buffer::serialize<uint64_t>(last_block_height));
+  ctx.store.save_protected_key("Band Protocol Block Height",
+                               Buffer::serialize<uint64_t>(last_block_height));
 
   // TODO: get updated validator vector (need to compare with old validator)
   // validators vs new_validators
@@ -216,19 +223,11 @@ std::vector<std::pair<VerifyKey, uint64_t>> BandApplication::end_block()
       Buffer::serialize<std::vector<std::pair<VerifyKey, uint64_t>>>(
           new_validators));
 
-  NOCOMMIT_LOG("Old validator set");
-  for (auto& old : validators) {
-    NOCOMMIT_LOG("{} {}", old.first, old.second);
-  }
-  for (auto& new_validator : new_validators) {
-    NOCOMMIT_LOG("{} {}", new_validator.first, new_validator.second);
-  }
   validators = new_validators;
   return updated_validators;
 }
 
 void BandApplication::commit_block()
 {
-  NOCOMMIT_LOG("Commit now!");
   Global::get().m_ctx->store.commit_block();
 }

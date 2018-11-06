@@ -39,7 +39,7 @@ public:
   std::string get_current_app_hash() const final;
 
   /// Initialize the blockchain according to the genesis information.
-  void init(const std::vector<std::pair<VerifyKey, uint64_t>>& validators,
+  void init(const std::vector<std::pair<VerifyKey, uint64_t>>& _validators,
             const std::string& init_state) final;
 
   /// Query the blockchain information. Data must be a JSON-serialized string

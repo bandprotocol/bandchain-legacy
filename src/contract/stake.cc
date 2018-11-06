@@ -205,7 +205,7 @@ void Stake::add_reward(const Address& party_leader, uint256_t value)
   else
     sum = party.sum_reward.back().second + shared_reward;
   party.sum_reward.push_back({Global::get().block_time, sum});
-  NOCOMMIT_LOG("Now reward : {} sum reward :{}", shared_reward, sum);
+  DEBUG(log, "Now reward : {} sum reward :{}", shared_reward, sum);
   // Save current stake to checkpoint stake
   party.last_checkpoint_stake = +party.current_stake;
 }

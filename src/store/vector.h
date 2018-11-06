@@ -34,8 +34,7 @@ public:
   {
     auto result = Global::get().m_ctx->store.get(parent_hash);
     if (result) {
-      Buffer buf{gsl::make_span(*result)};
-      m_size = buf.read_all<uint256_t>();
+      m_size = Buffer::deserialize<uint256_t>(*result);
     } else {
       m_size = 0;
     }
@@ -105,6 +104,8 @@ public:
 
   T back() const
   {
+    if (m_size == 0)
+      throw Error("Cannot get last element.");
     return operator[](m_size - 1);
   }
 
