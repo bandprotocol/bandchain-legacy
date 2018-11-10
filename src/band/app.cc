@@ -76,6 +76,7 @@ void BandApplication::init(
   Stake& stake = ctx.create<Stake>(stake_id, band);
 
   validators = _validators;
+  number_validators = validators.size();
 
   Token& band_token = ctx.get<Token>(band);
   for (auto& [vk, power] : validators) {
@@ -176,7 +177,8 @@ std::vector<std::pair<VerifyKey, uint64_t>> BandApplication::end_block()
 
   auto topx = stake.topx(number_validators);
   for (auto& [addr, power] : topx) {
-    new_validators.emplace_back(ctx.get<Account>(addr).get_vk(), power);
+    // Voting power set to be 1 for each validator.
+    new_validators.emplace_back(ctx.get<Account>(addr).get_vk(), 1);
   }
 
   std::vector<std::pair<VerifyKey, uint64_t>> updated_validators;
@@ -185,10 +187,6 @@ std::vector<std::pair<VerifyKey, uint64_t>> BandApplication::end_block()
     bool found = false;
     for (auto& new_validator : new_validators) {
       if (new_validator.first == old_validator.first) {
-        if (new_validator.second != old_validator.second) {
-          // Update existing validator
-          updated_validators.push_back(new_validator);
-        }
         found = true;
         break;
       }

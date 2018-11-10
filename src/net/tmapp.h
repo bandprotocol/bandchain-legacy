@@ -61,7 +61,7 @@ public:
 protected:
   uint64_t last_block_height = 0;
 
-  const uint16_t number_validators = 2;
+  uint16_t number_validators;
   std::vector<std::pair<VerifyKey, uint64_t>> validators;
 
 private:
