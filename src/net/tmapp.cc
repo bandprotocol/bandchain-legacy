@@ -94,6 +94,7 @@ void TendermintApplication::do_begin_block(const RequestBeginBlock& req)
   // TODO: Penalize missing validators
   begin_block(req.header().time().seconds(),
               Address::from_raw(req.header().proposer_address()));
+  ++last_block_height;
 }
 
 void TendermintApplication::do_check_tx(const RequestCheckTx& req,
@@ -158,7 +159,6 @@ void TendermintApplication::do_end_block(const RequestEndBlock&,
 void TendermintApplication::do_commit(ResponseCommit& res)
 {
   // TODO: Notify the application to flush the blockchain state
-  ++last_block_height;
   commit_block();
   res.set_data(get_current_app_hash());
 }

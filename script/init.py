@@ -24,7 +24,7 @@ def init():
     tendermint_config['p2p']['laddr'] = util.input_default(
         'Tendermint Port', tendermint_config['p2p']['laddr'])
     tendermint_config['p2p']['addr_book_strict'] = util.input_default(
-        'Strict address routability rules', tendermint_config['p2p']['addr_book_strict'])
+        'Strict address routability rules', tendermint_config['p2p']['addr_book_strict'], type=bool)
 
     # Save data back to config.toml
     with open(util.tendermint_home_directory + 'config/config.toml', "w") as f:
