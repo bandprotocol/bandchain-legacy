@@ -25,7 +25,7 @@ namespace
 {
 rocksdb::Slice get_slice_from_hash(const Hash& key)
 {
-  auto key_span = key.as_span();
+  const_span key_span = key.as_const_span();
   return rocksdb::Slice((const char*)key_span.data(), key_span.size_bytes());
 }
 } // namespace

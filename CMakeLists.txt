@@ -47,15 +47,6 @@ enable_testing()
 file(GLOB test_files "test/*_test.h")
 CXXTEST_ADD_TEST(band_test_runner band_test_runner.cc "${test_files}")
 target_link_libraries(band_test_runner bandprotocol)
-#[[
-foreach(test_file ${test_files})
-  get_filename_component(filename "${test_file}" NAME)
-  string(REGEX REPLACE "\\.[^.]*$" "_runner" executable ${filename})
-  string(REGEX REPLACE "\\.[^.]*$" "_runner.cc" test_source ${filename})
-  CXXTEST_ADD_TEST(${executable} ${test_source} "${test_file}")
-  target_link_libraries(${executable} bandprotocol)
-endforeach()
-]]
 
 file(GLOB main_files "src/main/*.cc")
 foreach(main_file ${main_files})

@@ -20,10 +20,7 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 
-#include "crypto/random.h"
-#include "inc/essential.h"
 #include "util/buffer.h"
-#include "util/string.h"
 
 /// Bytes is a stack-only data structure that encapsulates an array of raw
 /// bytes. The structure is templated over the size of the container and
@@ -32,78 +29,35 @@ template <int SIZE>
 class Bytes
 {
 public:
+  static constexpr size_t Size = SIZE;
+
   Bytes() = default;
   Bytes(const Bytes& bytes) = default;
 
-  static constexpr size_t Size = SIZE;
-
-  /// Create an n-byte structure from a raw string.
+  /// Create an n-byte structure from a raw string
   static Bytes from_raw(const std::string& raw_string);
 
-  /// Parse a hex string into an n-byte structure.
+  /// Parse a hex string into an n-byte structure
   static Bytes from_hex(const std::string& hex_string);
 
-  /// Create an arbitrary n-byte structure. Useful for testing.
+  /// Create an arbitrary n-byte structure. Useful for testing
   static Bytes rand();
 
-  /// Expose this data as a read-only span. Note that if this is destroyed,
-  /// the span will become invalid.
-  gsl::span<const std::byte> as_span() const
-  {
-    return gsl::make_span(rawdata);
-  }
-
-  /// Simple comparison operators.
+  /// Simple comparison operators
   bool operator==(const Bytes& rhs) const;
-  bool operator!=(const Bytes& rhs) const
-  {
-    return !operator==(rhs);
-  }
+  bool operator!=(const Bytes& rhs) const;
 
-  /// Convenient function to check if all bits are zeroes.
-  bool is_empty() const
-  {
-    return operator==(Bytes());
-  }
+  /// Convenient function to check if all bits are zeroes
+  bool empty() const;
 
-  /// Concat this bytes with another.
-  template <int RHS_SIZE>
-  Bytes<SIZE + RHS_SIZE> operator+(const Bytes<RHS_SIZE>& rhs) const;
-
-  /// Return the first RET_SIZE bytes of this structure.
-  template <int RET_SIZE>
-  Bytes<RET_SIZE> prefix() const;
-
-  /// Return the last RET_SIZE bytes of this structure.
-  template <int RET_SIZE>
-  Bytes<RET_SIZE> suffix() const;
-
-  /// Return the idx^th byte of this structure.
-  std::byte& operator[](size_t idx)
-  {
-    return rawdata[idx];
-  }
-
-  /// Similar to above, but for const variant.
-  const std::byte& operator[](size_t idx) const
-  {
-    return rawdata[idx];
-  }
-
-  /// Return the raw representation.
-  std::byte* data()
-  {
-    return rawdata.data();
-  }
-
-  /// Similar to above, but for const variant.
-  const std::byte* data() const
-  {
-    return rawdata.data();
-  }
-
-  /// Return a friendly hex representation of this bytes value.
+  /// Return a friendly hex representation of this bytes value
   std::string to_string() const;
+
+  /// Expose this bytes structure as a mutating span
+  span as_span();
+
+  /// Expose this bytes structure as a non-mutating span
+  const_span as_const_span() const;
 
   /// Read and write from/to buffer.
   friend Buffer& operator<<(Buffer& buf, const Bytes& data)
@@ -131,98 +85,8 @@ template <int SIZE>
 struct hash<Bytes<SIZE>> {
   inline size_t operator()(const Bytes<SIZE>& obj) const
   {
-    return boost::hash_range(obj.data(), obj.data() + SIZE);
+    const_span obj_span = obj.as_const_span();
+    return boost::hash_range(obj_span.data(), obj_span.data() + SIZE);
   }
 };
 } // namespace std
-
-////////////////////////////////////////////////////////////////////////////////
-static inline std::byte hex_to_byte(char hex_digit)
-{
-  if ('0' <= hex_digit && hex_digit <= '9') {
-    return std::byte(hex_digit - '0');
-  } else if ('a' <= hex_digit && hex_digit <= 'f') {
-    return std::byte(hex_digit - 'a' + 10);
-  } else if ('A' <= hex_digit && hex_digit <= 'F') {
-    return std::byte(hex_digit - 'A' + 10);
-  } else {
-    throw Error("hex_to_bytes: Invalid hex digit character");
-  }
-}
-
-template <int SIZE>
-Bytes<SIZE> Bytes<SIZE>::from_raw(const std::string& raw_string)
-{
-  if (raw_string.size() != SIZE) {
-    throw Error("Bytes<{}>::from_raw: Invalid raw string length {}", SIZE,
-                raw_string.size());
-  }
-
-  Bytes<SIZE> ret;
-  std::memcpy(ret.data(), raw_string.c_str(), SIZE);
-  return ret;
-}
-
-template <int SIZE>
-Bytes<SIZE> Bytes<SIZE>::from_hex(const std::string& hex_string)
-{
-  if (hex_string.size() != 2 * SIZE) {
-    throw Error("Bytes<{}>::from_raw: Invalid hex string length {}", SIZE,
-                hex_string.size());
-  }
-
-  Bytes<SIZE> ret;
-  for (size_t i = 0; i < SIZE; ++i) {
-    ret.rawdata[i] = (hex_to_byte(hex_string[2 * i + 0]) << 4) |
-                     (hex_to_byte(hex_string[2 * i + 1]) << 0);
-  }
-  return ret;
-}
-
-template <int SIZE>
-Bytes<SIZE> Bytes<SIZE>::rand()
-{
-  Bytes<SIZE> ret;
-  random_bytes(gsl::make_span(ret.rawdata));
-  return ret;
-}
-
-template <int SIZE>
-bool Bytes<SIZE>::operator==(const Bytes<SIZE>& rhs) const
-{
-  return rawdata == rhs.rawdata;
-}
-
-template <int SIZE>
-template <int RHS_SIZE>
-Bytes<SIZE + RHS_SIZE> Bytes<SIZE>::operator+(const Bytes<RHS_SIZE>& rhs) const
-{
-  Bytes<SIZE + RHS_SIZE> ret;
-  std::memcpy(ret.data(), data(), SIZE);
-  std::memcpy(ret.data() + SIZE, rhs.data(), RHS_SIZE);
-  return ret;
-}
-
-template <int SIZE>
-template <int RET_SIZE>
-Bytes<RET_SIZE> Bytes<SIZE>::prefix() const
-{
-  Bytes<RET_SIZE> ret;
-  std::memcpy(ret.data(), data(), RET_SIZE);
-  return ret;
-}
-
-template <int SIZE>
-template <int RET_SIZE>
-Bytes<RET_SIZE> Bytes<SIZE>::suffix() const
-{
-  Bytes<RET_SIZE> ret;
-  std::memcpy(ret.data(), data() + SIZE - RET_SIZE, RET_SIZE);
-  return ret;
-}
-
-template <int SIZE>
-std::string Bytes<SIZE>::to_string() const
-{
-  return bytes_to_hex(as_span());
-}

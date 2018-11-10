@@ -281,7 +281,7 @@ Buffer& operator>>(Buffer& buf, std::pair<P1, P2>& val)
 template <typename T>
 Buffer& operator<<(Buffer& buf, const std::vector<T>& val)
 {
-  buf << val.size();
+  buf << (uint64_t)val.size();
   for (const auto& v : val) {
     buf << v;
   }
@@ -291,7 +291,7 @@ Buffer& operator<<(Buffer& buf, const std::vector<T>& val)
 template <typename T>
 Buffer& operator>>(Buffer& buf, std::vector<T>& val)
 {
-  val.resize(buf.read<size_t>());
+  val.resize(buf.read<uint64_t>());
   for (auto& v : val) {
     buf >> v;
   }

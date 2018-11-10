@@ -120,39 +120,39 @@ public:
     TS_ASSERT_EQUALS(0, buf.size_bytes());
   }
 
-  void testAddOtherSpanToBuffer(void)
-  {
-    std::vector<Bytes<17>> address;
-    Bytes<17> a = Bytes<17>::from_hex("942e2c5433b264848aabe4b5e8cb154ba5");
-    address.push_back(a);
-    Bytes<17> b = Bytes<17>::from_hex("cc902326010122eed5afe07fbb1fed7f71");
-    address.push_back(b);
-    Bytes<17> c = Bytes<17>::from_hex("7735a79992f135fdbcc81e10fe814d1362");
-    address.push_back(c);
+  // void testAddOtherSpanToBuffer(void)
+  // {
+  //   std::vector<Bytes<17>> address;
+  //   Bytes<17> a = Bytes<17>::from_hex("942e2c5433b264848aabe4b5e8cb154ba5");
+  //   address.push_back(a);
+  //   Bytes<17> b = Bytes<17>::from_hex("cc902326010122eed5afe07fbb1fed7f71");
+  //   address.push_back(b);
+  //   Bytes<17> c = Bytes<17>::from_hex("7735a79992f135fdbcc81e10fe814d1362");
+  //   address.push_back(c);
 
-    Buffer buf;
-    // Push span of this vector to buffer
-    buf << gsl::make_span(address);
-    TS_ASSERT_EQUALS(51, buf.size_bytes());
+  //   Buffer buf;
+  //   // Push span of this vector to buffer
+  //   buf << gsl::make_span(address);
+  //   TS_ASSERT_EQUALS(51, buf.size_bytes());
 
-    // Vector of 17 bytes data size equal 2
-    std::vector<Bytes<17>> rec(2);
+  //   // Vector of 17 bytes data size equal 2
+  //   std::vector<Bytes<17>> rec(2);
 
-    // Pop follow input span
-    // Buffer will pop 2 first 17 bytes data and store to rec
-    buf >> gsl::make_span(rec);
-    // Left last element in buffer
-    TS_ASSERT_EQUALS(17, buf.size_bytes());
+  //   // Pop follow input span
+  //   // Buffer will pop 2 first 17 bytes data and store to rec
+  //   buf >> gsl::make_span(rec);
+  //   // Left last element in buffer
+  //   TS_ASSERT_EQUALS(17, buf.size_bytes());
 
-    TS_ASSERT_EQUALS(a, rec[0]);
-    TS_ASSERT_EQUALS(b, rec[1]);
+  //   TS_ASSERT_EQUALS(a, rec[0]);
+  //   TS_ASSERT_EQUALS(b, rec[1]);
 
-    // Check throw error if pop more than elements in buffer
-    TS_ASSERT_THROWS_ANYTHING(buf >> gsl::make_span(rec));
+  //   // Check throw error if pop more than elements in buffer
+  //   TS_ASSERT_THROWS_ANYTHING(buf >> gsl::make_span(rec));
 
-    // Size must remain 17 no pop execute
-    TS_ASSERT_EQUALS(17, buf.size_bytes());
-  }
+  //   // Size must remain 17 no pop execute
+  //   TS_ASSERT_EQUALS(17, buf.size_bytes());
+  // }
 
   void testVector()
   {

@@ -126,7 +126,7 @@ void Contract::call_buf(Buffer& in_buf, Buffer* out_buf)
 Address Contract::get_sender()
 {
   Address sender = Global::get().sender;
-  if (sender.is_empty())
+  if (sender.empty())
     throw Error("Cannot get transaction sender");
 
   return sender;

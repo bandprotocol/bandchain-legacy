@@ -21,7 +21,6 @@
 
 #include "inc/essential.h"
 #include "util/buffer.h"
-#include "util/bytes.h"
 
 /// An OpCode enum encodes the operation at the topmost level of an expression.
 /// An expression's serialized value starts with the opcode, followed by zero

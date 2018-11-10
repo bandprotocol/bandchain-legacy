@@ -21,11 +21,15 @@
 #include <gsl/gsl>
 #include <spdlog/spdlog.h>
 
+using uint256_t = boost::multiprecision::checked_uint256_t;
+using byte = std::byte;
+
+using span = gsl::span<byte>;
+using const_span = gsl::span<const byte>;
+
 #include "inc/exception.h"
 #include "inc/log.h"
 #include "inc/string.h"
-
-using uint256_t = boost::multiprecision::checked_uint256_t;
 
 #define BETTER_ENUMS_DEFAULT_CONSTRUCTOR(Enum)                                 \
 public:                                                                        \
