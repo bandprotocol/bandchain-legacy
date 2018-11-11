@@ -52,7 +52,7 @@ Contract* Context::get_contract_ptr(const Address& key)
   if (!raw_data)
     return nullptr;
 
-  Buffer buf{gsl::make_span(*raw_data)};
+  Buffer buf{gsl::as_bytes(gsl::make_span(*raw_data))};
   ContractID contract_id(ContractID::Creator);
   buf >> contract_id;
 

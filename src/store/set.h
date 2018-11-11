@@ -130,7 +130,7 @@ public:
   {
     auto result = Global::get().m_ctx->store.get(key);
     if (result) {
-      Buffer buf{gsl::make_span(*result)};
+      Buffer buf(gsl::as_bytes(gsl::make_span(*result)));
       buf >> nonce_node >> nonce_root >> m_size;
     } else {
       nonce_node = 0;

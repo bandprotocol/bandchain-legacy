@@ -111,7 +111,7 @@ std::string BandApplication::query(const std::string& path,
     return Contract::get_abi_interface().dump(4);
   }
 
-  Buffer msg_buf(gsl::make_span(data));
+  Buffer msg_buf(gsl::as_bytes(gsl::make_span(data)));
   uint64_t ts = msg_buf.read<uint64_t>();
   (void)ts;
 
@@ -135,7 +135,7 @@ std::string BandApplication::apply(const std::string& msg_raw)
   BOOST_SCOPE_EXIT_END
 
   Global::get().m_ctx->store.switch_to_tx();
-  Buffer msg_buf(gsl::make_span(msg_raw));
+  Buffer msg_buf(gsl::as_bytes(gsl::make_span(msg_raw)));
   Global::get().tx_hash = sha256(gsl::make_span(msg_raw));
   uint64_t ts = msg_buf.read<uint64_t>();
   // Mock

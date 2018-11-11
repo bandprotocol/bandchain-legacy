@@ -20,8 +20,14 @@
 Buffer::Buffer()
     : buf()
 {
-  /// Reserve 512 bytes to the buffer to prevent unnecessarily resize.
+  // Reserve 512 bytes to the buffer to prevent unnecessarily resizing
   buf.reserve(512);
+}
+
+Buffer::Buffer(gsl::span<const byte> data)
+{
+  buf.resize(data.size_bytes());
+  std::memcpy(&(*buf.begin()), data.data(), data.size_bytes());
 }
 
 Buffer& operator<<(Buffer& buf, uint8_t val)

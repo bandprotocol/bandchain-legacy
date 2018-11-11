@@ -26,17 +26,13 @@
 class Buffer
 {
 public:
-  /// Initialize an empty buffer.
   Buffer();
-
-  /// Initialize the buffer from the given data. Perform memcpy under the hood.
-  template <typename T>
-  Buffer(gsl::span<T> data);
+  Buffer(gsl::span<const byte> data);
 
   template <typename T>
   static T deserialize(const std::string& raw_data)
   {
-    Buffer buf(gsl::make_span(raw_data));
+    Buffer buf(gsl::as_bytes(gsl::make_span(raw_data)));
     return buf.read<T>();
   }
 
@@ -134,13 +130,6 @@ public:
 private:
   std::vector<std::byte> buf;
 };
-
-template <typename T>
-Buffer::Buffer(gsl::span<T> data)
-{
-  buf.resize(data.size_bytes());
-  std::memcpy(&(*buf.begin()), data.data(), data.size_bytes());
-}
 
 template <typename T>
 T Buffer::read()
