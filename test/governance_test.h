@@ -42,8 +42,7 @@ public:
 
     Address mrA = create_account();
 
-    Address band =
-        Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    Address band = Address::hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
     Curve linear = Curve(std::make_unique<EqVar>());
     {
       ctx.create<Token>(band, band, linear);
@@ -75,8 +74,7 @@ public:
 
     Address mrA = create_account();
 
-    Address band =
-        Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    Address band = Address::hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
     Curve linear = Curve(std::make_unique<EqVar>());
     {
       ctx.create<Token>(band, band, linear);
@@ -137,8 +135,7 @@ public:
 
     Address mrA = create_account();
 
-    Address band =
-        Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    Address band = Address::hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
     Curve linear = Curve(std::make_unique<EqVar>());
     {
       ctx.create<Token>(band, band, linear);
@@ -280,7 +277,7 @@ public:
 
       mrA = create_account();
 
-      band = Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+      band = Address::hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
       Curve linear = Curve(std::make_unique<EqVar>());
       ctx.create<Token>(band, band, linear);
 
@@ -362,7 +359,7 @@ private:
     auto& account = Global::get().m_ctx->get<Account>(address);
     account.set_sender();
     auto& token = Global::get().m_ctx->get<Token>(
-        Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"));
+        Address::hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"));
     token.mint(value);
   }
 };

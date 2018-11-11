@@ -64,7 +64,7 @@ void TendermintApplication::do_init_chain(const RequestInitChain& req)
 {
   std::vector<std::pair<VerifyKey, uint64_t>> validators;
   for (auto& validator : req.validators()) {
-    validators.emplace_back(VerifyKey::from_raw(validator.pub_key().data()),
+    validators.emplace_back(VerifyKey::raw(validator.pub_key().data()),
                             validator.power());
   }
   init(validators, req.app_state_bytes());
@@ -93,7 +93,7 @@ void TendermintApplication::do_begin_block(const RequestBeginBlock& req)
 {
   // TODO: Penalize missing validators
   begin_block(req.header().time().seconds(),
-              Address::from_raw(req.header().proposer_address()));
+              Address::raw(req.header().proposer_address()));
   ++last_block_height;
 }
 

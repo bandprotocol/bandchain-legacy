@@ -37,30 +37,30 @@ inline byte hex_to_byte(char hex_digit)
 } // namespace
 
 template <int SIZE>
-Bytes<SIZE> Bytes<SIZE>::from_raw(const std::string& raw_string)
+Bytes<SIZE> Bytes<SIZE>::raw(const std::string& raw_string)
 {
   if (raw_string.size() != SIZE) {
-    throw Error("Bytes<{}>::from_raw: Invalid raw string length {}", SIZE,
+    throw Error("Bytes<{}>::raw: Invalid raw string length {}", SIZE,
                 raw_string.size());
   }
 
   Bytes<SIZE> ret;
-  std::memcpy(ret.rawdata.data(), raw_string.c_str(), SIZE);
+  std::memcpy(ret.rawdata_.data(), raw_string.c_str(), SIZE);
   return ret;
 }
 
 template <int SIZE>
-Bytes<SIZE> Bytes<SIZE>::from_hex(const std::string& hex_string)
+Bytes<SIZE> Bytes<SIZE>::hex(const std::string& hex_string)
 {
   if (hex_string.size() != 2 * SIZE) {
-    throw Error("Bytes<{}>::from_raw: Invalid hex string length {}", SIZE,
+    throw Error("Bytes<{}>::hex: Invalid hex string length {}", SIZE,
                 hex_string.size());
   }
 
   Bytes<SIZE> ret;
   for (size_t i = 0; i < SIZE; ++i) {
-    ret.rawdata[i] = (hex_to_byte(hex_string[2 * i + 0]) << 4) |
-                     (hex_to_byte(hex_string[2 * i + 1]) << 0);
+    ret.rawdata_[i] = (hex_to_byte(hex_string[2 * i + 0]) << 4) |
+                      (hex_to_byte(hex_string[2 * i + 1]) << 0);
   }
   return ret;
 }
@@ -74,27 +74,15 @@ Bytes<SIZE> Bytes<SIZE>::rand()
 }
 
 template <int SIZE>
-span Bytes<SIZE>::as_span()
-{
-  return gsl::make_span(rawdata);
-}
-
-template <int SIZE>
-const_span Bytes<SIZE>::as_const_span() const
-{
-  return gsl::make_span(rawdata);
-}
-
-template <int SIZE>
 bool Bytes<SIZE>::operator==(const Bytes<SIZE>& rhs) const
 {
-  return rawdata == rhs.rawdata;
+  return rawdata_ == rhs.rawdata_;
 }
 
 template <int SIZE>
 bool Bytes<SIZE>::operator!=(const Bytes<SIZE>& rhs) const
 {
-  return rawdata != rhs.rawdata;
+  return rawdata_ != rhs.rawdata_;
 }
 
 template <int SIZE>
@@ -107,6 +95,18 @@ template <int SIZE>
 std::string Bytes<SIZE>::to_string() const
 {
   return bytes_to_hex(as_const_span());
+}
+
+template <int SIZE>
+gsl::span<byte> Bytes<SIZE>::as_span()
+{
+  return gsl::make_span(rawdata_);
+}
+
+template <int SIZE>
+gsl::span<const byte> Bytes<SIZE>::as_const_span() const
+{
+  return gsl::make_span(rawdata_);
 }
 
 template class Bytes<20>;

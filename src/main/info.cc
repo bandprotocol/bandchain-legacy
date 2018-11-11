@@ -22,7 +22,15 @@ int main(int argc, char* argv[])
       rocksdb::OptimisticTransactionDB::Open(options, +db_path, &txn_db);
   if (!s.ok())
     throw Error("Cannot open database");
+
+  rocksdb::OptimisticTransactionOptions txn_options;
+  rocksdb::Transaction* tx =
+      txn_db->BeginTransaction(rocksdb::WriteOptions(), txn_options);
+
   std::string value;
-  s = txn_db->Get(rocksdb::ReadOptions(), +key, &value);
+  s = tx->Get(rocksdb::ReadOptions(), +key, &value);
   std::cout << Buffer::deserialize<uint256_t>(value) << std::endl;
+
+  delete tx;
+  delete txn_db;
 }

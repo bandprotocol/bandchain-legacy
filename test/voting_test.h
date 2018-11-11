@@ -36,8 +36,7 @@ public:
     Context ctx(*store);
     Global::get().m_ctx = &ctx;
 
-    Address band =
-        Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    Address band = Address::hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
     Curve linear = Curve(std::make_unique<EqVar>());
 
     ctx.create<Token>(band, band, linear);
@@ -56,8 +55,7 @@ public:
     Context ctx(*store);
     Global::get().m_ctx = &ctx;
 
-    Address band =
-        Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    Address band = Address::hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
     Curve linear = Curve(std::make_unique<EqVar>());
     ctx.create<Token>(band, band, linear);
 
@@ -106,8 +104,7 @@ public:
     Global::get().m_ctx = &ctx;
     Global::get().flush = true;
 
-    Address band =
-        Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    Address band = Address::hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
     Curve linear = Curve(std::make_unique<EqVar>());
 
     {
@@ -217,8 +214,7 @@ public:
     Global::get().m_ctx = &ctx;
     Global::get().flush = true;
     Global::get().block_time = 0;
-    Address band =
-        Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    Address band = Address::hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
     Curve linear = Curve(std::make_unique<EqVar>());
     {
       ctx.create<Token>(band, band, linear);

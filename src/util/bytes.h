@@ -20,7 +20,7 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 
-#include "util/buffer.h"
+#include "inc/essential.h"
 
 /// Bytes is a stack-only data structure that encapsulates an array of raw
 /// bytes. The structure is templated over the size of the container and
@@ -35,10 +35,10 @@ public:
   Bytes(const Bytes& bytes) = default;
 
   /// Create an n-byte structure from a raw string
-  static Bytes from_raw(const std::string& raw_string);
+  static Bytes raw(const std::string& raw_string);
 
   /// Parse a hex string into an n-byte structure
-  static Bytes from_hex(const std::string& hex_string);
+  static Bytes hex(const std::string& hex_string);
 
   /// Create an arbitrary n-byte structure. Useful for testing
   static Bytes rand();
@@ -54,23 +54,14 @@ public:
   std::string to_string() const;
 
   /// Expose this bytes structure as a mutating span
-  span as_span();
+  gsl::span<byte> as_span();
 
   /// Expose this bytes structure as a non-mutating span
-  const_span as_const_span() const;
-
-  /// Read and write from/to buffer.
-  friend Buffer& operator<<(Buffer& buf, const Bytes& data)
-  {
-    return buf << gsl::make_span(data.rawdata);
-  }
-  friend Buffer& operator>>(Buffer& buf, Bytes& data)
-  {
-    return buf >> gsl::make_span(data.rawdata);
-  }
+  gsl::span<const byte> as_const_span() const;
 
 private:
-  std::array<std::byte, SIZE> rawdata{};
+  std::array<byte, SIZE> rawdata_{};
+
 } __attribute__((packed));
 
 using Address = Bytes<20>;   //< 20-Byte address
@@ -85,7 +76,7 @@ template <int SIZE>
 struct hash<Bytes<SIZE>> {
   inline size_t operator()(const Bytes<SIZE>& obj) const
   {
-    const_span obj_span = obj.as_const_span();
+    gsl::span<const byte> obj_span = obj.as_const_span();
     return boost::hash_range(obj_span.data(), obj_span.data() + SIZE);
   }
 };

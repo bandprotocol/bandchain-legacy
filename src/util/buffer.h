@@ -37,7 +37,7 @@ public:
   static T deserialize(const std::string& raw_data)
   {
     Buffer buf(gsl::make_span(raw_data));
-    return buf.read_all<T>();
+    return buf.read<T>();
   }
 
   /// Serialize the given data into raw string. Use operator<< internally.
@@ -53,14 +53,14 @@ public:
   template <typename T>
   T read();
 
-  /// Similar to above, but throw if the read fails or the buffer is not empty
-  /// after the read is complete.
-  template <typename T>
-  T read_all();
+  gsl::span<byte> as_span()
+  {
+    return gsl::make_span(buf);
+  }
 
   /// Expose this data as a read-only span. Note that if this is destroyed,
   /// the span will become invalid.
-  gsl::span<const std::byte> as_span() const
+  gsl::span<const byte> as_const_span() const
   {
     return gsl::make_span(buf);
   }
@@ -75,18 +75,6 @@ public:
   {
     val = buf.front();
     buf.erase(buf.begin());
-    return *this;
-  }
-
-  Buffer& operator<<(const Buffer& data)
-  {
-    buf.insert(buf.end(), data.buf.begin(), data.buf.end());
-    return *this;
-  }
-
-  Buffer& operator>>(Buffer& data)
-  {
-    data.buf.insert(data.buf.end(), buf.begin(), buf.end());
     return *this;
   }
 
@@ -117,7 +105,7 @@ public:
   /// Return the size of this buffer in bytes.
   gsl::span<const std::byte>::size_type size_bytes() const
   {
-    return as_span().size_bytes();
+    return as_const_span().size_bytes();
   }
 
   /// Clear the content in this buffer.
@@ -135,7 +123,7 @@ public:
 
   std::string to_string() const
   {
-    return bytes_to_hex(as_span());
+    return bytes_to_hex(as_const_span());
   }
 
   std::string to_raw_string() const
@@ -162,13 +150,18 @@ T Buffer::read()
   return result;
 }
 
-template <typename T>
-T Buffer::read_all()
+template <typename T,
+          typename std::enable_if_t<Has_as_const_span<T>::value, int> = 0>
+Buffer& operator<<(Buffer& buf, const T& val)
 {
-  T result = read<T>();
-  if (!empty())
-    throw Error("Buffer::read_all does not fully consume the buffer");
-  return result;
+  return buf << val.as_const_span();
+}
+
+template <typename T, typename std::enable_if_t<Has_as_span<T>::value, int> = 0>
+Buffer& operator>>(Buffer& buf, T& val)
+{
+  buf >> val.as_span();
+  return buf;
 }
 
 template <typename T, typename std::enable_if_t<std::is_enum_v<T>, int> = 0>

@@ -41,8 +41,9 @@ struct Has_as_const_span : std::false_type {
 
 template <typename T>
 struct Has_as_const_span<
-    T, void_t<std::enable_if_t<std::is_same<
-           const_span, decltype(std::declval<T>().as_const_span())>::value>>>
+    T, void_t<std::enable_if_t<
+           std::is_same<gsl::span<const byte>,
+                        decltype(std::declval<T>().as_const_span())>::value>>>
     : std::true_type {
 };
 
@@ -51,8 +52,9 @@ struct Has_as_span : std::false_type {
 };
 
 template <typename T>
-struct Has_as_span<T, void_t<std::enable_if_t<std::is_same<
-                          span, decltype(std::declval<T>().as_span())>::value>>>
+struct Has_as_span<
+    T, void_t<std::enable_if_t<std::is_same<
+           gsl::span<byte>, decltype(std::declval<T>().as_span())>::value>>>
     : std::true_type {
 };
 

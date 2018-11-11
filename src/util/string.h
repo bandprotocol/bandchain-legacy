@@ -18,10 +18,10 @@
 #pragma once
 
 /// Converts the given span of raw data into its hex representation
-inline std::string bytes_to_hex(const_span data)
+inline std::string bytes_to_hex(gsl::span<const byte> data)
 {
   std::string hex;
-  for (byte b : data) {
+  for (const byte b : data) {
     hex += "{:02x}"_format(static_cast<unsigned char>(b));
   }
   return hex;

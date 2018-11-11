@@ -123,11 +123,11 @@ public:
   // void testAddOtherSpanToBuffer(void)
   // {
   //   std::vector<Bytes<17>> address;
-  //   Bytes<17> a = Bytes<17>::from_hex("942e2c5433b264848aabe4b5e8cb154ba5");
+  //   Bytes<17> a = Bytes<17>::hex("942e2c5433b264848aabe4b5e8cb154ba5");
   //   address.push_back(a);
-  //   Bytes<17> b = Bytes<17>::from_hex("cc902326010122eed5afe07fbb1fed7f71");
+  //   Bytes<17> b = Bytes<17>::hex("cc902326010122eed5afe07fbb1fed7f71");
   //   address.push_back(b);
-  //   Bytes<17> c = Bytes<17>::from_hex("7735a79992f135fdbcc81e10fe814d1362");
+  //   Bytes<17> c = Bytes<17>::hex("7735a79992f135fdbcc81e10fe814d1362");
   //   address.push_back(c);
 
   //   Buffer buf;

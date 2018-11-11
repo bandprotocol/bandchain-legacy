@@ -68,11 +68,10 @@ void BandApplication::init(
 {
   ctx.create<Creator>(Address{});
   ctx.store.switch_to_tx();
-  Address band = Address::from_hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  Address band = Address::hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
   Curve linear = Curve(std::make_unique<EqVar>());
   ctx.create<Token>(band, band, linear);
-  Address stake_id =
-      Address::from_hex("1313131313131313131313131313131313131313");
+  Address stake_id = Address::hex("1313131313131313131313131313131313131313");
   Stake& stake = ctx.create<Stake>(stake_id, band);
 
   validators = _validators;
@@ -158,8 +157,7 @@ void BandApplication::begin_block(uint64_t block_time,
   Global::get().block_proposer = block_proposer;
 
   // Add reward to proposer
-  Address stake_id =
-      Address::from_hex("1313131313131313131313131313131313131313");
+  Address stake_id = Address::hex("1313131313131313131313131313131313131313");
   ctx.store.switch_to_tx();
   Stake& stake = ctx.get<Stake>(stake_id);
   stake.add_reward(block_proposer, 100);
@@ -169,8 +167,7 @@ void BandApplication::begin_block(uint64_t block_time,
 
 std::vector<std::pair<VerifyKey, uint64_t>> BandApplication::end_block()
 {
-  Address stake_id =
-      Address::from_hex("1313131313131313131313131313131313131313");
+  Address stake_id = Address::hex("1313131313131313131313131313131313131313");
   Stake& stake = ctx.get<Stake>(stake_id);
 
   std::vector<std::pair<VerifyKey, uint64_t>> new_validators;
