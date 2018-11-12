@@ -30,6 +30,31 @@ Buffer::Buffer(gsl::span<const byte> data)
   std::memcpy(&(*buf.begin()), data.data(), data.size_bytes());
 }
 
+Buffer& Buffer::operator<<(std::byte val)
+{
+  buf.push_back(val);
+  return *this;
+}
+
+Buffer& Buffer::operator>>(std::byte& val)
+{
+  val = buf.front();
+  buf.erase(buf.begin());
+  return *this;
+}
+
+Buffer& Buffer::operator<<(const Buffer& data)
+{
+  buf.insert(buf.end(), data.buf.begin(), data.buf.end());
+  return *this;
+}
+
+Buffer& Buffer::operator>>(Buffer& data)
+{
+  data.buf.insert(data.buf.end(), buf.begin(), buf.end());
+  return *this;
+}
+
 Buffer& operator<<(Buffer& buf, uint8_t val)
 {
   varint_encode(buf, val);

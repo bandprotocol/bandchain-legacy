@@ -61,18 +61,10 @@ public:
     return gsl::make_span(buf);
   }
 
-  Buffer& operator<<(std::byte val)
-  {
-    buf.push_back(val);
-    return *this;
-  }
-
-  Buffer& operator>>(std::byte& val)
-  {
-    val = buf.front();
-    buf.erase(buf.begin());
-    return *this;
-  }
+  Buffer& operator<<(std::byte val);
+  Buffer& operator>>(std::byte& val);
+  Buffer& operator<<(const Buffer& data);
+  Buffer& operator>>(Buffer& data);
 
   template <typename T>
   friend Buffer& operator<<(Buffer& buf, gsl::span<T> data)
@@ -137,20 +129,6 @@ T Buffer::read()
   T result;
   *this >> result;
   return result;
-}
-
-template <typename T,
-          typename std::enable_if_t<Has_as_const_span<T>::value, int> = 0>
-Buffer& operator<<(Buffer& buf, const T& val)
-{
-  return buf << val.as_const_span();
-}
-
-template <typename T, typename std::enable_if_t<Has_as_span<T>::value, int> = 0>
-Buffer& operator>>(Buffer& buf, T& val)
-{
-  buf >> val.as_span();
-  return buf;
 }
 
 template <typename T, typename std::enable_if_t<std::is_enum_v<T>, int> = 0>

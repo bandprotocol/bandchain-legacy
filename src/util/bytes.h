@@ -21,6 +21,7 @@
 #include <boost/functional/hash.hpp>
 
 #include "inc/essential.h"
+#include "util/buffer.h"
 
 /// Bytes is a stack-only data structure that encapsulates an array of raw
 /// bytes. The structure is templated over the size of the container and
@@ -58,6 +59,16 @@ public:
 
   /// Expose this bytes structure as a non-mutating span
   gsl::span<const byte> as_const_span() const;
+
+  friend Buffer& operator<<(Buffer& buf, const Bytes& data)
+  {
+    return buf << data.as_const_span();
+  }
+
+  friend Buffer& operator>>(Buffer& buf, Bytes& data)
+  {
+    return buf >> data.as_span();
+  }
 
 private:
   std::array<byte, SIZE> rawdata_{};
