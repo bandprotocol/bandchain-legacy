@@ -210,7 +210,7 @@ void Stake::add_reward(const Address& party_leader, uint256_t value)
   party.last_checkpoint_stake = +party.current_stake;
 }
 
-std::vector<std::pair<Address, uint256_t>> Stake::topx(uint16_t value)
+std::vector<std::pair<Address, uint256_t>> Stake::topx(uint16_t value) const
 {
   assert_con(value <= active_party_list.size(),
              "Party size is less than value");

@@ -51,8 +51,10 @@ BandApplication::BandApplication(Context& _ctx)
     validators =
         Buffer::deserialize<std::vector<std::pair<VerifyKey, uint64_t>>>(
             *vector_raw);
+    number_validators = validators.size();
   } else {
     validators = std::vector<std::pair<VerifyKey, uint64_t>>{};
+    number_validators = 0;
   }
 }
 
@@ -66,8 +68,8 @@ void BandApplication::init(
     const std::vector<std::pair<VerifyKey, uint64_t>>& _validators,
     const std::string& init_state)
 {
-  ctx.create<Creator>(Address{});
   ctx.store.switch_to_tx();
+  ctx.create<Creator>(Address{});
   Address band = Address::hex("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
   Curve linear = Curve(std::make_unique<EqVar>());
   ctx.create<Token>(band, band, linear);
@@ -168,6 +170,7 @@ void BandApplication::begin_block(uint64_t block_time,
 std::vector<std::pair<VerifyKey, uint64_t>> BandApplication::end_block()
 {
   Address stake_id = Address::hex("1313131313131313131313131313131313131313");
+  ctx.store.switch_to_tx();
   Stake& stake = ctx.get<Stake>(stake_id);
 
   std::vector<std::pair<VerifyKey, uint64_t>> new_validators;

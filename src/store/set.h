@@ -31,7 +31,7 @@ public:
   class Iterator
   {
   public:
-    Iterator(uint64_t _current_nonce, Set& _set)
+    Iterator(uint64_t _current_nonce, const Set& _set)
         : current_nonce(_current_nonce)
         , set(_set)
     {
@@ -47,19 +47,19 @@ public:
     {
       if (current_nonce == 0)
         return *this;
-      Node& node = set.get_node(current_nonce);
+      const Node& node = set.get_node(current_nonce);
       if (node.right == 0) {
         uint64_t now = current_nonce;
 
         while (true) {
-          Node& now_node = set.get_node(now);
+          const Node& now_node = set.get_node(now);
           uint64_t parent = now_node.parent;
           if (parent == 0) {
             current_nonce = 0;
             return *this;
           }
 
-          Node& parent_node = set.get_node(parent);
+          const Node& parent_node = set.get_node(parent);
           if (parent_node.right == now) {
             now = parent;
           } else {
@@ -70,7 +70,7 @@ public:
       } else {
         uint64_t now = node.right;
         while (true) {
-          Node& now_node = set.get_node(now);
+          const Node& now_node = set.get_node(now);
           if (now_node.left == 0) {
             current_nonce = now;
             return *this;
@@ -85,19 +85,19 @@ public:
     {
       if (current_nonce == 0)
         return *this;
-      Node& node = set.get_node(current_nonce);
+      const Node& node = set.get_node(current_nonce);
       if (node.left == 0) {
         uint64_t now = current_nonce;
 
         while (true) {
-          Node& now_node = set.get_node(now);
+          const Node& now_node = set.get_node(now);
           uint64_t parent = now_node.parent;
           if (parent == 0) {
             current_nonce = 0;
             return *this;
           }
 
-          Node& parent_node = set.get_node(parent);
+          const Node& parent_node = set.get_node(parent);
           if (parent_node.left == now) {
             now = parent;
           } else {
@@ -108,7 +108,7 @@ public:
       } else {
         uint64_t now = node.left;
         while (true) {
-          Node& now_node = set.get_node(now);
+          const Node& now_node = set.get_node(now);
           if (now_node.right == 0) {
             current_nonce = now;
             return *this;
@@ -121,7 +121,7 @@ public:
 
   private:
     uint64_t current_nonce;
-    Set& set;
+    const Set& set;
   };
 
 public:
@@ -256,11 +256,11 @@ public:
     }
   }
 
-  Iterator last()
+  Iterator last() const
   {
     uint64_t current_nonce_node = nonce_root;
     while (true) {
-      Node& current_node = get_node(current_nonce_node);
+      const Node& current_node = get_node(current_nonce_node);
       if (current_node.right) {
         current_nonce_node = current_node.right;
       } else {
@@ -272,6 +272,19 @@ public:
 private:
   struct Node;
   Node& get_node(uint64_t node_id)
+  {
+    if (auto it = cache.find(node_id); it != cache.end()) {
+      return it->second;
+    }
+
+    auto result = Global::get().m_ctx->store.get(sha256(key, node_id));
+    if (!result)
+      throw Error("Node not found.");
+    return cache.emplace(node_id, Buffer::deserialize<Node>(*result))
+        .first->second;
+  }
+
+  const Node& get_node(uint64_t node_id) const
   {
     if (auto it = cache.find(node_id); it != cache.end()) {
       return it->second;
@@ -557,5 +570,5 @@ private:
   uint64_t nonce_root;
   uint64_t m_size;
 
-  std::unordered_map<uint64_t, Node> cache;
+  mutable std::unordered_map<uint64_t, Node> cache;
 };
