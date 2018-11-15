@@ -19,12 +19,15 @@
 #include "inc/essential.h"
 #include "net/server.h"
 #include "store/context.h"
+#include "store/graph_cayley.h"
+#include "store/graph_set.h"
 #include "store/storage_map.h"
 #include "store/storage_rocksdb.h"
 #include "util/cli.h"
 
 CmdArg<bool> use_db("use-db", "set this flag to use rocksdb");
 CmdArg<int> port("port", "the port on which tmapp connects", 'p', 26658);
+CmdArg<bool> use_set("use-set", "set this flag to use graph set", 's');
 
 int main(int argc, char* argv[])
 {
@@ -37,9 +40,17 @@ int main(int argc, char* argv[])
   } else {
     store = std::make_unique<StorageMap>();
   }
-  Context ctx(*store);
-  BandApplication app(ctx);
+
   boost::asio::io_service service;
+  std::unique_ptr<GraphStore> graph;
+  if (+use_set) {
+    graph = std::make_unique<GraphStoreSet>();
+  } else {
+    graph = std::make_unique<GraphStoreCayley>(service, "localhost", 64210);
+  }
+
+  Context ctx(*store, *graph);
+  BandApplication app(ctx);
 
   Server server(service, app, +port);
   server.start();

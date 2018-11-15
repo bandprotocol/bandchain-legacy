@@ -28,7 +28,7 @@
 #include "util/typeid.h"
 
 ENUM(ContractID, uint16_t, Creator = 0, Account = 1, Token = 2, Voting = 3,
-     Registry = 4, Stake = 5, Governance = 6)
+     Registry = 4, Stake = 5, Governance = 6, Wiki = 7)
 
 class Contract
 {

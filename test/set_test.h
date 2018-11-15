@@ -19,6 +19,7 @@
 
 #include "inc/essential.h"
 #include "store/context.h"
+#include "store/graph_set.h"
 #include "store/set.h"
 #include "store/storage_map.h"
 #include "util/buffer.h"
@@ -29,7 +30,8 @@ public:
   void testInsetAndEraseSet()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Hash set_key = Hash::rand();
     Global::get().m_ctx = &ctx;
 
@@ -90,7 +92,8 @@ public:
   void testInsert()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Hash set_key = Hash::rand();
     Global::get().m_ctx = &ctx;
 
@@ -136,7 +139,8 @@ public:
   void testShapeOfTree()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Hash set_key = Hash::rand();
     Global::get().m_ctx = &ctx;
 
@@ -171,7 +175,8 @@ public:
   void testIterator()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Hash set_key = Hash::rand();
     Global::get().m_ctx = &ctx;
 

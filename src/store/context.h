@@ -22,6 +22,7 @@
 #include "crypto/sha256.h"
 #include "inc/essential.h"
 #include "store/contract.h"
+#include "store/graph.h"
 #include "store/storage.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
@@ -29,7 +30,7 @@
 class Context
 {
 public:
-  Context(Storage& _store);
+  Context(Storage& _store, GraphStore& _graph);
 
   void call(Buffer& in_buf, Buffer* out_buf = nullptr);
 
@@ -64,6 +65,7 @@ public:
 
 public:
   Storage& store;
+  GraphStore& graph;
 
 private:
   Contract* get_contract_ptr(const Address& key);

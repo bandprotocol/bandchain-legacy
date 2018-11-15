@@ -23,6 +23,7 @@
 #include "contract/creator.h"
 #include "contract/stake.h"
 #include "contract/token.h"
+#include "contract/wiki.h"
 #include "crypto/ed25519.h"
 #include "crypto/sha256.h"
 #include "store/contract.h"
@@ -75,6 +76,8 @@ void BandApplication::init(
   ctx.create<Token>(band, band, linear);
   Address stake_id = Address::hex("1313131313131313131313131313131313131313");
   Stake& stake = ctx.create<Stake>(stake_id, band);
+  Address wiki_id = Address::hex("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+  ctx.create<Wiki>(wiki_id);
 
   validators = _validators;
   number_validators = validators.size();

@@ -24,11 +24,13 @@
 #include "contract/tcr.h"
 #include "contract/token.h"
 #include "contract/voting.h"
+#include "contract/wiki.h"
 #include "crypto/sha256.h"
 #include "store/global.h"
 
-Context::Context(Storage& _store)
+Context::Context(Storage& _store, GraphStore& _graph)
     : store(_store)
+    , graph(_graph)
 {
 }
 
@@ -77,6 +79,9 @@ Contract* Context::get_contract_ptr(const Address& key)
       break;
     case +ContractID::Governance:
       cache.emplace(key, std::make_unique<Governance>(key));
+      break;
+    case +ContractID::Wiki:
+      cache.emplace(key, std::make_unique<Wiki>(key));
       break;
     default:
       throw Error("Contract id {} doesn't support.", contract_id);

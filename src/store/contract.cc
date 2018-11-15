@@ -24,6 +24,7 @@
 #include "contract/tcr.h"
 #include "contract/token.h"
 #include "contract/voting.h"
+#include "contract/wiki.h"
 #include "store/context.h"
 #include "store/global.h"
 #include "util/typeid.h"
@@ -85,6 +86,8 @@ ContractStaticInit::ContractStaticInit()
   // ADD_CALLABLE(Stake, topx, 6);
   ADD_CALLABLE(Governance, propose_new_parameter, 1);
   ADD_CALLABLE(Governance, resolve_proposal, 2);
+  ADD_CALLABLE(Wiki, add_triple, 1);
+  ADD_CALLABLE(Wiki, delete_triple, 2);
 
   Contract::add_constructor<Hash>(ContractID::Account);
   Contract::add_constructor<Address, Equation>(ContractID::Token);

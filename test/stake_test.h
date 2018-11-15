@@ -25,6 +25,7 @@
 #include "inc/essential.h"
 #include "store/context.h"
 #include "store/global.h"
+#include "store/graph_set.h"
 #include "store/storage_map.h"
 #include "util/buffer.h"
 
@@ -34,7 +35,8 @@ public:
   void testCreateStake()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Global::get().m_ctx = &ctx;
     Global::get().flush = true;
 
@@ -60,7 +62,8 @@ public:
   void testStake()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Global::get().m_ctx = &ctx;
     Global::get().flush = true;
     Global::get().block_time = 0;
@@ -163,7 +166,8 @@ public:
   void testAddRewardAndClaimReward()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Global::get().m_ctx = &ctx;
     Global::get().flush = true;
     Global::get().block_time = 0;
@@ -350,7 +354,8 @@ public:
   void testWithdraw()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Global::get().m_ctx = &ctx;
     Global::get().flush = true;
     Global::get().block_time = 0;
@@ -407,7 +412,8 @@ public:
   void testTopx()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Global::get().m_ctx = &ctx;
     Global::get().flush = true;
     Global::get().block_time = 0;
@@ -456,7 +462,8 @@ public:
   void testActivateAndDestroy()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Global::get().m_ctx = &ctx;
     Global::get().flush = true;
     Global::get().block_time = 0;

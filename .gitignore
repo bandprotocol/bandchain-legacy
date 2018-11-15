@@ -6,3 +6,4 @@
 /.vscode/
 /cmake-build-debug
 /.idea
+/script/venv/

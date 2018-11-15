@@ -23,6 +23,7 @@
 #include "contract/tcr.h"
 #include "contract/token.h"
 #include "contract/voting.h"
+#include "contract/wiki.h"
 #include "crypto/ed25519.h"
 #include "store/context.h"
 #include "store/global.h"
@@ -98,6 +99,12 @@ Address Creator::create(Buffer buf)
           ed25519_vk_to_addr(Global::get().tx_hash), token_id, voting_id,
           losing_threshold, winning_threshold, min_deposit, commit_duration,
           reveal_duration);
+      break;
+    }
+
+    case +ContractID::Wiki: {
+      created_contract = &Global::get().m_ctx->create<Wiki>(
+          ed25519_vk_to_addr(Global::get().tx_hash));
       break;
     }
     default:

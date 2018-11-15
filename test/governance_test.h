@@ -27,6 +27,7 @@
 #include "inc/essential.h"
 #include "store/context.h"
 #include "store/global.h"
+#include "store/graph_set.h"
 #include "store/storage_map.h"
 #include "util/buffer.h"
 
@@ -36,7 +37,8 @@ public:
   void testCreateGovernance()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Global::get().m_ctx = &ctx;
     Global::get().flush = true;
 
@@ -69,7 +71,8 @@ public:
   void testCreateProposal()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Global::get().m_ctx = &ctx;
 
     Address mrA = create_account();
@@ -129,7 +132,8 @@ public:
   void testResolveProposal()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    Context ctx(*store);
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
+    Context ctx(*store, *graph);
     Global::get().m_ctx = &ctx;
     Global::get().flush = true;
 
@@ -267,10 +271,12 @@ public:
   void testChallengeAfterUpdate()
   {
     std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
+    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
     Address mrA;
     Address band;
     {
-      Context ctx(*store);
+      Context ctx(*store, *graph);
+
       Global::get().m_ctx = &ctx;
       Global::get().flush = true;
       Global::get().block_time = 0;
@@ -340,7 +346,7 @@ public:
 
     // Create new context that use same storage
     {
-      Context ctx(*store);
+      Context ctx(*store, *graph);
       Global::get().m_ctx = &ctx;
       auto token = &ctx.get<Token>(band);
       TS_ASSERT_EQUALS(10000, token->balance(mrA));

@@ -20,6 +20,7 @@
 #include <spdlog/fmt/bundled/ostream.h>
 
 using namespace fmt::literals;
+using namespace std::literals::string_literals;
 
 template <typename...>
 using void_t = void;
