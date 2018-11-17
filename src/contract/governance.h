@@ -32,8 +32,10 @@ struct GovernanceParameters {
   {
   }
 
-  void init(uint8_t _losing_threshold, uint8_t _winning_threshold,
-            uint256_t _min_deposit, uint64_t _commit_duration,
+  void init(uint8_t _losing_threshold,
+            uint8_t _winning_threshold,
+            uint256_t _min_deposit,
+            uint64_t _commit_duration,
             uint64_t _reveal_duration)
   {
     losing_threshold = _losing_threshold;
@@ -102,9 +104,12 @@ public:
   friend class GovernanceTest;
   Governance(const Address& governance_id);
 
-  void init(const Address& _token_id, const Address& _voting_id,
-            uint8_t _losing_threshold, uint8_t _winning_threshold,
-            const uint256_t& _min_deposit, uint64_t _commit_duration,
+  void init(const Address& _token_id,
+            const Address& _voting_id,
+            uint8_t _losing_threshold,
+            uint8_t _winning_threshold,
+            const uint256_t& _min_deposit,
+            uint64_t _commit_duration,
             uint64_t _reveal_duration);
   // Callable function
   uint256_t propose_new_parameter(Address contract_id, Buffer buffer);
@@ -130,8 +135,10 @@ private:
     {
     }
 
-    void init(const uint256_t& _poll_id, const Address& _contract_id,
-              const Address& _proposer, Buffer _data,
+    void init(const uint256_t& _poll_id,
+              const Address& _contract_id,
+              const Address& _proposer,
+              Buffer _data,
               const std::string& _detail)
     {
       _exist = true;

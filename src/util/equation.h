@@ -25,7 +25,8 @@
 /// An OpCode enum encodes the operation at the topmost level of an expression.
 /// An expression's serialized value starts with the opcode, followed by zero
 /// or more serialized values of its sub-expression(s) or its value(s).
-ENUM(OpCode, uint16_t,
+ENUM(OpCode,
+     uint16_t,
      Add = 1,      //< Addition of two sub-expressions
      Sub = 2,      //< Subtraction of two sub-expressions
      Mul = 3,      //< Multiplication of two sub-expressions

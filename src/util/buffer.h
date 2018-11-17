@@ -146,15 +146,17 @@ Buffer& operator>>(Buffer& buf, T& val)
   return buf;
 }
 
-template <typename T, typename std::enable_if_t<
-                          std::is_integral_v<typename T::_integral>, int> = 0>
+template <typename T,
+          typename std::enable_if_t<std::is_integral_v<typename T::_integral>,
+                                    int> = 0>
 Buffer& operator<<(Buffer& buf, T val)
 {
   return buf << val._to_integral();
 }
 
-template <typename T, typename std::enable_if_t<
-                          std::is_integral_v<typename T::_integral>, int> = 0>
+template <typename T,
+          typename std::enable_if_t<std::is_integral_v<typename T::_integral>,
+                                    int> = 0>
 Buffer& operator>>(Buffer& buf, T& val)
 {
   typename T::_integral _val;

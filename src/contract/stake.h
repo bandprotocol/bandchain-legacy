@@ -44,8 +44,8 @@ public:
   void withdraw(uint256_t receipt_id);
 
   // Create new party and stake some token to it.
-  uint256_t create_party(uint256_t value, uint256_t numerator,
-                         uint256_t denominator);
+  uint256_t
+  create_party(uint256_t value, uint256_t numerator, uint256_t denominator);
 
   // Sender get reward from token that they stake from stark stake or last
   // claim_reward until now.
@@ -78,8 +78,10 @@ private:
     {
     }
 
-    void init(uint64_t _last_update_time, const Address& _owner,
-              const uint256_t& _party_id, const uint256_t& _value)
+    void init(uint64_t _last_update_time,
+              const Address& _owner,
+              const uint256_t& _party_id,
+              const uint256_t& _value)
     {
       _exist = true;
       last_update_time = _last_update_time;
@@ -120,8 +122,10 @@ private:
     const Hash parent_hash;
 
     void init(const uint256_t& _last_checkpoint_stake,
-              const uint256_t& _current_stake, const Address& _leader,
-              const uint256_t& _numerator, const uint256_t& _denominator)
+              const uint256_t& _current_stake,
+              const Address& _leader,
+              const uint256_t& _numerator,
+              const uint256_t& _denominator)
     {
       _exist = true;
       last_checkpoint_stake = _last_checkpoint_stake;

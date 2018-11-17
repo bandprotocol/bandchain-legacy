@@ -32,9 +32,12 @@ struct RegistryParameters {
   {
   }
 
-  void init(uint8_t _vote_quorum, uint8_t _dispensation_percentage,
-            uint256_t _min_deposit, uint64_t _apply_duration,
-            uint64_t _commit_duration, uint64_t _reveal_duration)
+  void init(uint8_t _vote_quorum,
+            uint8_t _dispensation_percentage,
+            uint256_t _min_deposit,
+            uint64_t _apply_duration,
+            uint64_t _commit_duration,
+            uint64_t _reveal_duration)
   {
     vote_quorum = _vote_quorum;
     dispensation_percentage = _dispensation_percentage;
@@ -119,10 +122,14 @@ public:
 
   Registry(const Address& registry_id);
 
-  void init(const Address& _token_id, const Address& _voting_id,
-            const Address& _governance_id, uint8_t _vote_quorum,
-            uint8_t _dispensation_percentage, const uint256_t& _min_deposit,
-            uint64_t _apply_duration, uint64_t _commit_duration,
+  void init(const Address& _token_id,
+            const Address& _voting_id,
+            const Address& _governance_id,
+            uint8_t _vote_quorum,
+            uint8_t _dispensation_percentage,
+            const uint256_t& _min_deposit,
+            uint64_t _apply_duration,
+            uint64_t _commit_duration,
             uint64_t _reveal_duration);
 
   // Callable function
@@ -141,7 +148,8 @@ public:
   void claim_reward(uint256_t challenge_id, uint256_t salt);
 
   // Function for get information
-  uint256_t voter_reward(const Address& voter, const uint256_t challenge_id,
+  uint256_t voter_reward(const Address& voter,
+                         const uint256_t challenge_id,
                          const uint256_t& salt) const;
 
   bool can_in_list(const uint256_t& list_id) const;
@@ -213,8 +221,10 @@ private:
     {
     }
 
-    void init(uint64_t _app_expire_time, const Address& _owner,
-              const uint256_t& _unstake_deposit, const std::string& _data)
+    void init(uint64_t _app_expire_time,
+              const Address& _owner,
+              const uint256_t& _unstake_deposit,
+              const std::string& _data)
     {
       _exist = true;
       app_expire_time = _app_expire_time;
@@ -258,8 +268,10 @@ private:
     {
     }
 
-    void init(const uint256_t& _poll_id, const Address& _challenger_address,
-              const std::string& _data, const uint256_t& reward,
+    void init(const uint256_t& _poll_id,
+              const Address& _challenger_address,
+              const std::string& _data,
+              const uint256_t& reward,
               const uint256_t& _stake)
     {
       _exist = true;

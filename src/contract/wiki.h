@@ -33,11 +33,11 @@ public:
   // Callable
 
   // Inner function for first phase add 1 quad
-  void add_triple(std::string subject, std::string predicate,
-                  std::string object);
+  void
+  add_triple(std::string subject, std::string predicate, std::string object);
 
-  void delete_triple(std::string subject, std::string predicate,
-                     std::string object);
+  void
+  delete_triple(std::string subject, std::string predicate, std::string object);
 
   void debug_create() const final;
   void debug_save() const final;

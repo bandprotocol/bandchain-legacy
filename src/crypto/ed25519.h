@@ -66,7 +66,8 @@ inline Signature ed25519_sign(const SecretKey& secret_key, gsl::span<T> data)
 
 /// Verify Ed25519 signature.
 template <typename T>
-inline bool ed25519_verify(const Signature& sig, const VerifyKey& verify_key,
+inline bool ed25519_verify(const Signature& sig,
+                           const VerifyKey& verify_key,
                            gsl::span<T> data)
 {
   return crypto_sign_ed25519_verify_detached(

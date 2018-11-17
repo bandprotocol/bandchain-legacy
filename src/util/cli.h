@@ -72,7 +72,9 @@ template <typename T>
 class CmdArgT : public CmdArgBase
 {
 public:
-  CmdArgT(std::string _name, std::string _desc, char _abbrev = '\0',
+  CmdArgT(std::string _name,
+          std::string _desc,
+          char _abbrev = '\0',
           T _default = T{})
       : CmdArgBase(std::move(_name), std::move(_desc), _abbrev)
       , value(_default)
@@ -148,7 +150,13 @@ public:
   using CmdArgT::CmdArgT;
 
 private:
-  void parse(const std::string& data) final { value = std::stoi(data); }
+  void parse(const std::string& data) final
+  {
+    value = std::stoi(data);
+  }
 
-  std::string get_type() const final { return "int"; }
+  std::string get_type() const final
+  {
+    return "int";
+  }
 };

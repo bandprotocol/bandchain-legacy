@@ -38,8 +38,10 @@ public:
   /// Validate the given set of transaction information. Mutate the user's
   /// nonce appropriately. Mode switching must be done before this is called.
   /// Throw exception if the validation fails.
-  void validateTransaction(const Ident& user, const Signature& sig,
-                           uint64_t nonce, gsl::span<const byte> data);
+  void validateTransaction(const Ident& user,
+                           const Signature& sig,
+                           uint64_t nonce,
+                           gsl::span<const byte> data);
 
 public:
   /// Create an account to RocksDB data storage. Throw if the creator does not

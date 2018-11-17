@@ -75,8 +75,10 @@ public:
                                   const uint256_t& poll_id,
                                   const uint256_t& salt) const;
 
-  uint256_t start_poll(uint8_t losing_threshold, uint8_t winning_threahold,
-                       uint64_t commit_duration, uint64_t reveal_duration);
+  uint256_t start_poll(uint8_t losing_threshold,
+                       uint8_t winning_threahold,
+                       uint64_t commit_duration,
+                       uint64_t reveal_duration);
 
   uint256_t get_total_winning_token(const uint256_t& poll_id) const;
 
@@ -161,8 +163,10 @@ private:
     {
     }
 
-    void init(uint64_t _commit_end_time, uint64_t _reveal_end_time,
-              uint8_t _losing_threshold, uint8_t _winning_threshold)
+    void init(uint64_t _commit_end_time,
+              uint64_t _reveal_end_time,
+              uint8_t _losing_threshold,
+              uint8_t _winning_threshold)
     {
       _exist = true;
       commit_end_time = _commit_end_time;

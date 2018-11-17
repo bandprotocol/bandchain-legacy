@@ -8,6 +8,7 @@ AllowShortFunctionsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakTemplateDeclarations: true
+BinPackParameters: false
 ColumnLimit: 80
 IndentCaseLabels: true
 IncludeBlocks: Regroup

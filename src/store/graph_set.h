@@ -24,10 +24,14 @@
 class GraphStoreSet : public GraphStore
 {
 public:
-  void add_edge(const std::string& subject, const std::string& predicate,
-                const std::string& object, const std::string& label) final;
-  void delete_edge(const std::string& subject, const std::string& predicate,
-                   const std::string& object, const std::string& label) final;
+  void add_edge(const std::string& subject,
+                const std::string& predicate,
+                const std::string& object,
+                const std::string& label) final;
+  void delete_edge(const std::string& subject,
+                   const std::string& predicate,
+                   const std::string& object,
+                   const std::string& label) final;
 
 private:
   struct Edge {

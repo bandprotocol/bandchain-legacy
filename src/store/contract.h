@@ -27,8 +27,16 @@
 #include "util/json.h"
 #include "util/typeid.h"
 
-ENUM(ContractID, uint16_t, Creator = 0, Account = 1, Token = 2, Voting = 3,
-     Registry = 4, Stake = 5, Governance = 6, Wiki = 7)
+ENUM(ContractID,
+     uint16_t,
+     Creator = 0,
+     Account = 1,
+     Token = 2,
+     Voting = 3,
+     Registry = 4,
+     Stake = 5,
+     Governance = 6,
+     Wiki = 7)
 
 class Contract
 {
@@ -113,7 +121,8 @@ private:
 
   /// TODO: Move this to static level
   template <typename T, typename Ret, typename... Args>
-  static void add_callable(ContractID contract_id, uint16_t func_id,
+  static void add_callable(ContractID contract_id,
+                           uint16_t func_id,
                            const std::string& func_name,
                            Ret (T::*func)(Args...))
   {
@@ -144,7 +153,8 @@ private:
   }
 
   template <typename T, typename Ret, typename... Args>
-  static void add_callable(ContractID contract_id, uint16_t func_id,
+  static void add_callable(ContractID contract_id,
+                           uint16_t func_id,
                            const std::string& func_name,
                            Ret (T::*func)(Args...) const)
   {

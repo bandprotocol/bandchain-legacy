@@ -26,12 +26,17 @@ class GraphStoreCayley : public GraphStore
 {
 public:
   GraphStoreCayley(boost::asio::io_service& service,
-                   const std::string& _hostname, uint16_t _port);
+                   const std::string& _hostname,
+                   uint16_t _port);
 
-  void add_edge(const std::string& subject, const std::string& predicate,
-                const std::string& object, const std::string& label) final;
-  void delete_edge(const std::string& subject, const std::string& predicate,
-                   const std::string& object, const std::string& label) final;
+  void add_edge(const std::string& subject,
+                const std::string& predicate,
+                const std::string& object,
+                const std::string& label) final;
+  void delete_edge(const std::string& subject,
+                   const std::string& predicate,
+                   const std::string& object,
+                   const std::string& label) final;
 
 private:
   std::string create_body_msg(const std::string& subject,

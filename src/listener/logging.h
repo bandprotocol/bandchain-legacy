@@ -17,25 +17,24 @@
 
 #pragma once
 
-#include <string>
+#include ""
 
-#include "inc/essential.h"
-#include "util/json.h"
-
-class GraphStore
+///
+class LoggingListener : public BaseListener
 {
-public:
-  virtual ~GraphStore()
-  {
+private:
+  /// "handle<MsgType>" functions are implemented as log function that basically
+  /// logs all the incoming message to the stdout console.
+#define BASE_PROCESS_MESSAGE(R, _, MSG)                                        \
+  virtual void BAND_MACRO_HANDLE(MSG)(const BAND_MACRO_MSG(MSG) & msg) final   \
+  {                                                                            \
+    INFO(log, "{}", msg);                                                      \
   }
 
-  virtual void add_edge(const std::string& subject,
-                        const std::string& predicate,
-                        const std::string& object,
-                        const std::string& label) = 0;
+  BAND_MACRO_MESSAGE_FOR_EACH(BASE_PROCESS_MESSAGE)
 
-  virtual void delete_edge(const std::string& subject,
-                           const std::string& predicate,
-                           const std::string& object,
-                           const std::string& label) = 0;
-};
+#undef BASE_PROCESS_MESSAGE
+
+private:
+  static inline auto log = logger::get("logging");
+}
