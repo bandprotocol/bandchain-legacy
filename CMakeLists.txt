@@ -26,6 +26,7 @@ file(GLOB source_files
      "src/contract/*.h" "src/contract/*.cc"
      "src/crypto/*.h" "src/crypto/*.cc"
      "src/inc/*.h" "src/inc/*.cc"
+     "src/listener/*.h" "src/listener/*.cc"
      "src/msg/*.h" "src/msg/*.cc"
      "src/net/*.h" "src/net/*.cc"
      "src/state/*.h" "src/state/*.cc"

@@ -37,6 +37,15 @@ inline byte hex_to_byte(char hex_digit)
 } // namespace
 
 template <int SIZE>
+Bytes<SIZE>::Bytes(gsl::span<const byte> data)
+{
+  if (data.size() != SIZE)
+    throw Error("Bytes<{}>(span): Invalid span size {}", SIZE, data.size());
+
+  std::copy_n(data.begin(), SIZE, rawdata_.begin());
+}
+
+template <int SIZE>
 Bytes<SIZE> Bytes<SIZE>::raw(const std::string& raw_string)
 {
   if (raw_string.size() != SIZE) {
