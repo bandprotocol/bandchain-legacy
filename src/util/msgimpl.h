@@ -69,6 +69,7 @@
     {                                                                          \
       std::string ret;                                                         \
       ret += "{";                                                              \
+      ret += " {}:"_format(BOOST_PP_STRINGIZE(BOOST_PP_CAT(NAME, Msg)));       \
       BOOST_PP_SEQ_FOR_EACH(BAND_MACRO_STRUCT_TO_STRING, ret, SEQ)             \
       ret.pop_back();                                                          \
       ret += " }";                                                             \

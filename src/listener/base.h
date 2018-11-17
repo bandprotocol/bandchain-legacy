@@ -49,7 +49,8 @@ public:
   /// "handle<MsgType>" functions are implemented as no-op functions. These
   /// functions can be overriden by the subclass to give functionalities.
 #define BASE_PROCESS_MESSAGE(R, _, MSG)                                        \
-  virtual void BAND_MACRO_HANDLE(MSG)(const BAND_MACRO_MSG(MSG) & msg)         \
+  virtual void BAND_MACRO_HANDLE(MSG)(const HeaderMsg& hdr,                    \
+                                      const BAND_MACRO_MSG(MSG) & msg)         \
   {                                                                            \
     /* Nothing interesting here! */                                            \
   }

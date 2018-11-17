@@ -38,30 +38,29 @@ public:
   /// Validate the given set of transaction information. Mutate the user's
   /// nonce appropriately. Mode switching must be done before this is called.
   /// Throw exception if the validation fails.
-  void validateTransaction(const Ident& user,
-                           const Signature& sig,
-                           uint64_t nonce,
-                           gsl::span<const byte> data);
+  void validateTransaction(const HeaderMsg& hdr, gsl::span<const byte> data);
 
 public:
   /// Create an account to RocksDB data storage. Throw if the creator does not
   /// have the necessary permission or the username is used.
-  void handleCreateAccount(const CreateAccountMsg& msg) final;
+  void handleCreateAccount(const HeaderMsg& hdr,
+                           const CreateAccountMsg& msg) final;
 
   /// Create a token contract to RocksDB data storage. Throw if the token
   /// identifier is used.
-  void handleCreateToken(const CreateTokenMsg& msg) final;
+  void handleCreateToken(const HeaderMsg& hdr, const CreateTokenMsg& msg) final;
 
   /// Add the appropriate amount of tokens to the transaction sender for the
   /// specified token contract.
-  void handleMintToken(const MintTokenMsg& msg) final;
+  void handleMintToken(const HeaderMsg& hdr, const MintTokenMsg& msg) final;
 
   /// Transfer tokens from the sender to the given dest.
-  void handleTransferToken(const TransferTokenMsg& msg) final;
+  void handleTransferToken(const HeaderMsg& hdr,
+                           const TransferTokenMsg& msg) final;
 
   /// Convert the base tokens to the new tokens for the given amount.
-  void handleBuyToken(const BuyTokenMsg& msg) final;
+  void handleBuyToken(const HeaderMsg& hdr, const BuyTokenMsg& msg) final;
 
   /// Convert the tokens back to the base tokens for the given amount.
-  void handleSellToken(const SellTokenMsg& msg) final;
+  void handleSellToken(const HeaderMsg& hdr, const SellTokenMsg& msg) final;
 };

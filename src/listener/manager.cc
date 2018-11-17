@@ -23,17 +23,19 @@ namespace
 {
 /// Parser the header part of the given raw messages. This helper function is
 /// used both during checkTx and applyTx
-std::tuple<Ident, Signature, uint64_t, gsl::span<const byte>, Buffer>
+std::tuple<HeaderMsg, gsl::span<const byte>, Buffer>
 parseHeader(gsl::span<const byte> raw)
 {
   Buffer buf(raw);
 
-  auto user = buf.read<Ident>();
-  auto sig = buf.read<Signature>();
-  auto nonce = buf.read<uint64_t>();
+  HeaderMsg hdr;
+  buf >> hdr.user;
+  buf >> hdr.sig;
+  buf >> hdr.nonce;
 
   return {
-      user, sig, nonce, raw.last(raw.size() - Ident::Size - Signature::Size),
+      hdr,
+      raw.last(raw.size() - Ident::Size - Signature::Size),
       buf,
   };
 }
@@ -62,32 +64,32 @@ void ListenerManager::checkTransaction(gsl::span<const byte> raw)
   if (!primary)
     throw Failure("endBlock: called without primary listener set");
 
-  auto [user, sig, nonce, data, buf] = parseHeader(raw);
+  auto [hdr, data, buf] = parseHeader(raw);
 
   (void)buf;
 
   primary->switchMode(PrimaryMode::Check);
-  primary->validateTransaction(user, sig, nonce, data);
+  primary->validateTransaction(hdr, data);
   primary->switchMode(PrimaryMode::None);
 }
 
 void ListenerManager::applyTransaction(gsl::span<const byte> raw)
 {
-  auto [user, sig, nonce, data, buf] = parseHeader(raw);
+  auto [hdr, data, buf] = parseHeader(raw);
   auto msgType = buf.read<MsgType>();
 
   if (primary) {
     primary->switchMode(PrimaryMode::Apply);
-    primary->validateTransaction(user, sig, nonce, data);
+    primary->validateTransaction(hdr, data);
   }
 
   switch (msgType) {
 #define HANDLE_APPLY_CASE(R, _, MSG)                                           \
   case +MsgType::MSG: {                                                        \
     auto msg = buf.read<BAND_MACRO_MSG(MSG)>();                                \
-    primary->BAND_MACRO_HANDLE(MSG)(msg);                                      \
+    primary->BAND_MACRO_HANDLE(MSG)(hdr, msg);                                 \
     for (auto& listener : listeners) {                                         \
-      listener->BAND_MACRO_HANDLE(MSG)(msg);                                   \
+      listener->BAND_MACRO_HANDLE(MSG)(hdr, msg);                              \
     }                                                                          \
   }
 

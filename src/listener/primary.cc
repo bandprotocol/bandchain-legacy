@@ -22,39 +22,44 @@ void PrimaryListener::switchMode(PrimaryMode mode)
   // TODO
 }
 
-void PrimaryListener::validateTransaction(const Ident& user,
-                                          const Signature& sig, uint64_t nonce,
+void PrimaryListener::validateTransaction(const HeaderMsg& hdr,
                                           gsl::span<const byte> data)
 {
   // TODO
 }
 
-void PrimaryListener::handleCreateAccount(const CreateAccountMsg& msg)
+void PrimaryListener::handleCreateAccount(const HeaderMsg& hdr,
+                                          const CreateAccountMsg& msg)
 {
   // TODO
 }
 
-void PrimaryListener::handleCreateToken(const CreateTokenMsg& msg)
+void PrimaryListener::handleCreateToken(const HeaderMsg& hdr,
+                                        const CreateTokenMsg& msg)
 {
   // TODO
 }
 
-void PrimaryListener::handleMintToken(const MintTokenMsg& msg)
+void PrimaryListener::handleMintToken(const HeaderMsg& hdr,
+                                      const MintTokenMsg& msg)
 {
   // TODO
 }
 
-void PrimaryListener::handleTransferToken(const TransferTokenMsg& msg)
+void PrimaryListener::handleTransferToken(const HeaderMsg& hdr,
+                                          const TransferTokenMsg& msg)
 {
   // TODO
 }
 
-void PrimaryListener::handleBuyToken(const BuyTokenMsg& msg)
+void PrimaryListener::handleBuyToken(const HeaderMsg& hdr,
+                                     const BuyTokenMsg& msg)
 {
   // TODO
 }
 
-void PrimaryListener::handleSellToken(const SellTokenMsg& msg)
+void PrimaryListener::handleSellToken(const HeaderMsg& hdr,
+                                      const SellTokenMsg& msg)
 {
   // TODO
 }

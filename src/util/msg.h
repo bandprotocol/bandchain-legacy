@@ -54,6 +54,21 @@
 /// Declare ENUM to represent each of the message types.
 BAND_MACRO_MESSAGE_TYPES(ENUM, MsgType, uint16_t)
 
+struct HeaderMsg {
+  Ident user;     //<
+  Signature sig;  //<
+  uint64_t nonce; //<
+
+  std::string to_string() const
+  {
+    std::string ret;
+    ret += "{ ";
+    ret += "{}: user = {}, sig = {}, nonce = {}"_format(user, sig, nonce);
+    ret += " }";
+    return ret;
+  }
+};
+
 MESSAGE(
     /// CreateAccount Message allows an existing account to create another
     /// account, given the necessary condition.
