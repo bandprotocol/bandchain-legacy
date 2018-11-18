@@ -143,7 +143,7 @@ void TendermintApplication::do_end_block(const RequestEndBlock&,
                                          ResponseEndBlock& res)
 {
   // TODO: Update the set of validators
-  std::vector<std::pair<VerifyKey, uint64_t>> update_validators = end_block();
+  auto update_validators = end_block();
   DEBUG(log, "Ending block update validators list");
   for (auto& [vk, power] : update_validators) {
     auto new_v = res.add_validator_updates();

@@ -21,7 +21,7 @@
 
 namespace
 {
-/// Parser the header part of the given raw messages. This helper function is
+/// Parse the header part of the given raw messages. This helper function is
 /// used both during checkTx and applyTx
 std::tuple<HeaderMsg, gsl::span<const byte>, Buffer>
 parseHeader(gsl::span<const byte> raw)
@@ -91,6 +91,7 @@ void ListenerManager::applyTransaction(gsl::span<const byte> raw)
     for (auto& listener : listeners) {                                         \
       listener->BAND_MACRO_HANDLE(MSG)(hdr, msg);                              \
     }                                                                          \
+    break;                                                                     \
   }
 
     BAND_MACRO_MESSAGE_FOR_EACH(HANDLE_APPLY_CASE)

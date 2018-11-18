@@ -54,7 +54,7 @@ public:
   /// specified token contract.
   void handleMintToken(const HeaderMsg& hdr, const MintTokenMsg& msg) final;
 
-  /// Transfer tokens from the sender to the given dest.
+  /// Transfer tokens from the sender to the given destination.
   void handleTransferToken(const HeaderMsg& hdr,
                            const TransferTokenMsg& msg) final;
 
