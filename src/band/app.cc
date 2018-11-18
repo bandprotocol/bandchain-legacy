@@ -31,7 +31,7 @@
 #include "util/cli.h"
 #include "util/equation.h"
 
-CmdArg<bool> fake_time("fake_time", "use tx time as global time", 'f');
+CmdArg<bool> fake_time("f,fake_time", "use tx time as global time");
 
 BandApplication::BandApplication(Context& _ctx)
     : ctx(_ctx)

@@ -13,7 +13,7 @@ CmdArg<std::string> key("key", "key of value");
 
 int main(int argc, char* argv[])
 {
-  Cmd cmd(argc, argv);
+  Cmd cmd("Show blockchain state information", argc, argv);
 
   rocksdb::Options options;
   options.create_if_missing = false;

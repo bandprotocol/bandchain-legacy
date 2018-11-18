@@ -26,12 +26,12 @@
 #include "util/cli.h"
 
 CmdArg<bool> use_db("use-db", "set this flag to use rocksdb");
-CmdArg<int> port("port", "the port on which tmapp connects", 'p', 26658);
-CmdArg<bool> use_set("use-set", "set this flag to use graph set", 's');
+CmdArg<int> port("p,port", "the port on which tmapp connects", "26658");
+CmdArg<bool> use_set("s,use-set", "set this flag to use graph set");
 
 int main(int argc, char* argv[])
 {
-  Cmd cmd(argc, argv);
+  Cmd cmd("Band ABCI application", argc, argv);
   LOG("BAND blockchain appliation starting...");
 
   std::unique_ptr<Storage> store;
