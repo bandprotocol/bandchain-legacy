@@ -7,6 +7,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "-Wall")
 
+set(SOCI_CXX_C11 ON)
+add_subdirectory(3pc/soci)
+
+find_path(POSTGRESQL_INCLUDE_DIRS
+    NAMES postgresql/libpq-fe.h
+)
+
+set(POSTGRESQL_INCLUDE_DIRS "${POSTGRESQL_INCLUDE_DIRS}/postgresql")
+
+set(${CMAKE_PREFIX_PATH} "~/" ${CMAKE_PREFIX_PATH})
 find_package(Boost 1.65.1 COMPONENTS system serialization REQUIRED)
 find_package(Protobuf 3.0.0 REQUIRED)
 find_package(Sodium REQUIRED)
@@ -19,6 +29,14 @@ include_directories(3pc/json-3.1.2/include)
 include_directories(3pc/optional-lite-3.0.0/include)
 include_directories(3pc/better-enum-0.11.1/include)
 include_directories(3pc/cxxopts-2.1.1/include)
+include_directories(3pc/soci/include)
+include_directories(${SOCI_CORE_INCLUDE_DIRS})
+include_directories(${SOCI_INCLUDE_DIRS})
+include_directories(${SOCI_BUILD_INCLUDE_DIRS})
+
+include_directories(${CONFIG_INCLUDE_DIR})
+include_directories(${POSTGRESQL_INCLUDE_DIRS})
+
 include_directories(. src test)
 
 
@@ -43,7 +61,9 @@ target_link_libraries(bandprotocol
                       ${Boost_LIBRARIES}
                       ${Protobuf_LIBRARIES}
                       ${sodium_LIBRARY_RELEASE}
-                      ${ROCKSDB_LIBRARIES})
+                      ${ROCKSDB_LIBRARIES}
+                      ${SOCI_CORE_TARGET}
+                      soci_postgresql)
 
 enable_testing()
 file(GLOB test_files "test/*_test.h")
