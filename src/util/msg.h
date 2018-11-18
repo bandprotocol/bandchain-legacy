@@ -55,15 +55,15 @@
 BAND_MACRO_MESSAGE_TYPES(ENUM, MsgType, uint16_t)
 
 struct HeaderMsg {
-  Ident user;     //<
-  Signature sig;  //<
-  uint64_t nonce; //<
+  Ident user;     //< The ID of the user sending this tranaction
+  Signature sig;  //< The signature of this transaction
+  uint64_t nonce; //< Strictly increasing nonce sequence specific to the sender
 
   std::string to_string() const
   {
     std::string ret;
-    ret += "{ ";
-    ret += "{}: user = {}, sig = {}, nonce = {}"_format(user, sig, nonce);
+    ret += "{ HeaderMsg: ";
+    ret += "user = {}, sig = {}, nonce = {}"_format(user, sig, nonce);
     ret += " }";
     return ret;
   }

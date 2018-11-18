@@ -17,9 +17,11 @@
 
 #pragma once
 
+#include "listener/base.h"
 #include "util/msg.h"
 
-///
+/// Logging listener is a simple listener that logs every message it gets to
+/// the standard output console.
 class LoggingListener : public BaseListener
 {
 private:
@@ -29,7 +31,7 @@ private:
   virtual void BAND_MACRO_HANDLE(MSG)(const HeaderMsg& hdr,                    \
                                       const BAND_MACRO_MSG(MSG) & msg) final   \
   {                                                                            \
-    INFO(log, "{}", msg);                                                      \
+    INFO(log, "{} {}", hdr, msg);                                              \
   }
 
   BAND_MACRO_MESSAGE_FOR_EACH(BASE_PROCESS_MESSAGE)
@@ -38,4 +40,4 @@ private:
 
 private:
   static inline auto log = logger::get("logging");
-}
+};
