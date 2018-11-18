@@ -37,6 +37,7 @@ struct TypeID {
 
 TYPEID(void)
 TYPEID(bool)
+TYPEID(int)
 TYPEID(uint8_t)
 TYPEID(uint16_t)
 TYPEID(uint64_t)

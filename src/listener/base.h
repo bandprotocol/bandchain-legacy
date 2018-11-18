@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "inc/essential.h"
 #include "util/bytes.h"
 #include "util/msg.h"
 

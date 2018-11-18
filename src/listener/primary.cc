@@ -29,6 +29,21 @@ void PrimaryListener::switchMode(PrimaryMode mode)
   // TODO
 }
 
+void PrimaryListener::load()
+{
+  // TODO
+}
+
+void PrimaryListener::begin(uint64_t timestamp, const Address& proposer)
+{
+  // TODO
+}
+
+void PrimaryListener::commit()
+{
+  // TODO
+}
+
 void PrimaryListener::validateTransaction(const HeaderMsg& hdr,
                                           gsl::span<const byte> data)
 {

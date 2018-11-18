@@ -19,6 +19,7 @@
 
 #include <enum/enum.h>
 
+#include "inc/essential.h"
 #include "listener/base.h"
 #include "util/msg.h"
 
@@ -46,6 +47,17 @@ public:
   void validateTransaction(const HeaderMsg& hdr, gsl::span<const byte> data);
 
 public:
+  /// Load the current state of this listener. May involve blocking remote
+  /// database calls.
+  void load() final;
+
+  /// Begin a new block. The listener may override this function to perform
+  /// necessary transactional operations.
+  void begin(uint64_t timestamp, const Address& proposer) final;
+
+  /// Commit the current block.
+  void commit() final;
+
   /// Create an account to RocksDB data storage. Throw if the creator does not
   /// have the necessary permission or the username is used.
   void handleCreateAccount(const HeaderMsg& hdr,

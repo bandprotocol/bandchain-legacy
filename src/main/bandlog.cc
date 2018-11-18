@@ -20,10 +20,10 @@
 #include "net/server.h"
 #include "net/tmapp.h"
 
-class BandLogingApplication : public TendermintApplication
+class BandLoggingApplication : public TendermintApplication
 {
 public:
-  BandLogingApplication(ListenerManager& _manager)
+  BandLoggingApplication(ListenerManager& _manager)
       : manager(_manager)
   {
   }
@@ -53,9 +53,7 @@ public:
     return "";
   }
 
-  void check(const std::string& msg_raw) final
-  {
-  }
+  void check(const std::string& msg_raw) final {}
 
   std::string apply(const std::string& msg_raw) final
   {
@@ -63,18 +61,14 @@ public:
     return "";
   }
 
-  void begin_block(uint64_t block_time, const Address& block_proposer) final
-  {
-  }
+  void begin_block(uint64_t block_time, const Address& block_proposer) final {}
 
   std::vector<std::pair<VerifyKey, uint64_t>> end_block() final
   {
     return {};
   }
 
-  void commit_block() final
-  {
-  }
+  void commit_block() final {}
 
 private:
   ListenerManager& manager;
@@ -87,7 +81,7 @@ int main(int argc, char* argv[])
   ListenerManager manager;
   manager.addListener(std::make_unique<LoggingListener>());
 
-  BandLogingApplication app(manager);
+  BandLoggingApplication app(manager);
 
   Server server(service, app, 26658);
   server.start();

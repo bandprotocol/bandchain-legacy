@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "inc/essential.h"
 #include "listener/base.h"
 #include "util/msg.h"
 

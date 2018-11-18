@@ -20,6 +20,7 @@
 #include <map>
 
 #include "inc/essential.h"
+#include "util/typeid.h"
 
 class CmdArgBase;
 
@@ -93,6 +94,12 @@ public:
     return value;
   }
 
+private:
+  std::string get_type() const final
+  {
+    return TypeID<T>::name;
+  }
+
 protected:
   T value;
 };
@@ -116,12 +123,7 @@ private:
     else if (data == "false")
       value = false;
     else
-      throw Failure("Invalid bool value. Must be true or false");
-  }
-
-  std::string get_type() const final
-  {
-    return "bool";
+      throw Failure("Invalid bool value: {}. Must be true or false", data);
   }
 };
 
@@ -136,11 +138,6 @@ private:
   {
     value = data;
   }
-
-  std::string get_type() const final
-  {
-    return "string";
-  }
 };
 
 template <>
@@ -153,10 +150,5 @@ private:
   void parse(const std::string& data) final
   {
     value = std::stoi(data);
-  }
-
-  std::string get_type() const final
-  {
-    return "int";
   }
 };
