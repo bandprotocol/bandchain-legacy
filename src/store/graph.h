@@ -25,9 +25,7 @@
 class GraphStore
 {
 public:
-  virtual ~GraphStore()
-  {
-  }
+  virtual ~GraphStore() {}
 
   virtual void add_edge(const std::string& subject,
                         const std::string& predicate,

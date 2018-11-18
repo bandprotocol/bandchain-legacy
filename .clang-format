@@ -4,7 +4,7 @@ BreakBeforeBraces: Linux
 PointerAlignment: Left
 BreakConstructorInitializers: BeforeComma
 AllowShortBlocksOnASingleLine: false
-AllowShortFunctionsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakTemplateDeclarations: true

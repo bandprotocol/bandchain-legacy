@@ -25,9 +25,7 @@
 class Storage
 {
 public:
-  virtual ~Storage()
-  {
-  }
+  virtual ~Storage() {}
 
   // Save or create value to key.
   virtual void put(const Hash& key, const std::string& val) = 0;

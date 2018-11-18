@@ -17,6 +17,13 @@
 
 #include "primary.h"
 
+#include "store/storage.h"
+
+PrimaryListener::PrimaryListener(Storage& _store)
+    : store(_store)
+{
+}
+
 void PrimaryListener::switchMode(PrimaryMode mode)
 {
   // TODO

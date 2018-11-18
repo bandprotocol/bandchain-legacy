@@ -26,12 +26,17 @@
 /// forth while the validator is running.
 ENUM(PrimaryMode, uint8_t, None, Check, Apply)
 
+/// Forward-declaration of the key-value primary lookup database.
+class Storage;
+
 /// Primary listener to maintain the blockchain state necessary for running
 /// a fullnode without providing the query interface. This listener is
 /// responsible for validating transactions and updating the validator set.
 class PrimaryListener : public BaseListener
 {
 public:
+  PrimaryListener(Storage& store);
+
   /// Switch the mode between checking and applying transactions.
   void switchMode(PrimaryMode mode);
 
@@ -63,4 +68,8 @@ public:
 
   /// Convert the tokens back to the base tokens for the given amount.
   void handleSellToken(const HeaderMsg& hdr, const SellTokenMsg& msg) final;
+
+private:
+  ///
+  Storage& store;
 };

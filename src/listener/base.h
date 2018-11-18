@@ -25,26 +25,18 @@
 class BaseListener
 {
 public:
-  virtual ~BaseListener()
-  {
-  }
+  virtual ~BaseListener() {}
 
   /// Load the current state of this listener. May involve blocking remote
   /// database calls.
-  virtual void load()
-  {
-  }
+  virtual void load() {}
 
   /// Begin a new block. The listener may override this function to perform
   /// necessary transactional operations.
-  virtual void begin(uint64_t timestamp, const Address& proposer)
-  {
-  }
+  virtual void begin(uint64_t timestamp, const Address& proposer) {}
 
   /// Commit the current block.
-  virtual void commit()
-  {
-  }
+  virtual void commit() {}
 
   /// "handle<MsgType>" functions are implemented as no-op functions. These
   /// functions can be overriden by the subclass to give functionalities.

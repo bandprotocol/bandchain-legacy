@@ -29,9 +29,7 @@ public:
   nonstd::optional<std::string> get(const Hash& key) const final;
   void del(const Hash& key) final;
 
-  void commit_block() final
-  {
-  }
+  void commit_block() final {}
 
   // TODO
   void switch_to_tx() final

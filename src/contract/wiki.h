@@ -26,9 +26,7 @@ class Wiki : public Contract
 public:
   Wiki(const Address& wiki_id);
 
-  void init()
-  {
-  }
+  void init() {}
 
   // Callable
 

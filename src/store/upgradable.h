@@ -25,9 +25,7 @@
 class Upgradable
 {
 public:
-  virtual ~Upgradable()
-  {
-  }
+  virtual ~Upgradable() {}
   virtual Address get_governance_id() const = 0;
   virtual void upgrade(Buffer buf) = 0;
   virtual std::string to_string(Buffer buf) const = 0;
