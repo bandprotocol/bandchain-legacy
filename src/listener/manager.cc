@@ -72,12 +72,8 @@ void ListenerManager::checkTransaction(gsl::span<const byte> raw)
     throw Failure("endBlock: called without primary listener set");
 
   auto [hdr, data, buf] = parseHeader(raw);
-
   (void)buf;
-
-  primary->switchMode(PrimaryMode::Check);
-  primary->validateTransaction(hdr, data);
-  primary->switchMode(PrimaryMode::None);
+  primary->validateTransaction(PrimaryMode::Check, hdr, data);
 }
 
 void ListenerManager::applyTransaction(gsl::span<const byte> raw,
@@ -87,8 +83,7 @@ void ListenerManager::applyTransaction(gsl::span<const byte> raw,
   auto msgType = buf.read<MsgType>();
 
   if (primary) {
-    primary->switchMode(PrimaryMode::Apply);
-    primary->validateTransaction(hdr, data);
+    primary->validateTransaction(PrimaryMode::Apply, hdr, data);
   }
 
   switch (msgType) {
@@ -105,10 +100,6 @@ void ListenerManager::applyTransaction(gsl::span<const byte> raw,
 
     BAND_MACRO_MESSAGE_FOR_EACH(HANDLE_APPLY_CASE)
 #undef HANDLE_APPLY_CASE
-  }
-
-  if (primary) {
-    primary->switchMode(PrimaryMode::None);
   }
 }
 

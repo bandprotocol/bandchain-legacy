@@ -24,11 +24,6 @@ PrimaryListener::PrimaryListener(Storage& _store)
 {
 }
 
-void PrimaryListener::switchMode(PrimaryMode mode)
-{
-  // TODO
-}
-
 void PrimaryListener::load()
 {
   // TODO
@@ -44,7 +39,8 @@ void PrimaryListener::commit(const BlockMsg& blk)
   // TODO
 }
 
-void PrimaryListener::validateTransaction(const HeaderMsg& hdr,
+void PrimaryListener::validateTransaction(PrimaryMode mode,
+                                          const HeaderMsg& hdr,
                                           gsl::span<const byte> data)
 {
   // TODO

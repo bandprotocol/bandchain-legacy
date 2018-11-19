@@ -24,7 +24,7 @@
 
 /// The mode in which this primary listener is running. Switching back and
 /// forth while the validator is running.
-ENUM(PrimaryMode, uint8_t, None, Check, Apply)
+ENUM(PrimaryMode, uint8_t, Check, Apply)
 
 /// Forward-declaration of the key-value primary lookup database.
 class Storage;
@@ -37,13 +37,12 @@ class PrimaryListener
 public:
   PrimaryListener(Storage& store);
 
-  /// Switch the mode between checking and applying transactions.
-  void switchMode(PrimaryMode mode);
-
   /// Validate the given set of transaction information. Mutate the user's
-  /// nonce appropriately. Mode switching must be done before this is called.
+  /// nonce appropriately. Mode must be specified before this is called.
   /// Throw exception if the validation fails.
-  void validateTransaction(const HeaderMsg& hdr, gsl::span<const byte> data);
+  void validateTransaction(PrimaryMode mode,
+                           const HeaderMsg& hdr,
+                           gsl::span<const byte> data);
 
   /// Load the current state of this listener. May involve blocking remote
   /// database calls.
