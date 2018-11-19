@@ -20,7 +20,6 @@
 #include <enum/enum.h>
 
 #include "inc/essential.h"
-#include "listener/base.h"
 #include "util/msg.h"
 
 /// The mode in which this primary listener is running. Switching back and
@@ -33,7 +32,7 @@ class Storage;
 /// Primary listener to maintain the blockchain state necessary for running
 /// a fullnode without providing the query interface. This listener is
 /// responsible for validating transactions and updating the validator set.
-class PrimaryListener : public BaseListener
+class PrimaryListener
 {
 public:
   PrimaryListener(Storage& store);
@@ -46,40 +45,27 @@ public:
   /// Throw exception if the validation fails.
   void validateTransaction(const HeaderMsg& hdr, gsl::span<const byte> data);
 
-public:
   /// Load the current state of this listener. May involve blocking remote
   /// database calls.
-  void load() final;
+  void load();
 
   /// Begin a new block. The listener may override this function to perform
   /// necessary transactional operations.
-  void begin(uint64_t timestamp, const Address& proposer) final;
+  void begin(const BlockMsg& blk);
 
   /// Commit the current block.
-  void commit() final;
+  void commit();
 
-  /// Create an account to RocksDB data storage. Throw if the creator does not
-  /// have the necessary permission or the username is used.
-  void handleCreateAccount(const HeaderMsg& hdr,
-                           const CreateAccountMsg& msg) final;
+  /// Primary listener must implement logic to handle each of the messages and
+  /// return blockchain response.
+#define BASE_PROCESS_MESSAGE(R, _, MSG)                                        \
+  BAND_MACRO_RESPONSE(MSG)                                                     \
+  BAND_MACRO_HANDLE(MSG)                                                       \
+  (const BlockMsg& blk, const HeaderMsg& hdr, const BAND_MACRO_MSG(MSG) & msg);
 
-  /// Create a token contract to RocksDB data storage. Throw if the token
-  /// identifier is used.
-  void handleCreateToken(const HeaderMsg& hdr, const CreateTokenMsg& msg) final;
+  BAND_MACRO_MESSAGE_FOR_EACH(BASE_PROCESS_MESSAGE)
 
-  /// Add the appropriate amount of tokens to the transaction sender for the
-  /// specified token contract.
-  void handleMintToken(const HeaderMsg& hdr, const MintTokenMsg& msg) final;
-
-  /// Transfer tokens from the sender to the given destination.
-  void handleTransferToken(const HeaderMsg& hdr,
-                           const TransferTokenMsg& msg) final;
-
-  /// Convert the base tokens to the new tokens for the given amount.
-  void handleBuyToken(const HeaderMsg& hdr, const BuyTokenMsg& msg) final;
-
-  /// Convert the tokens back to the base tokens for the given amount.
-  void handleSellToken(const HeaderMsg& hdr, const SellTokenMsg& msg) final;
+#undef BASE_PROCESS_MESSAGE
 
 private:
   ///

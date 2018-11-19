@@ -61,7 +61,10 @@ public:
     return "";
   }
 
-  void begin_block(uint64_t block_time, const Address& block_proposer) final {}
+  void begin_block(uint64_t block_time, const Address& block_proposer) final
+  {
+    manager.beginBlock(block_time, block_proposer);
+  }
 
   std::vector<std::pair<VerifyKey, uint64_t>> end_block() final
   {

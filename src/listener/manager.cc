@@ -17,7 +17,9 @@
 
 #include "manager.h"
 
+#include "crypto/sha256.h"
 #include "util/buffer.h"
+#include "util/msg.h"
 
 namespace
 {
@@ -29,6 +31,8 @@ parseHeader(gsl::span<const byte> raw)
   Buffer buf(raw);
 
   HeaderMsg hdr;
+  hdr.hash = sha256(raw);
+
   buf >> hdr.user;
   buf >> hdr.sig;
   buf >> hdr.nonce;
@@ -52,11 +56,14 @@ void ListenerManager::loadStates()
 
 void ListenerManager::beginBlock(uint64_t timestamp, const Address& proposer)
 {
+  block.timestamp = timestamp;
+  block.height += 1;
+
   if (primary)
-    primary->begin(timestamp, proposer);
+    primary->begin(block);
 
   for (auto& listener : listeners)
-    listener->begin(timestamp, proposer);
+    listener->begin(block);
 }
 
 void ListenerManager::checkTransaction(gsl::span<const byte> raw)
@@ -73,7 +80,8 @@ void ListenerManager::checkTransaction(gsl::span<const byte> raw)
   primary->switchMode(PrimaryMode::None);
 }
 
-void ListenerManager::applyTransaction(gsl::span<const byte> raw)
+void ListenerManager::applyTransaction(gsl::span<const byte> raw,
+                                       gsl::span<const byte> rawResult)
 {
   auto [hdr, data, buf] = parseHeader(raw);
   auto msgType = buf.read<MsgType>();
@@ -87,9 +95,10 @@ void ListenerManager::applyTransaction(gsl::span<const byte> raw)
 #define HANDLE_APPLY_CASE(R, _, MSG)                                           \
   case +MsgType::MSG: {                                                        \
     auto msg = buf.read<BAND_MACRO_MSG(MSG)>();                                \
-    primary->BAND_MACRO_HANDLE(MSG)(hdr, msg);                                 \
+    auto res = primary ? primary->BAND_MACRO_HANDLE(MSG)(block, hdr, msg)      \
+                       : Buffer(rawResult).read<BAND_MACRO_RESPONSE(MSG)>();   \
     for (auto& listener : listeners) {                                         \
-      listener->BAND_MACRO_HANDLE(MSG)(hdr, msg);                              \
+      listener->BAND_MACRO_HANDLE(MSG)(block, hdr, msg, res);                  \
     }                                                                          \
     break;                                                                     \
   }

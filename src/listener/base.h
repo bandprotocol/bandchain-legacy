@@ -34,7 +34,7 @@ public:
 
   /// Begin a new block. The listener may override this function to perform
   /// necessary transactional operations.
-  virtual void begin(uint64_t timestamp, const Address& proposer) {}
+  virtual void begin(const BlockMsg& blk) {}
 
   /// Commit the current block.
   virtual void commit() {}
@@ -42,8 +42,9 @@ public:
   /// "handle<MsgType>" functions are implemented as no-op functions. These
   /// functions can be overriden by the subclass to give functionalities.
 #define BASE_PROCESS_MESSAGE(R, _, MSG)                                        \
-  virtual void BAND_MACRO_HANDLE(MSG)(const HeaderMsg& hdr,                    \
-                                      const BAND_MACRO_MSG(MSG) & msg)         \
+  virtual void BAND_MACRO_HANDLE(MSG)(                                         \
+      const BlockMsg& blk, const HeaderMsg& hdr,                               \
+      const BAND_MACRO_MSG(MSG) & msg, const BAND_MACRO_RESPONSE(MSG) & res)   \
   {                                                                            \
     /* Nothing interesting here! */                                            \
   }

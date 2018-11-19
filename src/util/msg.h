@@ -51,24 +51,34 @@
 /// Convenient macro to suffix the given argument with "Msg".
 #define BAND_MACRO_MSG(NAME) BOOST_PP_CAT(NAME, Msg)
 
+/// Convenient macro to suffix the given argument with "Response".
+#define BAND_MACRO_RESPONSE(NAME) BOOST_PP_CAT(NAME, Response)
+
 /// Declare ENUM to represent each of the message types.
 BAND_MACRO_MESSAGE_TYPES(ENUM, MsgType, uint16_t)
 
-struct HeaderMsg {
-  Ident user;     //< The ID of the user sending this tranaction
-  Signature sig;  //< The signature of this transaction
-  uint64_t nonce; //< Strictly increasing nonce sequence specific to the sender
+STRUCT(
+    /// Block Message gives the summary of a block. Each block contains one
+    /// or more transactions.
+    BlockMsg,
+    (uint64_t, height),   //< The height of this block
+    (uint64_t, timestamp) //< The time of the block
+)
 
-  std::string to_string() const
-  {
-    std::string ret;
-    ret += "{ HeaderMsg: ";
-    ret += "user = {}, sig = {}, nonce = {}"_format(user, sig, nonce);
-    ret += " }";
-    return ret;
-  }
-};
+STRUCT(
+    /// Header Message is a part of the message the is common to all message
+    /// types. Note that some of the fields are not passed by the clients but
+    /// rather computed internally.
+    HeaderMsg,         //<
+    (Ident, user),     //< The ID of the user sending this tranaction
+    (Signature, sig),  //< The signature of this transaction
+    (uint64_t, nonce), //< Strictly increasing sequence of the sender
+    (Hash, hash)       //< The hash of the whole message
+)
 
+////////////////////////////////////////////////////////////////////////////////
+/// Meessages //////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 MESSAGE(
     /// CreateAccount Message allows an existing account to create another
     /// account, given the necessary condition.
@@ -112,7 +122,6 @@ MESSAGE(
     (Ident, token),    //< The ID of the token contract
     (uint256_t, value) //< The amount of new tokens to buy
 )
-
 MESSAGE(
     /// SellToken Message allows anyone to sell some tokens to gain the base
     /// tokens. The transaction would get rejected if the user does not have
@@ -120,4 +129,26 @@ MESSAGE(
     SellToken,         //<
     (Ident, token),    //< The ID of the token contract
     (uint256_t, value) //< The amount of tokens to sell
+)
+
+////////////////////////////////////////////////////////////////////////////////
+/// Responses //////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+NO_RESPONSE(CreateAccount)
+NO_RESPONSE(CreateToken)
+NO_RESPONSE(MintToken)
+NO_RESPONSE(TransferToken)
+
+RESPONSE(
+    /// BuyToken Response contains the number of base tokens that was spent
+    /// in the process.
+    BuyToken,          //<
+    (uint256_t, spent) //< The amount of base tokens spent
+)
+
+RESPONSE(
+    /// SellToken Response contains the number of base tokens the sender
+    /// received after completing the sell-back.
+    SellToken,
+    (uint256_t, received) //< The amount of base tokens received
 )

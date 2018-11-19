@@ -20,8 +20,8 @@
 Buffer::Buffer()
     : buf()
 {
-  // Reserve 512 bytes to the buffer to prevent unnecessarily resizing
-  buf.reserve(512);
+  // Reserve 128 bytes to the buffer to prevent unnecessarily resizing
+  buf.reserve(128);
 }
 
 Buffer::Buffer(gsl::span<const byte> data)

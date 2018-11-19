@@ -54,8 +54,10 @@ public:
   /// if no primary listener is set.
   void checkTransaction(gsl::span<const byte> raw);
 
-  /// Notify the listeners to apply the given transaction message.
-  void applyTransaction(gsl::span<const byte> raw);
+  /// Notify the listeners to apply the given transaction message. Optionally
+  /// take the result span if running in historical mode.
+  void applyTransaction(gsl::span<const byte> raw,
+                        gsl::span<const byte> rawResult = {});
 
   /// Notify the primary listener to end the current block and return the
   /// validator set update. Fail if called when the primary listener does not
@@ -82,4 +84,8 @@ private:
   /// All other listeners of this manager. For active validators, it is
   /// advisable to not add any other listeners for maximum performance.
   std::vector<std::unique_ptr<BaseListener>> listeners;
+
+  /// The information the most recent block. Use this timestamp for all
+  /// applying transactions until the block ends.
+  BlockMsg block;
 };

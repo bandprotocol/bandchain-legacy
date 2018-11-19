@@ -34,7 +34,7 @@ void PrimaryListener::load()
   // TODO
 }
 
-void PrimaryListener::begin(uint64_t timestamp, const Address& proposer)
+void PrimaryListener::begin(const BlockMsg& blk)
 {
   // TODO
 }
@@ -50,38 +50,47 @@ void PrimaryListener::validateTransaction(const HeaderMsg& hdr,
   // TODO
 }
 
-void PrimaryListener::handleCreateAccount(const HeaderMsg& hdr,
-                                          const CreateAccountMsg& msg)
+CreateAccountResponse PrimaryListener::handleCreateAccount(
+    const BlockMsg& blk, const HeaderMsg& hdr, const CreateAccountMsg& msg)
 {
   // TODO
+  return {};
 }
 
-void PrimaryListener::handleCreateToken(const HeaderMsg& hdr,
-                                        const CreateTokenMsg& msg)
+CreateTokenResponse PrimaryListener::handleCreateToken(
+    const BlockMsg& blk, const HeaderMsg& hdr, const CreateTokenMsg& msg)
 {
   // TODO
+  return {};
 }
 
-void PrimaryListener::handleMintToken(const HeaderMsg& hdr,
-                                      const MintTokenMsg& msg)
+MintTokenResponse PrimaryListener::handleMintToken(const BlockMsg& blk,
+                                                   const HeaderMsg& hdr,
+                                                   const MintTokenMsg& msg)
 {
   // TODO
+  return {};
 }
 
-void PrimaryListener::handleTransferToken(const HeaderMsg& hdr,
-                                          const TransferTokenMsg& msg)
+TransferTokenResponse PrimaryListener::handleTransferToken(
+    const BlockMsg& blk, const HeaderMsg& hdr, const TransferTokenMsg& msg)
 {
   // TODO
+  return {};
 }
 
-void PrimaryListener::handleBuyToken(const HeaderMsg& hdr,
-                                     const BuyTokenMsg& msg)
+BuyTokenResponse PrimaryListener::handleBuyToken(const BlockMsg& blk,
+                                                 const HeaderMsg& hdr,
+                                                 const BuyTokenMsg& msg)
 {
   // TODO
+  return {};
 }
 
-void PrimaryListener::handleSellToken(const HeaderMsg& hdr,
-                                      const SellTokenMsg& msg)
+SellTokenResponse PrimaryListener::handleSellToken(const BlockMsg& blk,
+                                                   const HeaderMsg& hdr,
+                                                   const SellTokenMsg& msg)
 {
   // TODO
+  return {};
 }

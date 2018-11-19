@@ -29,10 +29,11 @@ private:
   /// "handle<MsgType>" functions are implemented as log function that basically
   /// logs all the incoming message to the stdout console.
 #define BASE_PROCESS_MESSAGE(R, _, MSG)                                        \
-  virtual void BAND_MACRO_HANDLE(MSG)(const HeaderMsg& hdr,                    \
-                                      const BAND_MACRO_MSG(MSG) & msg) final   \
+  void BAND_MACRO_HANDLE(MSG)(const BlockMsg& blk, const HeaderMsg& hdr,       \
+                              const BAND_MACRO_MSG(MSG) & msg,                 \
+                              const BAND_MACRO_RESPONSE(MSG) & res) final      \
   {                                                                            \
-    INFO(log, "{} {}", hdr, msg);                                              \
+    INFO(log, "{} + {} + {} -> {}", blk, hdr, msg, res);                       \
   }
 
   BAND_MACRO_MESSAGE_FOR_EACH(BASE_PROCESS_MESSAGE)
