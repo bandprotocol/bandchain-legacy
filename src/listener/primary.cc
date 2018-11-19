@@ -39,7 +39,7 @@ void PrimaryListener::begin(const BlockMsg& blk)
   // TODO
 }
 
-void PrimaryListener::commit()
+void PrimaryListener::commit(const BlockMsg& blk)
 {
   // TODO
 }

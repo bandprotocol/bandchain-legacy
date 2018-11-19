@@ -124,10 +124,10 @@ std::vector<ValidatorUpdate> ListenerManager::endBlock()
 void ListenerManager::commitBlock()
 {
   if (primary)
-    primary->commit();
+    primary->commit(block);
 
   for (auto& listener : listeners)
-    listener->commit();
+    listener->commit(block);
 }
 
 void ListenerManager::setPrimary(std::unique_ptr<PrimaryListener> _primary)

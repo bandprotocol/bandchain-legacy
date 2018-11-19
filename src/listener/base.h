@@ -37,7 +37,7 @@ public:
   virtual void begin(const BlockMsg& blk) {}
 
   /// Commit the current block.
-  virtual void commit() {}
+  virtual void commit(const BlockMsg& blk) {}
 
   /// "handle<MsgType>" functions are implemented as no-op functions. These
   /// functions can be overriden by the subclass to give functionalities.

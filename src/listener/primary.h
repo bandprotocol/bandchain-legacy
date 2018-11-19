@@ -54,7 +54,7 @@ public:
   void begin(const BlockMsg& blk);
 
   /// Commit the current block.
-  void commit();
+  void commit(const BlockMsg& blk);
 
   /// Primary listener must implement logic to handle each of the messages and
   /// return blockchain response.
