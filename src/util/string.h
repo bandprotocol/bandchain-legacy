@@ -17,12 +17,60 @@
 
 #pragma once
 
-/// Converts the given span of raw data into its hex representation
-inline std::string bytes_to_hex(gsl::span<const byte> data)
+#include "inc/essential.h"
+#include "util/buffer.h"
+
+// enum telling string is case sensitive or not.
+enum class StringCase {
+  Sensitive,
+  InSensitive,
+};
+
+// Class String is a custom string type containing maximum length. Every
+// character is readable. It changes string to lower case if it's not case
+// sensitive.
+template <int MAX_LENGTH, StringCase CASE>
+class String
 {
-  std::string hex;
-  for (const byte b : data) {
-    hex += "{:02x}"_format(static_cast<unsigned char>(b));
+public:
+  static constexpr size_t MaxLegth = MAX_LENGTH;
+
+  String() = default;
+  String(const String& string) = default;
+  String(String&& string) = default;
+
+  String(const std::string& _string);
+
+  String& operator=(const String& _string) = default;
+  String& operator=(String&& _string) = default;
+
+  std::string to_string() const;
+
+  friend Buffer& operator<<(Buffer& buf, const String& data)
+  {
+    return buf << data.rawdata;
   }
-  return hex;
-}
+
+  friend Buffer& operator>>(Buffer& buf, String& data)
+  {
+    buf >> data.rawdata;
+    data.validate();
+    return buf;
+  }
+
+  bool empty() const
+  {
+    return rawdata.empty();
+  }
+
+private:
+  // Validate rawdata that size doesn't exceed max_length and every character
+  // is readable.
+  void validate();
+
+private:
+  std::string rawdata{};
+};
+
+using Ident = String<20, StringCase::InSensitive>; //< 20-length string
+                                                   // human-readable identitifer

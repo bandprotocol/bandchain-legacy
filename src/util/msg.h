@@ -25,6 +25,7 @@
 #include "inc/essential.h"
 #include "util/equation.h"
 #include "util/msgimpl.h"
+#include "util/string.h"
 
 // clang-format off
 

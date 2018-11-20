@@ -51,10 +51,9 @@ struct type_conversion<TokenTransaction> {
 
   static void from_base(const values& v, indicator ind, TokenTransaction& tx)
   {
-    std::string nullAddr = (Ident{}).to_string();
-    tx.srcUserID = Ident::hex(v.get<std::string>("src_user_id", nullAddr));
-    tx.dstUserID = Ident::hex(v.get<std::string>("dst_user_id", nullAddr));
-    tx.tokenID = Ident::hex(v.get<std::string>("token_id"));
+    tx.srcUserID = v.get<std::string>("src_user_id", "");
+    tx.dstUserID = v.get<std::string>("dst_user_id", "");
+    tx.tokenID = v.get<std::string>("token_id");
     tx.value = uint256_t{v.get<std::string>("value")};
     tx.txType = v.get<std::string>("tx_type");
     tx.txHash = Hash::hex(v.get<std::string>("tx_hash"));

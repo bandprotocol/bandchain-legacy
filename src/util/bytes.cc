@@ -18,7 +18,6 @@
 #include "bytes.h"
 
 #include "crypto/random.h"
-#include "util/string.h"
 
 namespace
 {

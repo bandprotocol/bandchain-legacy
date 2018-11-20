@@ -35,13 +35,13 @@ parseHeader(gsl::span<const byte> raw)
 
   buf >> hdr.user;
   buf >> hdr.sig;
+
+  // This is the size of data chunk that is needed to sign by the sender of this
+  // transaction.
+  auto dataSize = buf.size_bytes();
   buf >> hdr.nonce;
 
-  return {
-      hdr,
-      raw.last(raw.size() - Ident::Size - Signature::Size),
-      buf,
-  };
+  return {hdr, raw.last(dataSize), buf};
 }
 } // namespace
 

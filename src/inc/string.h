@@ -37,31 +37,6 @@ struct Has_to_string<T,
     : std::true_type {
 };
 
-template <typename T, typename = void>
-struct Has_as_const_span : std::false_type {
-};
-
-template <typename T>
-struct Has_as_const_span<
-    T,
-    void_t<std::enable_if_t<
-        std::is_same<gsl::span<const byte>,
-                     decltype(std::declval<T>().as_const_span())>::value>>>
-    : std::true_type {
-};
-
-template <typename T, typename = void>
-struct Has_as_span : std::false_type {
-};
-
-template <typename T>
-struct Has_as_span<T,
-                   void_t<std::enable_if_t<std::is_same<
-                       gsl::span<byte>,
-                       decltype(std::declval<T>().as_span())>::value>>>
-    : std::true_type {
-};
-
 template <typename T, typename = std::enable_if_t<Has_to_string<T>::value>>
 std::ostream& operator<<(std::ostream& os, const T& obj)
 {

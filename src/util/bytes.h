@@ -78,7 +78,6 @@ private:
 
 } __attribute__((packed));
 
-using Ident = Bytes<20>;     //< 20-Byte human-readable identitifer
 using Address = Bytes<20>;   //< 20-Byte address
 using Hash = Bytes<32>;      //< SHA-256 hash value
 using VerifyKey = Bytes<32>; //< Ed25519 verify key

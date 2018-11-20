@@ -180,6 +180,7 @@ std::vector<std::pair<VerifyKey, uint64_t>> BandApplication::end_block()
 
   auto topx = stake.topx(number_validators);
   for (auto& [addr, power] : topx) {
+    (void)power;
     // Voting power set to be 1 for each validator.
     new_validators.emplace_back(ctx.get<Account>(addr).get_vk(), 1);
   }

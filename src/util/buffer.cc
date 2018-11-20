@@ -17,6 +17,15 @@
 
 #include "buffer.h"
 
+std::string bytes_to_hex(gsl::span<const byte> data)
+{
+  std::string hex;
+  for (const byte b : data) {
+    hex += "{:02x}"_format(static_cast<unsigned char>(b));
+  }
+  return hex;
+}
+
 Buffer::Buffer()
     : buf()
 {

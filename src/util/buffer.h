@@ -21,7 +21,9 @@
 #include <type_traits>
 
 #include "inc/essential.h"
-#include "util/string.h"
+
+/// Converts the given span of raw data into its hex representation
+std::string bytes_to_hex(gsl::span<const byte> data);
 
 class Buffer
 {
