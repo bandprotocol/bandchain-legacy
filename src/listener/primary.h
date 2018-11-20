@@ -17,17 +17,16 @@
 
 #pragma once
 
+#include <boost/scope_exit.hpp>
 #include <enum/enum.h>
 
 #include "inc/essential.h"
+#include "store/storage.h"
 #include "util/msg.h"
 
 /// The mode in which this primary listener is running. Switching back and
 /// forth while the validator is running.
 ENUM(PrimaryMode, uint8_t, Check, Apply)
-
-/// Forward-declaration of the key-value primary lookup database.
-class Storage;
 
 /// Primary listener to maintain the blockchain state necessary for running
 /// a fullnode without providing the query interface. This listener is
@@ -35,7 +34,7 @@ class Storage;
 class PrimaryListener
 {
 public:
-  PrimaryListener(Storage& store);
+  PrimaryListener(Storage& storage);
 
   /// Validate the given set of transaction information. Mutate the user's
   /// nonce appropriately. Mode must be specified before this is called.
@@ -48,6 +47,9 @@ public:
   /// database calls.
   void load();
 
+  /// Initialize blockchain state according to the given genesis struct.
+  void init(const GenesisMsg& genesis);
+
   /// Begin a new block. The listener may override this function to perform
   /// necessary transactional operations.
   void begin(const BlockMsg& blk);
@@ -55,18 +57,37 @@ public:
   /// Commit the current block.
   void commit(const BlockMsg& blk);
 
+  /// Set up storage environment and call into primary logic to handle the
+  /// transaction. Also responsible for flushing/reseting storage cache.
+  template <typename T>
+  auto process(const BlockMsg& blk, const HeaderMsg& hdr, const T& msg)
+  {
+    BOOST_SCOPE_EXIT_TPL(&storage)
+    {
+      storage.reset();
+    }
+    BOOST_SCOPE_EXIT_END
+
+    storage.switchToApply();
+    auto result = handle(blk, hdr, msg);
+    storage.flush();
+
+    return result;
+  }
+
+private:
   /// Primary listener must implement logic to handle each of the messages and
   /// return blockchain response.
 #define BASE_PROCESS_MESSAGE(R, _, MSG)                                        \
   BAND_MACRO_RESPONSE(MSG)                                                     \
-  BAND_MACRO_HANDLE(MSG)                                                       \
-  (const BlockMsg& blk, const HeaderMsg& hdr, const BAND_MACRO_MSG(MSG) & msg);
+  handle(const BlockMsg& blk, const HeaderMsg& hdr,                            \
+         const BAND_MACRO_MSG(MSG) & msg);
 
   BAND_MACRO_MESSAGE_FOR_EACH(BASE_PROCESS_MESSAGE)
 
 #undef BASE_PROCESS_MESSAGE
 
 private:
-  ///
-  Storage& store;
+  /// Reference to the key-value storage manager.
+  Storage& storage;
 };

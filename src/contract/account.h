@@ -17,40 +17,34 @@
 
 #pragma once
 
-#include <unordered_map>
-
 #include "inc/essential.h"
 #include "store/contract.h"
 #include "store/data.h"
 #include "util/bytes.h"
 
+/// Account contract encapsulates the information stored for each of the account
+/// on Band blockchain. It is responsible for verifying public/private key pair
+/// signature and nonce.
 class Account final : public Contract
 {
 public:
-  Account(const Address& address);
+  using Contract::Contract;
 
-  void init(const VerifyKey& verify_key);
+  /// All account keys must begin with "u/" namespace.
+  static constexpr char KeyPrefix[] = "u/";
 
-  Buffer delegate_call(Buffer buf);
+  /// Initialize account information. To be called right after the creation.
+  void init(const PublicKey& publicKey);
 
-  uint256_t get_nonce() const;
+  /// Set the nonce of this account to the new value. Note that the new nonce
+  /// must be 1 + the old nonce, or else this function will throw.
+  void setNonce(uint64_t nonce);
 
-  VerifyKey get_vk() const;
-  void debug_create() const final
-  {
-    DEBUG(log, "account created at {} nonce = {} {}", m_addr, +m_nonce,
-          (void*)this);
-  }
-
-  void debug_save() const final
-  {
-    DEBUG(log, "account saved at {} nonce = {} {}", m_addr, +m_nonce,
-          (void*)this);
-  }
+  /// Check whether the given data and signature match with each other with
+  /// respect to this account's public key.
+  void verifySignature(gsl::span<const byte> data, const Signature& sig) const;
 
 private:
-  Data<VerifyKey> m_verify_key{sha256(m_addr, uint16_t(1))};
-  Data<uint64_t> m_nonce{sha256(m_addr, uint16_t(2))};
-
-  static inline auto log = logger::get("account");
+  DATA(PublicKey, publicKey)
+  DATA(uint256_t, nonce)
 };

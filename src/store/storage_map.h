@@ -25,29 +25,25 @@
 class StorageMap : public Storage
 {
 public:
-  void put(const Hash& key, const std::string& val) final;
-  nonstd::optional<std::string> get(const Hash& key) const final;
-  void del(const Hash& key) final;
+  ///
+  nonstd::optional<std::string> get(const std::string& key) const final;
 
-  void commit_block() final {}
+  ///
+  void put(const std::string& key, const std::string& val) final;
 
-  // TODO
-  void switch_to_tx() final
-  {
-    NOCOMMIT_LOG("Now apply mode");
-  }
-  void switch_to_check() final
-  {
-    NOCOMMIT_LOG("Now check mode");
-  }
-  void switch_to_query() final
-  {
-    NOCOMMIT_LOG("Now query mode");
-  }
+  ///
+  void del(const std::string& key) final;
 
-  void save_protected_key(const std::string& key, const std::string& val) final;
-  nonstd::optional<std::string> get_protected_key(const std::string& key) final;
+  ///
+  void commit() final {}
+
+  ///
+  void switchToCheck() final {}
+
+  ///
+  void switchToApply() final {}
 
 public:
-  std::unordered_map<Hash, std::string> data;
+  ///
+  std::unordered_map<std::string, std::string> data;
 };

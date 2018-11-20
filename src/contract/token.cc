@@ -17,94 +17,126 @@
 
 #include "token.h"
 
-#include "store/global.h"
-
-Token::Token(const Address& token_id)
-    : Contract(token_id, ContractID::Token)
+void Token::init(const Ident& _baseTokenIdent, const Curve& _curveData)
 {
+  // Verify that base token contract exists.
+  storage.load<Token>(_baseToken.to_string());
+
+  curveData = _curveData;
+  baseTokenIdent = _baseTokenIdent;
+  currentSupply = 0;
 }
 
-void Token::init(const Address& _base_token_id, const Curve& _buy_curve)
+void Token::mint(const Ident& receiver, const uint256_t& value)
 {
-  base_token_id = _base_token_id;
-  buy_curve = _buy_curve;
-  current_supply = 0;
+  balances[receiver] = +balances[receiver] + value;
+  currentSupply = +currentSupply + value;
 }
 
-void Token::mint(uint256_t value)
+void Token::transfer(const Ident& src, const Ident& dst, const uint256_t& value)
 {
-  // TODO
-  m_balances[get_sender()] = +m_balances[get_sender()] + value;
-  current_supply = +current_supply + value;
+  balances[src] = +balances[src] - value;
+  balances[dst] = +balances[dst] + value;
 }
 
-void Token::transfer(Address dest, uint256_t value)
+void Token::buy(const Ident& buyer, const uint256_t& value)
 {
-  m_balances[get_sender()] = +m_balances[get_sender()] - value;
-  m_balances[dest] = +m_balances[dest] + value;
+  Curve curve = +curveData;
+  auto& baseToken = storage.load<Token>(+baseTokenIdent);
+
+  uint256_t buyPrice =
+      curve.apply(+currentSupply + value) - curve.apply(+currentSupply);
+
+  baseToken.balances[buyer] = baseToken.balances[buyer] - value;
+  currentSupply = +currentSupply + value;
 }
 
-void Token::buy(uint256_t value)
+void Token::sell(const Ident& seller, const uint256_t& value)
 {
-  Curve real_curve = +buy_curve;
-  uint256_t buy_price = real_curve.apply(+current_supply + value) -
-                        real_curve.apply(+current_supply);
+  Curve curve = +curveData;
+  auto& baseToken = storage.load<Token>(+baseTokenIdent);
 
-  auto& base_contract = Global::get().m_ctx->get<Token>(+base_token_id);
+  uint256_t buyPrice =
+      curve.apply(+currentSupply) - curve.apply(+currentSupply - value);
 
-  base_contract.m_balances[get_sender()] =
-      +base_contract.m_balances[get_sender()] - buy_price;
-  m_balances[get_sender()] = +m_balances[get_sender()] + value;
-  current_supply = +current_supply + value;
+  baseToken.balances[seller] = baseToken.balances[seller] + value;
+  currentSupply = +currentSupply - value;
 }
 
-void Token::sell(uint256_t value)
-{
-  Curve real_curve = +buy_curve;
-  uint256_t sell_price = real_curve.apply(+current_supply) -
-                         real_curve.apply(+current_supply - value);
+// void Token::mint(uint256_t value)
+// {
+//   // TODO
+//   m_balances[get_sender()] = +m_balances[get_sender()] + value;
+//   current_supply = +current_supply + value;
+// }
 
-  auto& base_contract = Global::get().m_ctx->get<Token>(+base_token_id);
+// void Token::transfer(Address dest, uint256_t value)
+// {
+//   m_balances[get_sender()] = +m_balances[get_sender()] - value;
+//   m_balances[dest] = +m_balances[dest] + value;
+// }
 
-  base_contract.m_balances[get_sender()] =
-      +base_contract.m_balances[get_sender()] + sell_price;
-  m_balances[get_sender()] = +m_balances[get_sender()] - value;
-  current_supply = +current_supply - value;
-}
+// void Token::buy(uint256_t value)
+// {
+//   Curve real_curve = +buy_curve;
+//   uint256_t buy_price = real_curve.apply(+current_supply + value) -
+//                         real_curve.apply(+current_supply);
 
-uint256_t Token::balance(Address address) const
-{
-  return +m_balances[address];
-}
+//   auto& base_contract = Global::get().m_ctx->get<Token>(+base_token_id);
 
-uint256_t Token::spot_price() const
-{
-  Curve real_curve = +buy_curve;
-  return real_curve.apply(+current_supply + 1) -
-         real_curve.apply(+current_supply);
-}
+//   base_contract.m_balances[get_sender()] =
+//       +base_contract.m_balances[get_sender()] - buy_price;
+//   m_balances[get_sender()] = +m_balances[get_sender()] + value;
+//   current_supply = +current_supply + value;
+// }
 
-uint256_t Token::bulk_price(uint256_t value) const
-{
-  Curve real_curve = +buy_curve;
-  return real_curve.apply(+current_supply + value) -
-         real_curve.apply(+current_supply);
-}
+// void Token::sell(uint256_t value)
+// {
+//   Curve real_curve = +buy_curve;
+//   uint256_t sell_price = real_curve.apply(+current_supply) -
+//                          real_curve.apply(+current_supply - value);
 
-uint256_t Token::get_current_supply() const
-{
-  return +current_supply;
-}
+//   auto& base_contract = Global::get().m_ctx->get<Token>(+base_token_id);
 
-void Token::debug_create() const
-{
-  DEBUG(log, "token created at {} {}", m_addr, (void*)this);
-  DEBUG(log, "Base token id: {}", +base_token_id);
-  DEBUG(log, "Buy curve: {}", +buy_curve);
-}
+//   base_contract.m_balances[get_sender()] =
+//       +base_contract.m_balances[get_sender()] + sell_price;
+//   m_balances[get_sender()] = +m_balances[get_sender()] - value;
+//   current_supply = +current_supply - value;
+// }
 
-void Token::debug_save() const
-{
-  DEBUG(log, "token saved at {} {}", m_addr, (void*)this);
-  DEBUG(log, "Supply {}", +current_supply);
-}
+// uint256_t Token::balance(Address address) const
+// {
+//   return +m_balances[address];
+// }
+
+// uint256_t Token::spot_price() const
+// {
+//   Curve real_curve = +buy_curve;
+//   return real_curve.apply(+current_supply + 1) -
+//          real_curve.apply(+current_supply);
+// }
+
+// uint256_t Token::bulk_price(uint256_t value) const
+// {
+//   Curve real_curve = +buy_curve;
+//   return real_curve.apply(+current_supply + value) -
+//          real_curve.apply(+current_supply);
+// }
+
+// uint256_t Token::get_current_supply() const
+// {
+//   return +current_supply;
+// }
+
+// void Token::debug_create() const
+// {
+//   DEBUG(log, "token created at {} {}", m_addr, (void*)this);
+//   DEBUG(log, "Base token id: {}", +base_token_id);
+//   DEBUG(log, "Buy curve: {}", +buy_curve);
+// }
+
+// void Token::debug_save() const
+// {
+//   DEBUG(log, "token saved at {} {}", m_addr, (void*)this);
+//   DEBUG(log, "Supply {}", +current_supply);
+// }

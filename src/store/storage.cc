@@ -15,26 +15,28 @@
 // specific language governing permissions and limitations
 // under the License.
 
-#include "account.h"
+#include "storage.h"
 
-#include "crypto/ed25519.h"
+#include <boost/scope_exit.hpp>
 
-void Account::init(const PublicKey& _publicKey)
+void Storage::reset()
 {
-  publicKey = _publicKey;
+  cache.clear();
 }
 
-void Account::setNonce(uint64_t _nonce)
+void Storage::flush()
 {
-  if (_nonce != +nonce + 1)
-    throw Error("Account::setNonce: invalid nonce {} != {} + 1", _nonce,
-                +nonce);
-  nonce = _nonce;
+  BOOST_SCOPE_EXIT(&isFlushing)
+  {
+    isFlushing = false;
+  }
+  BOOST_SCOPE_EXIT_END
+
+  isFlushing = true;
+  cache.clear();
 }
 
-void Account::verifySignature(gsl::span<const byte> data,
-                              const Signature& sig) const
+bool Storage::shouldFlush() const
 {
-  if (!ed25519_verify(sig, +publicKey, data))
-    throw Error("Account::verifySignature: invalid transaction signature");
+  return isFlushing;
 }

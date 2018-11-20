@@ -32,6 +32,10 @@ public:
   /// database calls.
   virtual void load() {}
 
+  /// Notify that listener to initialize blockchain state following the given
+  /// genesis information.
+  virtual void init(const GenesisMsg& genesis) {}
+
   /// Begin a new block. The listener may override this function to perform
   /// necessary transactional operations.
   virtual void begin(const BlockMsg& blk) {}

@@ -17,189 +17,40 @@
 
 #pragma once
 
-#include <enum/enum.h>
-#include <functional>
-#include <unordered_map>
-
 #include "inc/essential.h"
-#include "util/buffer.h"
-#include "util/bytes.h"
-#include "util/json.h"
-#include "util/typeid.h"
 
-ENUM(ContractID,
-     uint16_t,
-     Creator = 0,
-     Account = 1,
-     Token = 2,
-     Voting = 3,
-     Registry = 4,
-     Stake = 5,
-     Governance = 6,
-     Wiki = 7)
+/// Forward declaration here. See "store/storage.h" for details.
+class Storage;
 
+/// Contract class is a thin wrapper on top of the storage to provide the
+/// external code an abstract and systemetic way to access and modify data.
 class Contract
 {
-  friend class ContractStaticInit;
-  friend class VotingTest;
-  friend class StakeTest;
-  friend class GovernanceTest;
-
 public:
-  virtual ~Contract();
+  /// Create the contract. Again this is not actually "creating" the contract,
+  /// but rather creating a wrapper that allows external code to inspect the
+  /// contract.
+  Contract(Storage& storage, const std::string& key);
 
-  virtual void debug_create() const = 0;
-  virtual void debug_save() const = 0;
+  /// Virtual destructor to ensure this class has vtable.
+  virtual ~Contract() {}
 
-  void call_buf(Buffer& in_buf, Buffer* out_buf);
-
+  /// Cast this contract instance to the parameterized type. Since contract
+  /// class contains a virtual function, dynamic_cast can be perform here.
   template <typename T>
   T* as()
   {
     T* result = dynamic_cast<T*>(this);
     if (result == nullptr)
-      throw Error("Invalid contract cast");
+      throw Error("Contract::as: invalid contract cast");
 
     return result;
   }
 
-  /// Get the sender of the current message. Throws if the sender has not
-  /// been set.
-  Address get_sender();
-
-  /// Set the sender of the current message to this contract.
-  void set_sender();
-
 protected:
-  Contract(const Address& addr, const ContractID _contract_id)
-      : m_addr(addr)
-      , contract_id(_contract_id)
-  {
-  }
+  /// Reference to the storage layer.
+  Storage& storage;
 
-  // Assert with condition
-  void assert_con(bool condition, std::string error_msg) const;
-
-public:
-  const Address m_addr;
-  const ContractID contract_id;
-
-  uint256_t increment_then_get()
-  {
-    nonce_counter++;
-    return nonce_counter;
-  }
-  static const json& get_abi_interface();
-
-private:
-  uint256_t nonce_counter = 0;
-
-private:
-  template <typename T = void, typename... Args>
-  static void _callable_params_gen(json& obj)
-  {
-    if constexpr (std::is_void_v<T>) {
-      if (obj.count("params") == 0)
-        obj["params"] = std::vector<std::string>(0);
-      return;
-    } else {
-      obj["params"].push_back(TypeID<T>::name);
-      _callable_params_gen<Args...>(obj);
-    }
-  }
-
-  template <typename T = void, typename... Args>
-  static void _construct_params_gen(json& obj)
-  {
-    if constexpr (std::is_void_v<T>) {
-      return;
-    } else {
-      obj["constructor_params"].push_back(TypeID<T>::name);
-      _construct_params_gen<Args...>(obj);
-    }
-  }
-
-  /// TODO: Move this to static level
-  template <typename T, typename Ret, typename... Args>
-  static void add_callable(ContractID contract_id,
-                           uint16_t func_id,
-                           const std::string& func_name,
-                           Ret (T::*func)(Args...))
-  {
-    all_functions[contract_id._to_integral()].emplace(
-        func_id, [func](void* obj, Buffer& in_buf, Buffer* out_buf) {
-          std::tuple<T*, Args...> tup{(T*)obj, in_buf.read<Args>()...};
-          std::function<Ret(T*, Args...)> func_cast = func;
-
-          if constexpr (!std::is_void_v<Ret>) {
-            if (out_buf) {
-              auto result = std::apply(func_cast, tup);
-              (*out_buf) << result;
-              return;
-            }
-          }
-
-          std::apply(func_cast, tup);
-        });
-
-    json& abi_contract = abi_interface[contract_id._to_string()];
-    abi_contract["id"] = contract_id._to_integral();
-
-    json& abi_func = abi_contract[func_name];
-    abi_func["opcode"] = func_id;
-    abi_func["result"] = TypeID<Ret>::name;
-    abi_func["type"] = "action";
-    _callable_params_gen<Args...>(abi_func);
-  }
-
-  template <typename T, typename Ret, typename... Args>
-  static void add_callable(ContractID contract_id,
-                           uint16_t func_id,
-                           const std::string& func_name,
-                           Ret (T::*func)(Args...) const)
-  {
-    all_functions[contract_id._to_integral()].emplace(
-        func_id, [func](void* obj, Buffer& in_buf, Buffer* out_buf) {
-          std::tuple<T*, Args...> tup{(T*)obj, in_buf.read<Args>()...};
-          std::function<Ret(T*, Args...)> func_cast = func;
-
-          if constexpr (!std::is_void_v<Ret>) {
-            if (out_buf) {
-              auto result = std::apply(func_cast, tup);
-              (*out_buf) << result;
-              return;
-            }
-          }
-
-          std::apply(func_cast, tup);
-        });
-
-    json& abi_contract = abi_interface[contract_id._to_string()];
-    abi_contract["id"] = contract_id._to_integral();
-
-    json& abi_func = abi_contract[func_name];
-    abi_func["opcode"] = func_id;
-    abi_func["result"] = TypeID<Ret>::name;
-    abi_func["type"] = "query";
-    _callable_params_gen<Args...>(abi_func);
-  }
-
-  template <typename... Args>
-  static void add_constructor(ContractID contract_id)
-  {
-    json& abi_contract = abi_interface[contract_id._to_string()];
-
-    _construct_params_gen<Args...>(abi_contract);
-  }
-  using BufferFunc = std::function<void(void*, Buffer&, Buffer*)>;
-  using BufferFuncMap = std::unordered_map<uint16_t, BufferFunc>;
-
-  inline static std::array<BufferFuncMap, ContractID::_size()> all_functions;
-  inline static json abi_interface;
-};
-
-class ContractStaticInit
-{
-public:
-  ContractStaticInit();
+  /// The key of this contract.
+  const std::string key;
 };

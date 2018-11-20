@@ -47,6 +47,9 @@ public:
   /// listeners are added and before the consensus system starts.
   void loadStates();
 
+  /// Initialize blockchain state according to the given genesis struct.
+  void initChain(gsl::span<const byte> raw);
+
   /// Notify all the listeners that a new block has been proposed.
   void beginBlock(uint64_t timestamp, const Address& proposer);
 

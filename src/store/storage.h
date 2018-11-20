@@ -18,34 +18,104 @@
 #pragma once
 
 #include <nonstd/optional.hpp>
+#include <unordered_map>
 
 #include "inc/essential.h"
-#include "util/bytes.h"
+#include "store/contract.h"
 
+/// TODO
 class Storage
 {
 public:
-  virtual ~Storage() {}
+  /// TODO
+  void reset();
 
-  // Save or create value to key.
-  virtual void put(const Hash& key, const std::string& val) = 0;
+  /// TODO
+  void flush();
 
-  // Get value from key or return nullopt if not exist.
-  virtual nonstd::optional<std::string> get(const Hash& key) const = 0;
+  /// TODO
+  bool shouldFlush() const;
 
-  // Delete key from storage.
-  virtual void del(const Hash& key) = 0;
+  ///
+  virtual void commit() = 0;
 
-  // Commit tx_transaction
-  virtual void commit_block() = 0;
+  /// TODO
+  template <typename T>
+  T& load(const std::string& key)
+  {
+    const std::string prefixedKey = T::KeyPrefix + key;
 
-  virtual void switch_to_tx() = 0;
-  virtual void switch_to_check() = 0;
-  virtual void switch_to_query() = 0;
+    if (auto ptr = getContract<T>(prefixedKey); ptr != nullptr)
+      return *ptr;
 
-  virtual void save_protected_key(const std::string& key,
-                                  const std::string& val) = 0;
+    throw Error("Storage::load: contract key {} does not exist", prefixedKey);
+  }
 
-  virtual nonstd::optional<std::string>
-  get_protected_key(const std::string& key) = 0;
+  /// TODO
+  template <typename T, typename... Args>
+  T& create(const std::string& key, Args&&... args)
+  {
+    const std::string prefixedKey = T::KeyPrefix + key;
+
+    if (auto ptr = getContract<T>(prefixedKey); ptr == nullptr)
+      throw Error("Storage::create: contract key {} already exists",
+                  prefixedKey);
+
+    auto uniq = std::make_unique<T>(*this, prefixedKey);
+    auto raw = uniq.get();
+
+    uniq->init(std::forward<Args>(args)...);
+    put(prefixedKey, prefixedKey);
+
+    cache[prefixedKey] = std::move(uniq);
+    return *raw;
+  }
+
+public:
+  ///
+  virtual nonstd::optional<std::string> get(const std::string& key) const = 0;
+
+  ///
+  virtual void put(const std::string& key, const std::string& val) = 0;
+
+  ///
+  virtual void del(const std::string& key) = 0;
+
+  ///
+  virtual void switchToCheck() = 0;
+
+  ///
+  virtual void switchToApply() = 0;
+
+private:
+  ///
+  template <typename T>
+  T* getContract(const std::string& prefixedKey)
+  {
+    if (auto it = cache.find(prefixedKey); it != cache.end())
+      return it->second->as<T>();
+
+    auto storeValue = get(prefixedKey);
+    if (!storeValue.has_value())
+      return nullptr;
+
+    if (*storeValue != prefixedKey)
+      throw Error("Storage::getContract: contract key {} is not consistent "
+                  "with the value {}",
+                  prefixedKey, *storeValue);
+
+    auto uniq = std::make_unique<T>(*this, prefixedKey);
+    auto raw = uniq.get();
+
+    cache[prefixedKey] = std::move(uniq);
+    return raw;
+  }
+
+private:
+  /// A boolean to indicate whether this storage is in the process of flushing
+  /// the cached data in to the peristent store.
+  bool isFlushing = false;
+
+  ///
+  std::unordered_map<std::string, std::unique_ptr<Contract>> cache;
 };

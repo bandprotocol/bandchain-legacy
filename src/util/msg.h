@@ -59,6 +59,14 @@
 BAND_MACRO_MESSAGE_TYPES(ENUM, MsgType, uint16_t)
 
 STRUCT(
+    /// Genesis Message is passed to the
+    GenesisMsg,
+    (Ident, account),       //< First user to hold all minted Band
+    (PublicKey, publicKey), //< Public key of the first account
+    (Ident, token)          //< First token native to the blockchain
+)
+
+STRUCT(
     /// Block Message gives the summary of a block. Each block contains one
     /// or more transactions.
     BlockMsg,

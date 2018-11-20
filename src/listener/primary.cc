@@ -17,10 +17,11 @@
 
 #include "primary.h"
 
-#include "store/storage.h"
+#include "contract/account.h"
+#include "contract/token.h"
 
-PrimaryListener::PrimaryListener(Storage& _store)
-    : store(_store)
+PrimaryListener::PrimaryListener(Storage& _storage)
+    : storage(_storage)
 {
 }
 
@@ -29,63 +30,90 @@ void PrimaryListener::load()
   // TODO
 }
 
+void PrimaryListener::init(const GenesisMsg& genesis)
+{
+  storage.switchToApply();
+
+  // Set up the genesis account. Owner of this account can use it to create more
+  // accounts to this blockchain later.
+  storage.create<Account>(genesis.account.to_string(), genesis.publicKey);
+
+  storage.commit();
+}
+
 void PrimaryListener::begin(const BlockMsg& blk)
 {
-  // TODO
+  storage.reset();
 }
 
 void PrimaryListener::commit(const BlockMsg& blk)
 {
-  // TODO
+  storage.commit();
 }
 
 void PrimaryListener::validateTransaction(PrimaryMode mode,
                                           const HeaderMsg& hdr,
                                           gsl::span<const byte> data)
 {
-  // TODO
+  switch (mode) {
+    case +PrimaryMode::Check:
+      storage.switchToCheck();
+      break;
+    case +PrimaryMode::Apply:
+      storage.switchToApply();
+      break;
+  }
+
+  auto& account = storage.load<Account>(hdr.user.to_string());
+  account.verifySignature(data, hdr.sig);
+  account.setNonce(hdr.nonce);
 }
 
-CreateAccountResponse PrimaryListener::handleCreateAccount(
-    const BlockMsg& blk, const HeaderMsg& hdr, const CreateAccountMsg& msg)
+CreateAccountResponse PrimaryListener::handle(const BlockMsg& blk,
+                                              const HeaderMsg& hdr,
+                                              const CreateAccountMsg& msg)
+{
+  // TODO:
+  storage.create<Account>(msg.user.to_string(), msg.pk);
+
+  return {};
+}
+
+CreateTokenResponse PrimaryListener::handle(const BlockMsg& blk,
+                                            const HeaderMsg& hdr,
+                                            const CreateTokenMsg& msg)
 {
   // TODO
   return {};
 }
 
-CreateTokenResponse PrimaryListener::handleCreateToken(
-    const BlockMsg& blk, const HeaderMsg& hdr, const CreateTokenMsg& msg)
+MintTokenResponse PrimaryListener::handle(const BlockMsg& blk,
+                                          const HeaderMsg& hdr,
+                                          const MintTokenMsg& msg)
 {
   // TODO
   return {};
 }
 
-MintTokenResponse PrimaryListener::handleMintToken(const BlockMsg& blk,
-                                                   const HeaderMsg& hdr,
-                                                   const MintTokenMsg& msg)
+TransferTokenResponse PrimaryListener::handle(const BlockMsg& blk,
+                                              const HeaderMsg& hdr,
+                                              const TransferTokenMsg& msg)
 {
   // TODO
   return {};
 }
 
-TransferTokenResponse PrimaryListener::handleTransferToken(
-    const BlockMsg& blk, const HeaderMsg& hdr, const TransferTokenMsg& msg)
+BuyTokenResponse PrimaryListener::handle(const BlockMsg& blk,
+                                         const HeaderMsg& hdr,
+                                         const BuyTokenMsg& msg)
 {
   // TODO
   return {};
 }
 
-BuyTokenResponse PrimaryListener::handleBuyToken(const BlockMsg& blk,
-                                                 const HeaderMsg& hdr,
-                                                 const BuyTokenMsg& msg)
-{
-  // TODO
-  return {};
-}
-
-SellTokenResponse PrimaryListener::handleSellToken(const BlockMsg& blk,
-                                                   const HeaderMsg& hdr,
-                                                   const SellTokenMsg& msg)
+SellTokenResponse PrimaryListener::handle(const BlockMsg& blk,
+                                          const HeaderMsg& hdr,
+                                          const SellTokenMsg& msg)
 {
   // TODO
   return {};

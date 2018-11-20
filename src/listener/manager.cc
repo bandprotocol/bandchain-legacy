@@ -54,6 +54,18 @@ void ListenerManager::loadStates()
     listener->load();
 }
 
+void ListenerManager::initChain(gsl::span<const byte> raw)
+{
+  GenesisMsg genesis;
+  // TODO
+
+  if (primary)
+    primary->init(genesis);
+
+  for (auto& listener : listeners)
+    listener->init(genesis);
+}
+
 void ListenerManager::beginBlock(uint64_t timestamp, const Address& proposer)
 {
   block.timestamp = timestamp;
@@ -90,7 +102,7 @@ void ListenerManager::applyTransaction(gsl::span<const byte> raw,
 #define HANDLE_APPLY_CASE(R, _, MSG)                                           \
   case +MsgType::MSG: {                                                        \
     auto msg = buf.read<BAND_MACRO_MSG(MSG)>();                                \
-    auto res = primary ? primary->BAND_MACRO_HANDLE(MSG)(block, hdr, msg)      \
+    auto res = primary ? primary->process(block, hdr, msg)                     \
                        : Buffer(rawResult).read<BAND_MACRO_RESPONSE(MSG)>();   \
     for (auto& listener : listeners) {                                         \
       listener->BAND_MACRO_HANDLE(MSG)(block, hdr, msg, res);                  \

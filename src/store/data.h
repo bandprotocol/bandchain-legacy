@@ -17,97 +17,121 @@
 
 #pragma once
 
+#include <enum/enum.h>
 #include <nonstd/optional.hpp>
 
 #include "inc/essential.h"
-#include "store/contract.h"
-#include "store/global.h"
+#include "store/storage.h"
+#include "util/buffer.h"
 
-ENUM(CacheStatus, uint16_t, Unchanged = 0, Changed = 1, Erased = 2)
+/// Shorthand marcro to define data field inside of contract.
+#define DATA(TYPE, NAME) Data<TYPE> NAME{storage, key + "/" + #NAME};
 
+/// The status of data inside the wrapper. Data will be flushed to database
+/// following this status.
+ENUM(DataCacheStatus, uint8_t, Unchanged, Changed, Erased)
+
+/// Data is a wrapper for any data type on top of a key-value storage layer.
+/// It is responsible for loading data from the underlying store, saving changes
+/// and flushing the change to the store on destruction.
 template <typename T>
 class Data
 {
 public:
-  Data(const Hash& _key)
-      : key(_key)
-      , status(CacheStatus::Unchanged)
+  /// Create this data wrapper based on the given key and the storage reference.
+  Data(Storage& _storage, const std::string& _key)
+      : storage(_storage)
+      , key(_key)
   {
   }
 
+  /// On destruction, flush all changes made to this wrapper into the persistent
+  /// key-value storage.
+  ~Data()
+  {
+    if (!storage.shouldFlush())
+      return;
+
+    switch (status) {
+      case +DataCacheStatus::Unchanged:
+        break;
+      case +DataCacheStatus::Changed:
+        storage.put(key, Buffer::serialize<T>(*cache));
+        break;
+      case +DataCacheStatus::Erased:
+        storage.del(key);
+        break;
+    }
+  }
+
+  /// Copy and move don't make much sense here and can lead to weird bugs.
+  /// Better to just disable them both.
   Data(const Data& data) = delete;
   Data(Data&& data) = delete;
 
-  ~Data()
-  {
-    if (Global::get().flush) {
-      if (status == CacheStatus::Erased) {
-        Global::get().m_ctx->store.del(key);
-      } else if (status == CacheStatus::Changed)
-        Global::get().m_ctx->store.put(key, Buffer::serialize<T>(*cache));
-    }
-  }
-
+  /// Operator+ returns the underlying data inside this wrapper. The wrapper
+  /// will need to fetch data from the storage if it's not available.
   T operator+() const
   {
-    if (status == CacheStatus::Erased)
-      throw Error("Object has erased.");
+    if (status == DataCacheStatus::Erased)
+      throw Error("Data::operator+: cannot access deleted object");
 
-    if (cache) {
+    if (cache)
       return *cache;
-    } else {
-      auto result = Global::get().m_ctx->store.get(key);
-      if (result) {
-        cache = Buffer::deserialize<T>(*result);
-      } else {
-        if constexpr (!std::is_enum_v<T>) {
-          cache = T{};
-        } else {
-          throw Error("Cannot create default constructor");
-        }
-      }
+
+    nonstd::optional<std::string> result = storage.get(key);
+
+    if (result) {
+      cache = Buffer::deserialize<T>(*result);
       return *cache;
     }
+
+    if constexpr (!std::is_enum_v<T>) {
+      cache = T{};
+      return *cache;
+    }
+
+    throw Error("Data::operator+: construct object without default ctor");
   }
 
-  // void operator=(T value)
-  // {
-  //   cache = value;
-  //   status = CacheStatus::Changed;
-  // }
+  /// Check if the data actually has the underlying value backed in storage.
+  bool exist()
+  {
+    if (status == DataCacheStatus::Erased)
+      return false;
 
+    if (cache)
+      return true;
+
+    return storage.get(key).has_value();
+  }
+
+  /// Update the value. Note that it does not actually make the change into the
+  /// store until the flush occurs.
   void operator=(const T& value)
   {
     cache = value;
-    status = CacheStatus::Changed;
+    status = DataCacheStatus::Changed;
   }
 
+  /// Mark the value as erased. Similar to operator=, this is not reflect in the
+  /// storage until data destruction.
   void erase()
   {
     cache = nonstd::nullopt;
-    status = CacheStatus::Erased;
-  }
-
-  bool exist()
-  {
-    if (status == CacheStatus::Erased)
-      return false;
-
-    if (cache) {
-      return true;
-    } else {
-      auto result = Global::get().m_ctx->store.get(key);
-      if (result) {
-        cache = Buffer::deserialize<T>(*result);
-        return true;
-      } else {
-        return false;
-      }
-    }
+    status = DataCacheStatus::Erased;
   }
 
 private:
-  const Hash key;
-  CacheStatus status = CacheStatus::Unchanged;
-  mutable nonstd::optional<T> cache{};
+  /// Reference to the storage layer.
+  Storage& storage;
+
+  /// The key to which this wrapper use to access data.
+  const std::string key;
+
+  /// The status of the cache below.
+  DataCacheStatus status = DataCacheStatus::Unchanged;
+
+  /// The cache value. This will be flushed once this wrapper is destroyed.
+  mutable nonstd::optional<T> cache;
 };

@@ -17,8 +17,11 @@
 
 #include "listener/logging.h"
 #include "listener/manager.h"
+#include "listener/primary.h"
 #include "net/server.h"
 #include "net/tmapp.h"
+#include "store/storage.h"
+#include "store/storage_map.h"
 
 class BandLoggingApplication : public TendermintApplication
 {
@@ -46,6 +49,7 @@ public:
   void init(const std::vector<std::pair<VerifyKey, uint64_t>>& _validators,
             const std::string& init_state) final
   {
+    NOCOMMIT_LOG("INIT STATE IS {}", init_state);
   }
 
   std::string query(const std::string& path, const std::string& data) final
@@ -53,7 +57,10 @@ public:
     return "";
   }
 
-  void check(const std::string& msg_raw) final {}
+  void check(const std::string& msg_raw) final
+  {
+    manager.checkTransaction(gsl::as_bytes(gsl::make_span(msg_raw)));
+  }
 
   std::string apply(const std::string& msg_raw) final
   {
@@ -82,6 +89,9 @@ int main(int argc, char* argv[])
   boost::asio::io_service service;
 
   ListenerManager manager;
+  StorageMap storage;
+
+  manager.setPrimary(std::make_unique<PrimaryListener>(storage));
   manager.addListener(std::make_unique<LoggingListener>());
 
   BandLoggingApplication app(manager);
