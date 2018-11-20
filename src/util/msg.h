@@ -142,13 +142,15 @@ NO_RESPONSE(TransferToken)
 RESPONSE(
     /// BuyToken Response contains the number of base tokens that was spent
     /// in the process.
-    BuyToken,          //<
-    (uint256_t, spent) //< The amount of base tokens spent
+    BuyToken,
+    (Ident, baseToken), //< Base token
+    (uint256_t, spent)  //< The amount of base tokens spent
 )
 
 RESPONSE(
     /// SellToken Response contains the number of base tokens the sender
     /// received after completing the sell-back.
     SellToken,
+    (Ident, baseToken),   //< Base token
     (uint256_t, received) //< The amount of base tokens received
 )
