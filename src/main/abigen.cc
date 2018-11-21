@@ -18,10 +18,32 @@
 #include <iostream>
 
 #include "inc/essential.h"
-#include "store/contract.h"
+#include "util/json.h"
+#include "util/msg.h"
 
 int main()
 {
-  std::cout << Contract::get_abi_interface().dump(4) << std::endl;
+  json interface;
+
+#define ADD_TOP_LEVEL_INTERFACE(MSG)                                           \
+  interface[BOOST_PP_STRINGIZE(MSG)] = MSG::interface();
+
+  ADD_TOP_LEVEL_INTERFACE(GenesisMsg)
+  ADD_TOP_LEVEL_INTERFACE(BlockMsg)
+  ADD_TOP_LEVEL_INTERFACE(HeaderMsg)
+#undef ADD_TOP_LEVEL_INTERFACE
+
+#define ADD_TX_INTERFACE(R, _, TX)                                             \
+  {                                                                            \
+    json txInterface;                                                          \
+    txInterface["Input"] = BAND_MACRO_MSG(TX)::interface();                    \
+    txInterface["Output"] = BAND_MACRO_RESPONSE(TX)::interface();              \
+    interface[BOOST_PP_STRINGIZE(TX)] = txInterface;                           \
+  }
+
+  BAND_MACRO_MESSAGE_FOR_EACH(ADD_TX_INTERFACE)
+#undef ADD_TX_INTERFACE
+
+  std::cout << interface.dump(2) << std::endl;
   return 0;
 }

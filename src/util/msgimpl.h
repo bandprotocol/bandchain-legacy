@@ -27,6 +27,7 @@
 #include "inc/essential.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
+#include "util/json.h"
 
 #define BAND_MACRO_STRUCT_DECL(R, _, TYPE)                                     \
   BOOST_PP_TUPLE_ELEM(0, TYPE) BOOST_PP_TUPLE_ELEM(1, TYPE){};
@@ -40,6 +41,10 @@
 #define BAND_MACRO_STRUCT_TO_STRING(R, RET, TYPE)                              \
   RET += " {} = {},"_format(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(1, TYPE)),  \
                             BOOST_PP_TUPLE_ELEM(1, TYPE));
+
+#define BAND_MACRO_STRUCT_ABI(R, RET, TYPE)                                    \
+  RET.push_back(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(1, TYPE)) + ":"s +      \
+                TypeID<BOOST_PP_TUPLE_ELEM(0, TYPE)>::name);
 
 #define BAND_STRUCT_DECL(NAME, SEQ)                                            \
   struct NAME {                                                                \
@@ -74,6 +79,12 @@
       ret += " }";                                                             \
       return ret;                                                              \
     }                                                                          \
+    static json interface()                                                    \
+    {                                                                          \
+      json ret = json::array();                                                \
+      BOOST_PP_SEQ_FOR_EACH(BAND_MACRO_STRUCT_ABI, ret, SEQ)                   \
+      return ret;                                                              \
+    }                                                                          \
   };
 
 #define BAND_EMPTY_STRUCT_DECL(NAME)                                           \
@@ -89,6 +100,10 @@
     std::string to_string() const                                              \
     {                                                                          \
       return "{{ {} }}"_format(BOOST_PP_STRINGIZE(NAME));                      \
+    }                                                                          \
+    static json interface()                                                    \
+    {                                                                          \
+      return json::array();                                                    \
     }                                                                          \
   };
 

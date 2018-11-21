@@ -19,9 +19,10 @@
 
 #include "inc/essential.h"
 #include "util/buffer.h"
+#include "util/typeid.h"
 
 // enum telling string is case sensitive or not.
-enum class StringCase {
+enum class StringCase : uint8_t {
   Sensitive,
   InSensitive,
 };
@@ -72,5 +73,6 @@ private:
   std::string rawdata{};
 };
 
-using Ident = String<20, StringCase::InSensitive>; //< 20-length string
-                                                   // human-readable identitifer
+using Ident = String<20, StringCase::InSensitive>; //< 20-char readable ident
+
+TYPEID(Ident)

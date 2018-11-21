@@ -22,6 +22,7 @@
 
 #include "inc/essential.h"
 #include "util/buffer.h"
+#include "util/typeid.h"
 
 /// Bytes is a stack-only data structure that encapsulates an array of raw
 /// bytes. The structure is templated over the size of the container and
@@ -84,6 +85,10 @@ using VerifyKey = Bytes<32>; //< Ed25519 verify key
 using PublicKey = Bytes<32>; //< Ed25519 public key
 using SecretKey = Bytes<64>; //< Ed25519 secret key
 using Signature = Bytes<64>; //< Ed25519 signature
+
+TYPEID(Address)
+TYPEID(Hash)
+TYPEID(Signature)
 
 namespace std
 {
