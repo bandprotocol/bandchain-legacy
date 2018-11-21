@@ -34,7 +34,7 @@ public:
   /// Load the current state of this listener. May involve block height now.
   void load() final {}
 
-  /// Begin a new block. TStart transaction to write in database and ensure if
+  /// Begin a new block. Start transaction to write in database and ensure if
   /// program down, tx(s) in this block will revert and not appear in database.
   void begin(const BlockMsg& blk) final;
 

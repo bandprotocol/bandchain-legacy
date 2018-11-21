@@ -42,7 +42,9 @@
         MintToken,                                                             \
         TransferToken,                                                         \
         BuyToken,                                                              \
-        SellToken                                                              \
+        SellToken,                                                             \
+        AddWikiEdge,                                                           \
+        RemoveWikiEdge                                                         \
   )
 // clang-format on
 
@@ -140,6 +142,24 @@ MESSAGE(
     (uint256_t, value) //< The amount of tokens to sell
 )
 
+MESSAGE(
+    /// AddWikiEdge Message allows anyone to add new edge to graph database. The
+    /// transaction would get rejected if edge already existed in database.
+    AddWikiEdge,
+    (NodeID, subject),   //< Subject of new relation
+    (NodeID, predicate), //< Describe what is relation
+    (NodeID, object)     //< Object of new relation
+)
+
+MESSAGE(
+    /// RemoveWikiEdge Message allows anyone to delete existed edge in graph
+    /// database. The transaction would get rejected if edge does not exist.
+    RemoveWikiEdge,
+    (NodeID, subject),   //< Subject of new relation
+    (NodeID, predicate), //< Describe what is relation
+    (NodeID, object)     //< Object of new relation
+)
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Responses //////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -163,3 +183,6 @@ RESPONSE(
     (Ident, baseToken),   //< Base token
     (uint256_t, received) //< The amount of base tokens received
 )
+
+NO_RESPONSE(AddWikiEdge)
+NO_RESPONSE(RemoveWikiEdge)

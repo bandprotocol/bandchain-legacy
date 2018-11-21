@@ -76,3 +76,8 @@ private:
 using Ident = String<20, StringCase::InSensitive>; //< 20-char readable ident
 
 TYPEID(Ident)
+
+using NodeID =
+    String<128, StringCase::Sensitive>; //< 128-length string represent node in
+                                        // graph database
+TYPEID(NodeID)

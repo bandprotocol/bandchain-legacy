@@ -126,3 +126,19 @@ SellTokenResponse PrimaryListener::handle(const BlockMsg& blk,
       .received = received,
   };
 }
+
+AddWikiEdgeResponse PrimaryListener::handle(const BlockMsg& blk,
+                                            const HeaderMsg& hdr,
+                                            const AddWikiEdgeMsg& msg)
+{
+  // TODO
+  return {};
+}
+
+RemoveWikiEdgeResponse PrimaryListener::handle(const BlockMsg& blk,
+                                               const HeaderMsg& hdr,
+                                               const RemoveWikiEdgeMsg& msg)
+{
+  // TODO
+  return {};
+}

@@ -54,3 +54,4 @@ void String<MAX_LENGTH, CASE>::validate()
 }
 
 template class String<20, StringCase::InSensitive>;
+template class String<128, StringCase::Sensitive>;
