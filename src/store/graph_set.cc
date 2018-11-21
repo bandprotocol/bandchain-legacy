@@ -22,12 +22,7 @@ void GraphStoreSet::add_edge(const std::string& subject,
                              const std::string& object,
                              const std::string& label)
 {
-  Edge edge{subject, predicate, object, label};
-  auto [it, ok] = edges.insert(edge);
-  (void)it;
-  if (!ok) {
-    throw Error("Edge has already existed");
-  }
+  edges.insert({subject, predicate, object, label});
 }
 
 void GraphStoreSet::delete_edge(const std::string& subject,
@@ -35,8 +30,5 @@ void GraphStoreSet::delete_edge(const std::string& subject,
                                 const std::string& object,
                                 const std::string& label)
 {
-  Edge edge{subject, predicate, object, label};
-  if (!edges.erase(edge)) {
-    throw Error("Edge doesn't exist");
-  }
+  edges.erase({subject, predicate, object, label});
 }

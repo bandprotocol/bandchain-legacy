@@ -22,7 +22,8 @@
 using boost::asio::ip::tcp;
 
 GraphStoreCayley::GraphStoreCayley(boost::asio::io_service& _service,
-                                   const std::string& _hostname, uint16_t _port)
+                                   const std::string& _hostname,
+                                   uint16_t _port)
     : hostname(_hostname)
     , port(_port)
     , service(_service)
@@ -63,7 +64,6 @@ std::string GraphStoreCayley::create_body_msg(const std::string& subject,
 void GraphStoreCayley::send_request_and_get_response(const std::string& path,
                                                      const std::string& data)
 {
-  json result_json;
   try {
     tcp::resolver resolver(service);
     tcp::resolver::query query(hostname, std::to_string(port));
@@ -116,16 +116,7 @@ void GraphStoreCayley::send_request_and_get_response(const std::string& path,
     std::string result;
     std::getline(response_stream, result);
 
-    result_json = json::parse(result);
-
   } catch (std::exception& e) {
     throw Failure(e.what());
-  }
-
-  auto it = result_json.find("result");
-  if (it == result_json.end()) {
-    it = result_json.find("error");
-    std::string err_msg = *it;
-    throw Error(err_msg);
   }
 }

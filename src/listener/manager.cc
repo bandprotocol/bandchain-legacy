@@ -19,6 +19,7 @@
 
 #include "crypto/sha256.h"
 #include "util/buffer.h"
+#include "util/json.h"
 #include "util/msg.h"
 
 namespace
@@ -44,6 +45,25 @@ parseHeader(gsl::span<const byte> raw)
   return {hdr, raw.last(dataSize), buf};
 }
 } // namespace
+
+std::string ListenerManager::abi()
+{
+  json interface;
+
+#define ADD_TX_INTERFACE(R, _, TX)                                             \
+  {                                                                            \
+    json txInterface;                                                          \
+    txInterface["Input"] = BAND_MACRO_MSG(TX)::interface();                    \
+    txInterface["Output"] = BAND_MACRO_RESPONSE(TX)::interface();              \
+    txInterface["ID"] = (+MsgType::TX)._to_integral();                         \
+    interface[BOOST_PP_STRINGIZE(TX)] = txInterface;                           \
+  }
+
+  BAND_MACRO_MESSAGE_FOR_EACH(ADD_TX_INTERFACE)
+#undef ADD_TX_INTERFACE
+
+  return interface.dump();
+}
 
 void ListenerManager::loadStates()
 {

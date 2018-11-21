@@ -25,14 +25,6 @@ int main()
 {
   json interface;
 
-#define ADD_TOP_LEVEL_INTERFACE(MSG)                                           \
-  interface[BOOST_PP_STRINGIZE(MSG)] = MSG::interface();
-
-  ADD_TOP_LEVEL_INTERFACE(GenesisMsg)
-  ADD_TOP_LEVEL_INTERFACE(BlockMsg)
-  ADD_TOP_LEVEL_INTERFACE(HeaderMsg)
-#undef ADD_TOP_LEVEL_INTERFACE
-
 #define ADD_TX_INTERFACE(R, _, TX)                                             \
   {                                                                            \
     json txInterface;                                                          \

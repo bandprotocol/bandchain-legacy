@@ -55,7 +55,7 @@ public:
 
   std::string query(const std::string& path, const std::string& data) final
   {
-    throw Error("bandlog::query: not supported");
+    return ListenerManager::abi();
   }
 
   void check(const std::string& msg_raw) final

@@ -43,6 +43,11 @@ struct ValidatorUpdate {
 class ListenerManager
 {
 public:
+  /// Return stringified json representing the blockchain message interface.
+  /// External clients are expected to call this to learn the messaging format.
+  static std::string abi();
+
+public:
   /// Load the states of all the listeners. This must be called after all
   /// listeners are added and before the consensus system starts.
   void loadStates();

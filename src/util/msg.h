@@ -143,8 +143,7 @@ MESSAGE(
 )
 
 MESSAGE(
-    /// AddWikiEdge Message allows anyone to add new edge to graph database. The
-    /// transaction would get rejected if edge already existed in database.
+    /// AddWikiEdge Message allows anyone to add new edge to graph database.
     AddWikiEdge,
     (NodeID, subject),   //< Subject of new relation
     (NodeID, predicate), //< Describe what is relation
@@ -153,7 +152,7 @@ MESSAGE(
 
 MESSAGE(
     /// RemoveWikiEdge Message allows anyone to delete existed edge in graph
-    /// database. The transaction would get rejected if edge does not exist.
+    /// database.
     RemoveWikiEdge,
     (NodeID, subject),   //< Subject of new relation
     (NodeID, predicate), //< Describe what is relation
