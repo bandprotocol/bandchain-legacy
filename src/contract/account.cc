@@ -27,8 +27,8 @@ void Account::init(const PublicKey& _publicKey)
 
 void Account::setNonce(uint64_t _nonce)
 {
-  if (_nonce != +nonce + 1)
-    throw Error("Account::setNonce: invalid nonce {} != {} + 1", _nonce,
+  if (_nonce <= +nonce)
+    throw Error("Account::setNonce: nonce is too small {} <= {}", _nonce,
                 +nonce);
   nonce = _nonce;
 }
