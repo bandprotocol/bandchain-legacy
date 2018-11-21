@@ -17,11 +17,9 @@
 
 #include "storage_map.h"
 
-#include "crypto/sha256.h"
-
 nonstd::optional<std::string> StorageMap::get(const std::string& key) const
 {
-  if (auto it = data.find(key); it != data.end())
+  if (auto it = currentCache->find(key); it != currentCache->end())
     return it->second;
 
   return nonstd::nullopt;
@@ -29,10 +27,26 @@ nonstd::optional<std::string> StorageMap::get(const std::string& key) const
 
 void StorageMap::put(const std::string& key, const std::string& val)
 {
-  data[key] = val;
+  currentCache->operator[](key) = val;
 }
 
 void StorageMap::del(const std::string& key)
 {
-  data.erase(key);
+  currentCache->erase(key);
+}
+
+void StorageMap::commit()
+{
+  checkCache = applyCache;
+  currentCache = nullptr;
+}
+
+void StorageMap::switchToCheck()
+{
+  currentCache = &checkCache;
+}
+
+void StorageMap::switchToApply()
+{
+  currentCache = &applyCache;
 }

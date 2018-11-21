@@ -22,6 +22,7 @@
 void Account::init(const PublicKey& _publicKey)
 {
   publicKey = _publicKey;
+  nonce = 0;
 }
 
 void Account::setNonce(uint64_t _nonce)

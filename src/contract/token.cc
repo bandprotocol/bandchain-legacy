@@ -17,14 +17,19 @@
 
 #include "token.h"
 
-void Token::init(const Ident& _baseTokenIdent, const Curve& _curveData)
+void Token::init(const Ident& _baseIdent, const Curve& _curveData)
 {
   // Verify that base token contract exists.
-  storage.load<Token>(_baseToken.to_string());
+  storage.load<Token>(_baseIdent);
 
   curveData = _curveData;
-  baseTokenIdent = _baseTokenIdent;
+  baseIdent = _baseIdent;
   currentSupply = 0;
+}
+
+Ident Token::base() const
+{
+  return +baseIdent;
 }
 
 void Token::mint(const Ident& receiver, const uint256_t& value)
@@ -39,28 +44,34 @@ void Token::transfer(const Ident& src, const Ident& dst, const uint256_t& value)
   balances[dst] = +balances[dst] + value;
 }
 
-void Token::buy(const Ident& buyer, const uint256_t& value)
+uint256_t Token::buy(const Ident& buyer, const uint256_t& value)
 {
   Curve curve = +curveData;
-  auto& baseToken = storage.load<Token>(+baseTokenIdent);
+  auto& baseToken = storage.load<Token>(+baseIdent);
 
-  uint256_t buyPrice =
+  uint256_t buyTokens =
       curve.apply(+currentSupply + value) - curve.apply(+currentSupply);
 
-  baseToken.balances[buyer] = baseToken.balances[buyer] - value;
+  baseToken.balances[buyer] = +baseToken.balances[buyer] - buyTokens;
+  balances[buyer] = +balances[buyer] + value;
+
   currentSupply = +currentSupply + value;
+  return buyTokens;
 }
 
-void Token::sell(const Ident& seller, const uint256_t& value)
+uint256_t Token::sell(const Ident& seller, const uint256_t& value)
 {
   Curve curve = +curveData;
-  auto& baseToken = storage.load<Token>(+baseTokenIdent);
+  auto& baseToken = storage.load<Token>(+baseIdent);
 
-  uint256_t buyPrice =
+  uint256_t sellTokens =
       curve.apply(+currentSupply) - curve.apply(+currentSupply - value);
 
-  baseToken.balances[seller] = baseToken.balances[seller] + value;
+  baseToken.balances[seller] = +baseToken.balances[seller] + sellTokens;
+  balances[seller] = +balances[seller] + value;
+
   currentSupply = +currentSupply - value;
+  return sellTokens;
 }
 
 // void Token::mint(uint256_t value)

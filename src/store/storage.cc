@@ -34,6 +34,7 @@ void Storage::flush()
 
   isFlushing = true;
   cache.clear();
+  commit();
 }
 
 bool Storage::shouldFlush() const

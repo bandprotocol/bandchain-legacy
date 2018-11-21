@@ -23,13 +23,12 @@
 #include "inc/essential.h"
 
 /// Shorthand marcro to define data mapping field inside of contract.
-#define DATAMAP(KEY, VAL, NAME)                                                \
-  DataMap<KEY, VAL> NAME{storage, key + "/" + #NAME + "/"};
+#define DATAMAP(VAL, NAME) DataMap<VAL> NAME{storage, key + "/" + #NAME + "/"};
 
 /// DataMap is a wrapper over a key-value like lookup interface. It does not
 /// maintain any data on its own, but rather facilitate key-generation for the
 /// underlying data. Note that this means DataMap does not support iteration.
-template <typename Key, typename Value>
+template <typename Value>
 class DataMap
 {
 public:
@@ -48,14 +47,17 @@ public:
   /// Operation[] returns the reference to the underlying mapping. The caller
   /// can use it however they won't. DataMap ensures that the created mapping
   /// won't get destroyed until this DataMap is destroyed.
-  Value& operator[](const Key& key) const
+  template <typename T>
+  Value& operator[](const T& key) const
   {
-    if (auto it = cache.find(key); it != cache.end())
+    const std::string keyString = key.to_string();
+
+    if (auto it = cache.find(keyString); it != cache.end())
       return it->second;
 
     return cache
-        .emplace(std::piecewise_construct, std::forward_as_tuple(key),
-                 std::forward_as_tuple(storage, baseKey + key.to_string()))
+        .emplace(std::piecewise_construct, std::forward_as_tuple(keyString),
+                 std::forward_as_tuple(storage, baseKey + keyString))
         .first->second;
   }
 
@@ -68,5 +70,5 @@ private:
 
   /// The map to keep track of 'active' data values. Storing it in the map means
   /// their destructors won't get called until this DataMap is destructed.
-  mutable std::unordered_map<Key, Value> cache;
+  mutable std::unordered_map<std::string, Value> cache;
 };

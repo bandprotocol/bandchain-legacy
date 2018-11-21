@@ -68,6 +68,10 @@ public:
   /// Return the prettified string representation of this curve
   std::string to_string() const;
 
+public:
+  /// Return a newly created linear curve.
+  static Curve linear();
+
 private:
   std::unique_ptr<Eq> equation; //< The underlying equation
 };

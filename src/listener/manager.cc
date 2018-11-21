@@ -58,6 +58,8 @@ void ListenerManager::initChain(gsl::span<const byte> raw)
 {
   GenesisMsg genesis;
   // TODO
+  genesis.account = "BandGod"s;
+  genesis.token = "Band"s;
 
   if (primary)
     primary->init(genesis);
@@ -88,8 +90,8 @@ void ListenerManager::checkTransaction(gsl::span<const byte> raw)
   primary->validateTransaction(PrimaryMode::Check, hdr, data);
 }
 
-void ListenerManager::applyTransaction(gsl::span<const byte> raw,
-                                       gsl::span<const byte> rawResult)
+std::string ListenerManager::applyTransaction(gsl::span<const byte> raw,
+                                              gsl::span<const byte> rawResult)
 {
   auto [hdr, data, buf] = parseHeader(raw);
   auto msgType = buf.read<MsgType>();
@@ -98,12 +100,16 @@ void ListenerManager::applyTransaction(gsl::span<const byte> raw,
     primary->validateTransaction(PrimaryMode::Apply, hdr, data);
   }
 
+  // String to store the result of applying this transaction.
+  std::string result;
+
   switch (msgType) {
 #define HANDLE_APPLY_CASE(R, _, MSG)                                           \
   case +MsgType::MSG: {                                                        \
     auto msg = buf.read<BAND_MACRO_MSG(MSG)>();                                \
     auto res = primary ? primary->process(block, hdr, msg)                     \
                        : Buffer(rawResult).read<BAND_MACRO_RESPONSE(MSG)>();   \
+    result = Buffer::serialize(res);                                           \
     for (auto& listener : listeners) {                                         \
       listener->BAND_MACRO_HANDLE(MSG)(block, hdr, msg, res);                  \
     }                                                                          \
@@ -113,6 +119,8 @@ void ListenerManager::applyTransaction(gsl::span<const byte> raw,
     BAND_MACRO_MESSAGE_FOR_EACH(HANDLE_APPLY_CASE)
 #undef HANDLE_APPLY_CASE
   }
+
+  return result;
 }
 
 std::vector<ValidatorUpdate> ListenerManager::endBlock()

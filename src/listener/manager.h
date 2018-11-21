@@ -58,9 +58,10 @@ public:
   void checkTransaction(gsl::span<const byte> raw);
 
   /// Notify the listeners to apply the given transaction message. Optionally
-  /// take the result span if running in historical mode.
-  void applyTransaction(gsl::span<const byte> raw,
-                        gsl::span<const byte> rawResult = {});
+  /// take the result span if running in historical mode. Return the result of
+  /// applying the transaction.
+  std::string applyTransaction(gsl::span<const byte> raw,
+                               gsl::span<const byte> rawResult = {});
 
   /// Notify the primary listener to end the current block and return the
   /// validator set update. Fail if called when the primary listener does not

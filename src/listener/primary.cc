@@ -19,6 +19,7 @@
 
 #include "contract/account.h"
 #include "contract/token.h"
+#include "util/equation.h"
 
 PrimaryListener::PrimaryListener(Storage& _storage)
     : storage(_storage)
@@ -33,12 +34,11 @@ void PrimaryListener::load()
 void PrimaryListener::init(const GenesisMsg& genesis)
 {
   storage.switchToApply();
-
-  // Set up the genesis account. Owner of this account can use it to create more
-  // accounts to this blockchain later.
-  storage.create<Account>(genesis.account.to_string(), genesis.publicKey);
-
-  storage.commit();
+  // Genesis account. This account can use it to create more accounts laer.
+  storage.create<Account>(genesis.account, genesis.publicKey);
+  // Genesis token. This token is native to Band and is used to reward people.
+  storage.create<Token>(genesis.token, genesis.token, Curve::linear());
+  storage.flush();
 }
 
 void PrimaryListener::begin(const BlockMsg& blk)
@@ -48,7 +48,7 @@ void PrimaryListener::begin(const BlockMsg& blk)
 
 void PrimaryListener::commit(const BlockMsg& blk)
 {
-  storage.commit();
+  storage.flush();
 }
 
 void PrimaryListener::validateTransaction(PrimaryMode mode,
@@ -64,8 +64,8 @@ void PrimaryListener::validateTransaction(PrimaryMode mode,
       break;
   }
 
-  auto& account = storage.load<Account>(hdr.user.to_string());
-  account.verifySignature(data, hdr.sig);
+  auto& account = storage.load<Account>(hdr.user);
+  // account.verifySignature(data, hdr.sig);
   account.setNonce(hdr.nonce);
 }
 
@@ -73,9 +73,7 @@ CreateAccountResponse PrimaryListener::handle(const BlockMsg& blk,
                                               const HeaderMsg& hdr,
                                               const CreateAccountMsg& msg)
 {
-  // TODO:
-  storage.create<Account>(msg.user.to_string(), msg.pk);
-
+  storage.create<Account>(msg.user, msg.pk);
   return {};
 }
 
@@ -83,7 +81,7 @@ CreateTokenResponse PrimaryListener::handle(const BlockMsg& blk,
                                             const HeaderMsg& hdr,
                                             const CreateTokenMsg& msg)
 {
-  // TODO
+  storage.create<Token>(msg.createdToken, msg.baseToken, msg.curve);
   return {};
 }
 
@@ -91,7 +89,8 @@ MintTokenResponse PrimaryListener::handle(const BlockMsg& blk,
                                           const HeaderMsg& hdr,
                                           const MintTokenMsg& msg)
 {
-  // TODO
+  auto& token = storage.load<Token>(msg.token);
+  token.mint(hdr.user, msg.value);
   return {};
 }
 
@@ -99,7 +98,8 @@ TransferTokenResponse PrimaryListener::handle(const BlockMsg& blk,
                                               const HeaderMsg& hdr,
                                               const TransferTokenMsg& msg)
 {
-  // TODO
+  auto& token = storage.load<Token>(msg.token);
+  token.transfer(hdr.user, msg.dest, msg.value);
   return {};
 }
 
@@ -107,14 +107,22 @@ BuyTokenResponse PrimaryListener::handle(const BlockMsg& blk,
                                          const HeaderMsg& hdr,
                                          const BuyTokenMsg& msg)
 {
-  // TODO
-  return {};
+  auto& token = storage.load<Token>(msg.token);
+  uint256_t spent = token.buy(hdr.user, msg.value);
+  return {
+      .baseToken = token.base(),
+      .spent = spent,
+  };
 }
 
 SellTokenResponse PrimaryListener::handle(const BlockMsg& blk,
                                           const HeaderMsg& hdr,
                                           const SellTokenMsg& msg)
 {
-  // TODO
-  return {};
+  auto& token = storage.load<Token>(msg.token);
+  uint256_t received = token.sell(hdr.user, msg.value);
+  return {
+      .baseToken = token.base(),
+      .received = received,
+  };
 }

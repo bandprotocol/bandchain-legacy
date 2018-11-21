@@ -22,28 +22,26 @@
 
 #include "store/storage.h"
 
+/// StorageMap is a simple interface for store key-value data backed by
+/// std::unordered_map. Obviously, this is not persistent and will be purged
+/// after the program dies.
 class StorageMap : public Storage
 {
 public:
-  ///
   nonstd::optional<std::string> get(const std::string& key) const final;
-
-  ///
   void put(const std::string& key, const std::string& val) final;
-
-  ///
   void del(const std::string& key) final;
-
-  ///
-  void commit() final {}
-
-  ///
-  void switchToCheck() final {}
-
-  ///
-  void switchToApply() final {}
+  void commit() final;
+  void switchToCheck() final;
+  void switchToApply() final;
 
 public:
-  ///
-  std::unordered_map<std::string, std::string> data;
+  /// Two different maps for each of the modes. Note that checkCache will be a
+  /// copy of applyCache everytime commit is called.
+  std::unordered_map<std::string, std::string> checkCache;
+  std::unordered_map<std::string, std::string> applyCache;
+
+  /// Pointer to the current cache database, following the most recent switch
+  /// call.
+  std::unordered_map<std::string, std::string>* currentCache = nullptr;
 };

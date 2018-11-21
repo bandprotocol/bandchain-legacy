@@ -22,6 +22,7 @@
 #include "net/tmapp.h"
 #include "store/storage.h"
 #include "store/storage_map.h"
+#include "util/cli.h"
 
 class BandLoggingApplication : public TendermintApplication
 {
@@ -49,12 +50,12 @@ public:
   void init(const std::vector<std::pair<VerifyKey, uint64_t>>& _validators,
             const std::string& init_state) final
   {
-    NOCOMMIT_LOG("INIT STATE IS {}", init_state);
+    manager.initChain(gsl::as_bytes(gsl::make_span(init_state)));
   }
 
   std::string query(const std::string& path, const std::string& data) final
   {
-    return "";
+    throw Error("bandlog::query: not supported");
   }
 
   void check(const std::string& msg_raw) final
@@ -64,8 +65,7 @@ public:
 
   std::string apply(const std::string& msg_raw) final
   {
-    manager.applyTransaction(gsl::as_bytes(gsl::make_span(msg_raw)));
-    return "";
+    return manager.applyTransaction(gsl::as_bytes(gsl::make_span(msg_raw)));
   }
 
   void begin_block(uint64_t block_time, const Address& block_proposer) final
@@ -75,10 +75,14 @@ public:
 
   std::vector<std::pair<VerifyKey, uint64_t>> end_block() final
   {
+    manager.endBlock();
     return {};
   }
 
-  void commit_block() final {}
+  void commit_block() final
+  {
+    manager.commitBlock();
+  }
 
 private:
   ListenerManager& manager;
@@ -86,6 +90,7 @@ private:
 
 int main(int argc, char* argv[])
 {
+  Cmd cmd("Band ACBI application", argc, argv);
   boost::asio::io_service service;
 
   ListenerManager manager;

@@ -21,8 +21,8 @@
 #include "store/contract.h"
 #include "store/data.h"
 #include "store/data_map.h"
-#include "util/bytes.h"
 #include "util/equation.h"
+#include "util/string.h"
 
 // Token contract encapsulates the management of tokens in Band blockchain. Each
 // token contract keeps track of its token internal information, including
@@ -36,18 +36,32 @@ public:
   /// All token keys must begin with "t/" namespace.
   static constexpr char KeyPrefix[] = "t/";
 
+  /// Initialize account information. To be called right after the creation.
   void init(const Ident& baseToken, const Curve& curve);
+
+  /// Return the identification of its base token.
+  Ident base() const;
+
+  /// Mint new tokens for amount equal to value to recevier.
   void mint(const Ident& receiver, const uint256_t& value);
+
+  /// Transfer value tokens from source to destination.
   void transfer(const Ident& src, const Ident& dst, const uint256_t& value);
-  void buy(const Ident& buyer, const uint256_t& value);
-  void sell(const Ident& seller, const uint256_t& value);
+
+  /// Buy this tokens for the buyer, deducting their base tokens amount. Return
+  /// the amount of base tokens that get deducted.
+  uint256_t buy(const Ident& buyer, const uint256_t& value);
+
+  /// Sell this tokens for the seller and returns the amount of base tokens that
+  /// they receive.
+  uint256_t sell(const Ident& seller, const uint256_t& value);
 
 private:
   DATA(Curve, curveData)
-  DATA(Ident, baseTokenIdent)
+  DATA(Ident, baseIdent)
   DATA(uint256_t, currentSupply)
 
-  DATAMAP(Ident, Data<uint256_t>, balances)
+  DATAMAP(Data<uint256_t>, balances)
 };
 
 // {

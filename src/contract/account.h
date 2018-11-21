@@ -21,6 +21,7 @@
 #include "store/contract.h"
 #include "store/data.h"
 #include "util/bytes.h"
+#include "util/string.h"
 
 /// Account contract encapsulates the information stored for each of the account
 /// on Band blockchain. It is responsible for verifying public/private key pair

@@ -44,6 +44,11 @@ public:
   String& operator=(const String& _string) = default;
   String& operator=(String&& _string) = default;
 
+  bool empty() const
+  {
+    return rawdata.empty();
+  }
+
   std::string to_string() const;
 
   friend Buffer& operator<<(Buffer& buf, const String& data)
@@ -56,11 +61,6 @@ public:
     buf >> data.rawdata;
     data.validate();
     return buf;
-  }
-
-  bool empty() const
-  {
-    return rawdata.empty();
   }
 
 private:

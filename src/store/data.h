@@ -55,12 +55,16 @@ public:
     switch (status) {
       case +DataCacheStatus::Unchanged:
         break;
-      case +DataCacheStatus::Changed:
+      case +DataCacheStatus::Changed: {
+        DEBUG(log, "PUT {} -> {}", key, *cache);
         storage.put(key, Buffer::serialize<T>(*cache));
         break;
-      case +DataCacheStatus::Erased:
+      }
+      case +DataCacheStatus::Erased: {
+        DEBUG(log, "DEL {}", key);
         storage.del(key);
         break;
+      }
     }
   }
 
@@ -134,4 +138,7 @@ private:
 
   /// The cache value. This will be flushed once this wrapper is destroyed.
   mutable nonstd::optional<T> cache;
+
+  /// Static logger for this class.
+  static inline auto log = logger::get("data");
 };

@@ -29,9 +29,7 @@ uint256_t pow(const uint256_t& l, const uint256_t& r)
 }
 } // namespace
 
-Curve::Curve()
-{
-}
+Curve::Curve() {}
 
 Curve::Curve(const Curve& curve)
     : equation(curve.equation->clone())
@@ -43,9 +41,7 @@ Curve::Curve(std::unique_ptr<Eq> _equation)
 {
 }
 
-Curve::~Curve()
-{
-}
+Curve::~Curve() {}
 
 Curve& Curve::operator=(const Curve& curve)
 {
@@ -67,6 +63,11 @@ std::string Curve::to_string() const
     return "[NULL_CURVE]";
 
   return equation->to_string();
+}
+
+Curve Curve::linear()
+{
+  return Curve(std::make_unique<EqVar>());
 }
 
 Buffer& operator<<(Buffer& buf, const Curve& curve)
