@@ -147,7 +147,8 @@ MESSAGE(
     AddWikiEdge,
     (NodeID, subject),   //< Subject of new relation
     (NodeID, predicate), //< Describe what is relation
-    (NodeID, object)     //< Object of new relation
+    (NodeID, object),    //< Object of new relation
+    (NodeID, label)      //< Relation label
 )
 
 MESSAGE(
@@ -156,7 +157,8 @@ MESSAGE(
     RemoveWikiEdge,
     (NodeID, subject),   //< Subject of new relation
     (NodeID, predicate), //< Describe what is relation
-    (NodeID, object)     //< Object of new relation
+    (NodeID, object),    //< Object of new relation
+    (NodeID, label)      //< Relation label
 )
 
 ////////////////////////////////////////////////////////////////////////////////

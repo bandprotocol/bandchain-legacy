@@ -32,7 +32,7 @@ void CayleyListener::handleAddWikiEdge(const BlockMsg& blk,
                                        const AddWikiEdgeResponse& res)
 {
   graph.add_edge(msg.subject.to_string(), msg.predicate.to_string(),
-                 msg.object.to_string(), "");
+                 msg.object.to_string(), msg.label.to_string());
 }
 
 void CayleyListener::handleRemoveWikiEdge(const BlockMsg& blk,
@@ -41,5 +41,5 @@ void CayleyListener::handleRemoveWikiEdge(const BlockMsg& blk,
                                           const RemoveWikiEdgeResponse& res)
 {
   graph.delete_edge(msg.subject.to_string(), msg.predicate.to_string(),
-                    msg.object.to_string(), "");
+                    msg.object.to_string(), msg.label.to_string());
 }
