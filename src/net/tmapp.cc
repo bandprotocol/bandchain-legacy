@@ -50,7 +50,8 @@ bool read_ahead(Buffer& buf, int& value)
 void TendermintApplication::do_info(const RequestInfo& req, ResponseInfo& res)
 {
   if (req.version() != get_tm_version()) {
-    throw Failure("Invalid Version");
+    throw Failure("Invalid Tendermint version {}. Expect {}", req.version(),
+                  get_tm_version());
   }
   res.set_data(get_name());
   res.set_version(get_version());
