@@ -18,196 +18,216 @@
 #include <cxxtest/TestSuite.h>
 
 #include "inc/essential.h"
-#include "store/context.h"
+#include "store/contract.h"
 #include "store/graph_set.h"
 #include "store/set.h"
 #include "store/storage_map.h"
 #include "util/buffer.h"
+#include "util/string.h"
+
+class TestContract final : public Contract
+{
+public:
+  using Contract::Contract;
+
+  static constexpr char KeyPrefix[] = "test/";
+
+  void init() {}
+  SET(uint16_t, s)
+};
 
 class SetTest : public CxxTest::TestSuite
 {
 public:
   void testInsetAndEraseSet()
   {
-    std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
-    Context ctx(*store, *graph);
-    Hash set_key = Hash::rand();
-    Global::get().m_ctx = &ctx;
+    StorageMap storage;
+    storage.switchToApply();
+    storage.create<TestContract>(Ident{"set"});
+    {
+      storage.switchToApply();
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
+      setContract.s.insert(5);
+      setContract.s.insert(uint16_t(72));
+      storage.flush();
+    }
+    {
+      storage.switchToApply();
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
 
-    {
-      Set<uint16_t> s{set_key};
-      s.insert(5);
-      s.insert(uint16_t(72));
-      Global::get().flush = true;
+      TS_ASSERT_EQUALS(2, setContract.s.size());
+      TS_ASSERT_EQUALS(72, setContract.s.get_max());
     }
     {
-      Set<uint16_t> s{set_key};
-      TS_ASSERT_EQUALS(2, s.size());
-
-      TS_ASSERT_EQUALS(72, s.get_max());
-    }
-
-    {
-      Set<uint16_t> s{set_key};
-      s.insert(uint16_t(36));
+      storage.switchToApply();
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
+      setContract.s.insert(uint16_t(36));
+      storage.flush();
     }
     {
-      Set<uint16_t> s{set_key};
-      s.erase(uint16_t(72));
+      storage.switchToApply();
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
+      setContract.s.erase(uint16_t(72));
+      storage.flush();
       // NOCOMMIT_LOG("================================");
       // s.pre_order(1);
       // NOCOMMIT_LOG("================================");
     }
     {
-      Set<uint16_t> s{set_key};
+      storage.switchToApply();
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
       // NOCOMMIT_LOG("================================");
       // s.pre_order(1);
       // NOCOMMIT_LOG("================================");
-      TS_ASSERT_EQUALS(36, s.get_max());
-      TS_ASSERT_EQUALS(2, s.size());
-      TS_ASSERT_EQUALS(false, s.insert(uint16_t(5)));
-      TS_ASSERT_EQUALS(2, s.size());
+      TS_ASSERT_EQUALS(36, setContract.s.get_max());
+      TS_ASSERT_EQUALS(2, setContract.s.size());
+      TS_ASSERT_EQUALS(false, setContract.s.insert(uint16_t(5)));
+      TS_ASSERT_EQUALS(2, setContract.s.size());
     }
     {
-      Set<uint16_t> s{set_key};
+      storage.switchToApply();
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
       // NOCOMMIT_LOG("================================");
       // s.pre_order(1);
       // NOCOMMIT_LOG("================================");
-      s.insert(6);
-      s.insert(90);
-      s.insert(2);
-      s.insert(22);
-      s.insert(54);
-      s.insert(40);
-      s.erase(36);
-      s.insert(10);
-      s.erase(10);
+      setContract.s.insert(6);
+      setContract.s.insert(90);
+      setContract.s.insert(2);
+      setContract.s.insert(22);
+      setContract.s.insert(54);
+      setContract.s.insert(40);
+      setContract.s.erase(36);
+      setContract.s.insert(10);
+      setContract.s.erase(10);
+      // storage.flush();
       // NOCOMMIT_LOG("================================");
-      // s.pre_order(1);
+      // setContract.s.pre_order(1);
       // NOCOMMIT_LOG("================================");
     }
   }
 
   void testInsert()
   {
-    std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
-    Context ctx(*store, *graph);
-    Hash set_key = Hash::rand();
-    Global::get().m_ctx = &ctx;
+    StorageMap storage;
+    storage.switchToApply();
+    storage.create<TestContract>(Ident{"set"});
 
     {
-      Set<uint16_t> s{set_key};
-      s.insert(10);
-      s.insert(20);
-      s.insert(30);
-      Global::get().flush = true;
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
+      setContract.s.insert(10);
+      setContract.s.insert(20);
+      setContract.s.insert(30);
+      storage.flush();
     }
     {
-      Set<uint16_t> s{set_key};
+      storage.switchToApply();
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
       // s.insert(30);
       // NOCOMMIT_LOG("Before Add 40");
-      s.insert(40);
+      setContract.s.insert(40);
       // NOCOMMIT_LOG("After Add 40");
       // NOCOMMIT_LOG("================================");
       // s.pre_order(1);
       // NOCOMMIT_LOG("================================");
-      TS_ASSERT_EQUALS(4, s.size());
-      Global::get().flush = true;
+      TS_ASSERT_EQUALS(4, setContract.s.size());
+      storage.flush();
     }
 
     {
-      Set<uint16_t> s{set_key};
+      storage.switchToApply();
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
       // NOCOMMIT_LOG("================================");
       // s.pre_order(1);
       // NOCOMMIT_LOG("================================");
-      s.insert(50);
+      setContract.s.insert(50);
       // NOCOMMIT_LOG("================================");
       // s.pre_order(1);
       // NOCOMMIT_LOG("================================");
-      s.insert(25);
+      setContract.s.insert(25);
+      storage.flush();
     }
     {
-      Set<uint16_t> s{set_key};
+      storage.switchToApply();
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
       // s.pre_order(1);
-      TS_ASSERT_EQUALS(6, s.size());
+      TS_ASSERT_EQUALS(6, setContract.s.size());
     }
     {
     }
   }
   void testShapeOfTree()
   {
-    std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
-    Context ctx(*store, *graph);
-    Hash set_key = Hash::rand();
-    Global::get().m_ctx = &ctx;
+    StorageMap storage;
+    storage.switchToApply();
+    storage.create<TestContract>(Ident{"set"});
 
     {
-      Set<uint16_t> s{set_key};
-      s.insert(11);
-      s.insert(7);
-      s.insert(12);
-      s.insert(2);
-      s.insert(8);
-      s.insert(13);
-      s.insert(1);
-      s.insert(3);
-      s.insert(4);
-      Global::get().flush = true;
+      storage.switchToApply();
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
+      setContract.s.insert(11);
+      setContract.s.insert(7);
+      setContract.s.insert(12);
+      setContract.s.insert(2);
+      setContract.s.insert(8);
+      setContract.s.insert(13);
+      setContract.s.insert(1);
+      setContract.s.insert(3);
+      setContract.s.insert(4);
+      storage.flush();
     }
     // {
-    //   Set<uint16_t> s{set_key};
-    //   NOCOMMIT_LOG("====================================");
-    //   s.pre_order(1);
-    //   NOCOMMIT_LOG("====================================");
-    //   s.erase(12);
+    //   storage.switchToApply();
+    //   auto& setContract = storage.load<TestContract>(Ident{"set"});
+    //   // NOCOMMIT_LOG("====================================");
+    //   // setContract.s.pre_order(1);
+    //   // NOCOMMIT_LOG("====================================");
+    //   // setContract.s.erase(12);
     // }
     // {
-    //   Set<uint16_t> s{set_key};
-    //   NOCOMMIT_LOG("====================================");
-    //   s.pre_order(8);
-    //   NOCOMMIT_LOG("====================================");
+    //   storage.switchToApply();
+    //   auto& setContract = storage.load<TestContract>(Ident{"set"});
+    //   // NOCOMMIT_LOG("====================================");
+    //   // setContract.s.pre_order(8);
+    //   // NOCOMMIT_LOG("====================================");
     // }
   }
 
   void testIterator()
   {
-    std::unique_ptr<Storage> store = std::make_unique<StorageMap>();
-    std::unique_ptr<GraphStore> graph = std::make_unique<GraphStoreSet>();
-    Context ctx(*store, *graph);
-    Hash set_key = Hash::rand();
-    Global::get().m_ctx = &ctx;
+    StorageMap storage;
+    storage.switchToApply();
+    storage.create<TestContract>(Ident{"set"});
 
     {
-      Set<uint16_t> s{set_key};
-      s.insert(11);
-      s.insert(7);
-      s.insert(12);
-      s.insert(2);
-      s.insert(8);
-      s.insert(13);
-      s.insert(1);
-      s.insert(3);
-      s.insert(4);
-      Global::get().flush = true;
+      storage.switchToApply();
+      auto& setContract = storage.load<TestContract>(Ident{"set"});
+      setContract.s.insert(11);
+      setContract.s.insert(7);
+      setContract.s.insert(12);
+      setContract.s.insert(2);
+      setContract.s.insert(8);
+      setContract.s.insert(13);
+      setContract.s.insert(1);
+      setContract.s.insert(3);
+      setContract.s.insert(4);
+      storage.flush();
     }
-    {
-      // Set<uint16_t> s{set_key};
-      // auto it = s.begin();
-      // NOCOMMIT_LOG("Begin {}", *it);
-      // while (*it) {
-      //   NOCOMMIT_LOG("{}", *it);
-      //   ++it;
-      // }
+    // {
+    //   storage.switchToApply();
+    //   auto& setContract = storage.load<TestContract>(Ident{"set"});
+    //   auto it = setContract.s.begin();
+    //   NOCOMMIT_LOG("Begin {}", *it);
+    //   while (*it) {
+    //     NOCOMMIT_LOG("{}", *it);
+    //     ++it;
+    //   }
 
-      // auto it2 = s.last();
-      // NOCOMMIT_LOG("LAst {}", *it2);
-      // while (*it2) {
-      //   NOCOMMIT_LOG("{}", *it2);
-      //   --it2;
-      // }
-    }
+    //   auto it2 = setContract.s.last();
+    //   NOCOMMIT_LOG("LAst {}", *it2);
+    //   while (*it2) {
+    //     NOCOMMIT_LOG("{}", *it2);
+    //     --it2;
+    //   }
+    // }
   }
 };

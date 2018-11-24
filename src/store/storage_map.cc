@@ -19,19 +19,28 @@
 
 nonstd::optional<std::string> StorageMap::get(const std::string& key) const
 {
-  if (auto it = currentCache->find(key); it != currentCache->end())
+  if (currentCache == nullptr) {
+    throw Failure("<StorageMap::get> currentCache points to nullptr");
+  }
+  if (auto it = currentCache->find(key); it != currentCache->end()) {
     return it->second;
-
+  }
   return nonstd::nullopt;
 }
 
 void StorageMap::put(const std::string& key, const std::string& val)
 {
+  if (currentCache == nullptr) {
+    throw Failure("<StorageMap::put> currentCache points to nullptr");
+  }
   currentCache->operator[](key) = val;
 }
 
 void StorageMap::del(const std::string& key)
 {
+  if (currentCache == nullptr) {
+    throw Failure("<StorageMap::del> currentCache points to nullptr");
+  }
   currentCache->erase(key);
 }
 

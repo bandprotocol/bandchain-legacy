@@ -68,7 +68,7 @@ private:
   /// Return Tendermint version that this app supports.
   std::string get_tm_version()
   {
-    return "0.24.0-d419fffe";
+    return "0.25.0-d297f022";
   }
 
   void do_info(const RequestInfo&, ResponseInfo&);

@@ -88,6 +88,8 @@ private:
   ListenerManager& manager;
 };
 
+CmdArg<int> port("p,port", "the port on which tmapp connects", "26658");
+
 int main(int argc, char* argv[])
 {
   Cmd cmd("Band ACBI application", argc, argv);
@@ -101,7 +103,7 @@ int main(int argc, char* argv[])
 
   BandLoggingApplication app(manager);
 
-  Server server(service, app, 26658);
+  Server server(service, app, +port);
   server.start();
 
   service.run();
