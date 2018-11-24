@@ -40,6 +40,9 @@ void Token::mint(const Ident& receiver, const uint256_t& value)
 
 void Token::transfer(const Ident& src, const Ident& dst, const uint256_t& value)
 {
+  if (+balances[src] < value)
+    throw Error("Token::transfer: sender has insufficient tokens");
+
   balances[src] = +balances[src] - value;
   balances[dst] = +balances[dst] + value;
 }
@@ -51,6 +54,9 @@ uint256_t Token::buy(const Ident& buyer, const uint256_t& value)
 
   uint256_t buyTokens =
       curve.apply(+currentSupply + value) - curve.apply(+currentSupply);
+
+  if (+baseToken.balances[buyer] < buyTokens)
+    throw Error("Token::buy: buyer has insufficient base tokens");
 
   baseToken.balances[buyer] = +baseToken.balances[buyer] - buyTokens;
   balances[buyer] = +balances[buyer] + value;
@@ -64,11 +70,14 @@ uint256_t Token::sell(const Ident& seller, const uint256_t& value)
   Curve curve = +curveData;
   auto& baseToken = storage.load<Token>(+baseIdent);
 
+  if (+balances[seller] < value)
+    throw Error("Token::sell: seller has insufficient tokens");
+
   uint256_t sellTokens =
       curve.apply(+currentSupply) - curve.apply(+currentSupply - value);
 
+  balances[seller] = +balances[seller] - value;
   baseToken.balances[seller] = +baseToken.balances[seller] + sellTokens;
-  balances[seller] = +balances[seller] + value;
 
   currentSupply = +currentSupply - value;
   return sellTokens;

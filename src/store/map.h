@@ -46,9 +46,10 @@ public:
 
   /// Operation[] returns the reference to the underlying mapping. The caller
   /// can use it however they won't. DataMap ensures that the created mapping
-  /// won't get destroyed until this DataMap is destroyed.
+  /// won't get destroyed until this DataMap is destroyed. Both const and
+  /// non-const versions are provided.
   template <typename T>
-  Value& operator[](const T& key) const
+  const Value& operator[](const T& key) const
   {
     const std::string keyString = key.to_string();
 
@@ -59,6 +60,13 @@ public:
         .emplace(std::piecewise_construct, std::forward_as_tuple(keyString),
                  std::forward_as_tuple(storage, baseKey + keyString))
         .first->second;
+  }
+
+  template <typename T>
+  Value& operator[](const T& key)
+  {
+    return const_cast<Value&>(
+        static_cast<const DataMap*>(this)->operator[](key));
   }
 
 private:

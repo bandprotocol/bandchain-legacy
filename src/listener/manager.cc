@@ -90,6 +90,7 @@ void ListenerManager::initChain(gsl::span<const byte> raw)
 
 void ListenerManager::beginBlock(uint64_t timestamp, const Address& proposer)
 {
+  block = BlockMsg{};
   block.timestamp = timestamp;
   block.height += 1;
 

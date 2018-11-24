@@ -72,8 +72,9 @@ STRUCT(
     /// Block Message gives the summary of a block. Each block contains one
     /// or more transactions.
     BlockMsg,
-    (uint64_t, height),   //< The height of this block
-    (uint64_t, timestamp) //< The time of the block
+    (uint64_t, height),    //< The height of this block
+    (uint64_t, timestamp), //< The time of the block
+    (Address, proposer)    //< Block proposer
 )
 
 STRUCT(

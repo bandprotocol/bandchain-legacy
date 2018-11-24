@@ -20,7 +20,7 @@
 #include "inc/essential.h"
 #include "store/contract.h"
 #include "store/data.h"
-#include "store/data_map.h"
+#include "store/map.h"
 #include "util/equation.h"
 #include "util/string.h"
 
