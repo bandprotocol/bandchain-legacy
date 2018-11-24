@@ -42,8 +42,8 @@ public:
   class Iterator
   {
   public:
-    Iterator(uint64_t _current_nonce, const Set& _set)
-        : current_nonce(_current_nonce)
+    Iterator(uint64_t _currentNonce, const Set& _set)
+        : currentNonce(_currentNonce)
         , set(_set)
     {
     }
@@ -51,45 +51,45 @@ public:
     /// Operator * to get copy of value in node
     T operator*()
     {
-      if (current_nonce == 0)
+      if (currentNonce == 0)
         return T{};
-      return set.get_node(current_nonce).val;
+      return set.getNode(currentNonce).val;
     }
 
     /// Operator ++ move iterator to next element (sort by value).
     Iterator& operator++()
     {
-      if (current_nonce == 0)
+      if (currentNonce == 0)
         return *this;
-      const Node& node = set.get_node(current_nonce);
+      const Node& node = set.getNode(currentNonce);
       if (node.right == 0) {
-        uint64_t now = current_nonce;
+        uint64_t now = currentNonce;
 
         while (true) {
-          const Node& now_node = set.get_node(now);
-          uint64_t parent = now_node.parent;
+          const Node& nowNode = set.getNode(now);
+          uint64_t parent = nowNode.parent;
           if (parent == 0) {
-            current_nonce = 0;
+            currentNonce = 0;
             return *this;
           }
 
-          const Node& parent_node = set.get_node(parent);
-          if (parent_node.right == now) {
+          const Node& parentNode = set.getNode(parent);
+          if (parentNode.right == now) {
             now = parent;
           } else {
-            current_nonce = parent;
+            currentNonce = parent;
             return *this;
           }
         }
       } else {
         uint64_t now = node.right;
         while (true) {
-          const Node& now_node = set.get_node(now);
-          if (now_node.left == 0) {
-            current_nonce = now;
+          const Node& nowNode = set.getNode(now);
+          if (nowNode.left == 0) {
+            currentNonce = now;
             return *this;
           } else {
-            now = now_node.left;
+            now = nowNode.left;
           }
         }
       }
@@ -98,44 +98,44 @@ public:
     /// Operator -- move iterator to previous element (sort by value).
     Iterator& operator--()
     {
-      if (current_nonce == 0)
+      if (currentNonce == 0)
         return *this;
-      const Node& node = set.get_node(current_nonce);
+      const Node& node = set.getNode(currentNonce);
       if (node.left == 0) {
-        uint64_t now = current_nonce;
+        uint64_t now = currentNonce;
 
         while (true) {
-          const Node& now_node = set.get_node(now);
-          uint64_t parent = now_node.parent;
+          const Node& nowNode = set.getNode(now);
+          uint64_t parent = nowNode.parent;
           if (parent == 0) {
-            current_nonce = 0;
+            currentNonce = 0;
             return *this;
           }
 
-          const Node& parent_node = set.get_node(parent);
-          if (parent_node.left == now) {
+          const Node& parentNode = set.getNode(parent);
+          if (parentNode.left == now) {
             now = parent;
           } else {
-            current_nonce = parent;
+            currentNonce = parent;
             return *this;
           }
         }
       } else {
         uint64_t now = node.left;
         while (true) {
-          const Node& now_node = set.get_node(now);
-          if (now_node.right == 0) {
-            current_nonce = now;
+          const Node& nowNode = set.getNode(now);
+          if (nowNode.right == 0) {
+            currentNonce = now;
             return *this;
           } else {
-            now = now_node.right;
+            now = nowNode.right;
           }
         }
       }
     }
 
   private:
-    uint64_t current_nonce;
+    uint64_t currentNonce;
     const Set& set;
   };
 
@@ -150,11 +150,11 @@ public:
     auto result = storage.get(key + "details");
     if (result) {
       Buffer buf(gsl::as_bytes(gsl::make_span(*result)));
-      buf >> nonce_node >> nonce_root >> m_size;
+      buf >> nonceNode >> nonceRoot >> setSize;
     } else {
-      nonce_node = 0;
-      nonce_root = 0;
-      m_size = 0;
+      nonceNode = 0;
+      nonceRoot = 0;
+      setSize = 0;
     }
   }
 
@@ -163,7 +163,7 @@ public:
   {
     if (storage.shouldFlush()) {
       Buffer buf;
-      buf << nonce_node << nonce_root << m_size;
+      buf << nonceNode << nonceRoot << setSize;
       storage.put(key + "details", buf.to_raw_string());
       for (auto& [id, node] : cache) {
         if (node.status == SetCacheStatus::Changed) {
@@ -180,80 +180,80 @@ public:
   /// Insert new element to tree. If it has existed, return false.
   bool insert(const T& val)
   {
-    uint64_t before_insert_size = m_size;
-    nonce_root = insert_node(nonce_root, val);
-    return before_insert_size != m_size;
+    uint64_t beforeInsertSize = setSize;
+    nonceRoot = insertNode(nonceRoot, val);
+    return beforeInsertSize != setSize;
   }
 
   /// Erase element on tree. If it doesn't exist, return false.
   bool erase(const T& val)
   {
-    uint64_t before_insert_size = m_size;
-    nonce_root = delete_node(nonce_root, val);
-    return before_insert_size != m_size;
+    uint64_t beforeInsertSize = setSize;
+    nonceRoot = deleteNode(nonceRoot, val);
+    return beforeInsertSize != setSize;
     return 0;
   }
 
   /// Check val exist in tree. Return true if exist.
   bool contains(const T& val)
   {
-    uint64_t current_nonce_node = nonce_root;
+    uint64_t currentNonceNode = nonceRoot;
     while (true) {
-      if (current_nonce_node == 0)
+      if (currentNonceNode == 0)
         return false;
 
-      Node& current_node = get_node(current_nonce_node);
-      if (val == current_node.val) {
+      Node& currentNode = getNode(currentNonceNode);
+      if (val == currentNode.val) {
         return true;
       }
 
-      if (val < current_node.val) {
-        current_nonce_node = current_node.left;
+      if (val < currentNode.val) {
+        currentNonceNode = currentNode.left;
       } else {
-        current_nonce_node = current_node.right;
+        currentNonceNode = currentNode.right;
       }
     }
   }
 
   /// Get the max value on tree.
-  T get_max()
+  T maxValue()
   {
-    if (m_size == 0)
+    if (setSize == 0)
       return T{};
-    uint64_t current_nonce_node = nonce_root;
+    uint64_t currentNonceNode = nonceRoot;
     while (true) {
-      Node& current_node = get_node(current_nonce_node);
-      if (current_node.right == 0) {
-        return current_node.val;
+      Node& currentNode = getNode(currentNonceNode);
+      if (currentNode.right == 0) {
+        return currentNode.val;
       }
-      current_nonce_node = current_node.right;
+      currentNonceNode = currentNode.right;
     }
   }
 
   /// Get size of tree.
   uint64_t size() const
   {
-    return m_size;
+    return setSize;
   }
 
   /// Find element in tree return custom iterator to this val, otherwise return
   /// id = 0
   Iterator find(const T& val)
   {
-    uint64_t current_nonce_node = nonce_root;
+    uint64_t currentNonceNode = nonceRoot;
     while (true) {
-      if (current_nonce_node == 0)
+      if (currentNonceNode == 0)
         return Iterator(0, *this);
 
-      Node& current_node = get_node(current_nonce_node);
-      if (val == current_node.val) {
-        return Iterator(current_nonce_node, *this);
+      Node& currentNode = getNode(currentNonceNode);
+      if (val == currentNode.val) {
+        return Iterator(currentNonceNode, *this);
       }
 
-      if (val < current_node.val) {
-        current_nonce_node = current_node.left;
+      if (val < currentNode.val) {
+        currentNonceNode = currentNode.left;
       } else {
-        current_nonce_node = current_node.right;
+        currentNonceNode = currentNode.right;
       }
     }
   }
@@ -261,13 +261,13 @@ public:
   /// Return iterator that points to first element.
   Iterator begin()
   {
-    uint64_t current_nonce_node = nonce_root;
+    uint64_t currentNonceNode = nonceRoot;
     while (true) {
-      Node& current_node = get_node(current_nonce_node);
-      if (current_node.left) {
-        current_nonce_node = current_node.left;
+      Node& currentNode = getNode(currentNonceNode);
+      if (currentNode.left) {
+        currentNonceNode = currentNode.left;
       } else {
-        return Iterator(current_nonce_node, *this);
+        return Iterator(currentNonceNode, *this);
       }
     }
   }
@@ -275,13 +275,13 @@ public:
   // Return iterator that points to last element.
   Iterator last() const
   {
-    uint64_t current_nonce_node = nonce_root;
+    uint64_t currentNonceNode = nonceRoot;
     while (true) {
-      const Node& current_node = get_node(current_nonce_node);
-      if (current_node.right) {
-        current_nonce_node = current_node.right;
+      const Node& currentNode = getNode(currentNonceNode);
+      if (currentNode.right) {
+        currentNonceNode = currentNode.right;
       } else {
-        return Iterator(current_nonce_node, *this);
+        return Iterator(currentNonceNode, *this);
       }
     }
   }
@@ -290,276 +290,273 @@ private:
   struct Node;
 
   /// Return reference of Node struct.
-  const Node& get_node(uint64_t node_id) const
+  const Node& getNode(uint64_t nodeID) const
   {
-    if (auto it = cache.find(node_id); it != cache.end()) {
+    if (auto it = cache.find(nodeID); it != cache.end()) {
       return it->second;
     }
 
-    auto result = storage.get(key + std::to_string(node_id));
+    auto result = storage.get(key + std::to_string(nodeID));
     if (!result)
       throw Error("Node not found.");
-    return cache.emplace(node_id, Buffer::deserialize<Node>(*result))
+    return cache.emplace(nodeID, Buffer::deserialize<Node>(*result))
         .first->second;
   }
 
-  Node& get_node(uint64_t node_id)
+  Node& getNode(uint64_t nodeID)
   {
-    return const_cast<Node&>(static_cast<const Set*>(this)->get_node(node_id));
+    return const_cast<Node&>(static_cast<const Set*>(this)->getNode(nodeID));
   }
 
   /// Create new node save only value other attribute will be updated by other
   /// function.
-  uint64_t new_node(const T& val)
+  uint64_t newNode(const T& val)
   {
-    nonce_node++;
-    m_size++;
-    cache.emplace(nonce_node, Node{0, 0, 1, 0, val, SetCacheStatus::Changed});
-    return nonce_node;
+    nonceNode++;
+    setSize++;
+    cache.emplace(nonceNode, Node{0, 0, 1, 0, val, SetCacheStatus::Changed});
+    return nonceNode;
   }
 
   /// Get height of node
-  uint64_t get_height(uint64_t node_nonce)
+  uint64_t getHeight(uint64_t nodeNonce)
   {
-    if (node_nonce == 0)
+    if (nodeNonce == 0)
       return 0;
-    return get_node(node_nonce).height;
+    return getNode(nodeNonce).height;
   }
 
-  /// Return node_id of minimum node on subtree that have root_nonce as a root.
-  uint64_t min_value_node(uint64_t root_nonce)
+  /// Return nodeID of minimum node on subtree that have rootNonce as a root.
+  uint64_t minValueNode(uint64_t rootNonce)
   {
     while (true) {
-      Node& current_node = get_node(root_nonce);
-      if (current_node.left == 0)
-        return root_nonce;
-      root_nonce = current_node.left;
+      Node& currentNode = getNode(rootNonce);
+      if (currentNode.left == 0)
+        return rootNonce;
+      rootNonce = currentNode.left;
     }
   }
 
   /// Right rotate use in balancing process.
-  uint64_t right_rotate(uint64_t y)
+  uint64_t rightRotate(uint64_t y)
   {
-    Node& top_node = get_node(y);
-    uint64_t x = top_node.left;
-    Node& left_node = get_node(x);
+    Node& topNode = getNode(y);
+    uint64_t x = topNode.left;
+    Node& leftNode = getNode(x);
 
-    uint64_t T2 = left_node.right;
+    uint64_t T2 = leftNode.right;
 
-    top_node.left = T2;
-    left_node.right = y;
+    topNode.left = T2;
+    leftNode.right = y;
 
     // Update parent
-    uint64_t grandparent = top_node.parent;
-    left_node.parent = grandparent;
-    top_node.parent = x;
+    uint64_t grandparent = topNode.parent;
+    leftNode.parent = grandparent;
+    topNode.parent = x;
 
     if (T2 != 0) {
-      Node& tmp = get_node(T2);
+      Node& tmp = getNode(T2);
       tmp.parent = y;
       tmp.status = SetCacheStatus::Changed;
     }
 
-    top_node.height =
-        std::max(get_height(top_node.left), get_height(top_node.right)) + 1;
-    left_node.height =
-        std::max(get_height(left_node.left), get_height(left_node.right)) + 1;
+    topNode.height =
+        std::max(getHeight(topNode.left), getHeight(topNode.right)) + 1;
+    leftNode.height =
+        std::max(getHeight(leftNode.left), getHeight(leftNode.right)) + 1;
 
-    top_node.status = SetCacheStatus::Changed;
-    left_node.status = SetCacheStatus::Changed;
+    topNode.status = SetCacheStatus::Changed;
+    leftNode.status = SetCacheStatus::Changed;
 
     return x;
   }
 
   /// Left rotate use in balancing process.
-  uint64_t left_rotate(uint64_t x)
+  uint64_t leftRotate(uint64_t x)
   {
-    Node& top_node = get_node(x);
-    uint64_t y = top_node.right;
-    Node& right_node = get_node(y);
+    Node& topNode = getNode(x);
+    uint64_t y = topNode.right;
+    Node& rightNode = getNode(y);
 
-    uint64_t T2 = right_node.left;
+    uint64_t T2 = rightNode.left;
 
-    top_node.right = T2;
-    right_node.left = x;
+    topNode.right = T2;
+    rightNode.left = x;
 
     // Update parent
-    uint64_t grandparent = top_node.parent;
-    right_node.parent = grandparent;
-    top_node.parent = y;
+    uint64_t grandparent = topNode.parent;
+    rightNode.parent = grandparent;
+    topNode.parent = y;
 
     if (T2 != 0) {
-      Node& tmp = get_node(T2);
+      Node& tmp = getNode(T2);
       tmp.parent = x;
       tmp.status = SetCacheStatus::Changed;
     }
 
-    top_node.height =
-        std::max(get_height(top_node.left), get_height(top_node.right)) + 1;
-    right_node.height =
-        std::max(get_height(right_node.left), get_height(right_node.right)) + 1;
+    topNode.height =
+        std::max(getHeight(topNode.left), getHeight(topNode.right)) + 1;
+    rightNode.height =
+        std::max(getHeight(rightNode.left), getHeight(rightNode.right)) + 1;
 
-    top_node.status = SetCacheStatus::Changed;
-    right_node.status = SetCacheStatus::Changed;
+    topNode.status = SetCacheStatus::Changed;
+    rightNode.status = SetCacheStatus::Changed;
 
     return y;
   }
 
   /// Find difference of height between left and right subtree. Return true of
-  /// left_height >=right_height and return difference height in second member.
-  std::pair<bool, uint64_t> get_balance(uint64_t top_node_nonce)
+  /// leftHeight >= rightHeight and return difference height in second member.
+  std::pair<bool, uint64_t> getBalance(uint64_t topNodeNonce)
   {
-    if (top_node_nonce == 0)
+    if (topNodeNonce == 0)
       return {true, 0};
-    Node& node = get_node(top_node_nonce);
-    uint64_t left_height = get_height(node.left);
-    uint64_t right_height = get_height(node.right);
+    Node& node = getNode(topNodeNonce);
+    uint64_t leftHeight = getHeight(node.left);
+    uint64_t rightHeight = getHeight(node.right);
 
-    if (left_height >= right_height)
-      return {true, left_height - right_height};
+    if (leftHeight >= rightHeight)
+      return {true, leftHeight - rightHeight};
     else
-      return {false, right_height - left_height};
+      return {false, rightHeight - leftHeight};
   }
 
   /// Update parent to given child node.
-  void update_parent(uint64_t parent, uint64_t child)
+  void updateParent(uint64_t parent, uint64_t child)
   {
     if (child == 0)
       return;
-    Node& child_node = get_node(child);
-    child_node.parent = parent;
+    Node& childNode = getNode(child);
+    childNode.parent = parent;
   }
 
-  // Insert new value and return new root_nonce
-  uint64_t insert_node(uint64_t current_nonce, const T& val)
+  // Insert new value and return new rootNonce
+  uint64_t insertNode(uint64_t currentNonce, const T& val)
   {
-    if (current_nonce == 0) {
-      return new_node(val);
+    if (currentNonce == 0) {
+      return newNode(val);
     }
 
-    Node& current_node = get_node(current_nonce);
-    if (val < current_node.val) {
-      current_node.left = insert_node(current_node.left, val);
-      update_parent(current_nonce, current_node.left);
-    } else if (val > current_node.val) {
-      current_node.right = insert_node(current_node.right, val);
-      update_parent(current_nonce, current_node.right);
+    Node& currentNode = getNode(currentNonce);
+    if (val < currentNode.val) {
+      currentNode.left = insertNode(currentNode.left, val);
+      updateParent(currentNonce, currentNode.left);
+    } else if (val > currentNode.val) {
+      currentNode.right = insertNode(currentNode.right, val);
+      updateParent(currentNonce, currentNode.right);
     } else {
-      return current_nonce;
+      return currentNonce;
     }
 
-    current_node.height = 1 + std::max(get_height(current_node.left),
-                                       get_height(current_node.right));
-    current_node.status = SetCacheStatus::Changed;
+    currentNode.height =
+        1 + std::max(getHeight(currentNode.left), getHeight(currentNode.right));
+    currentNode.status = SetCacheStatus::Changed;
 
-    auto [heavy_left, height_diff] = get_balance(current_nonce);
+    auto [heavyLeft, heightDiff] = getBalance(currentNonce);
 
     // Left
-    if (heavy_left && height_diff > 1) {
-      Node& left_node = get_node(current_node.left);
+    if (heavyLeft && heightDiff > 1) {
+      Node& leftNode = getNode(currentNode.left);
       // Left Left Case
-      if (val < left_node.val) {
-        return right_rotate(current_nonce);
+      if (val < leftNode.val) {
+        return rightRotate(currentNonce);
       }
       // Left Right Case
-      else if (val > left_node.val) {
-        current_node.left = left_rotate(current_node.left);
-        return right_rotate(current_nonce);
+      else if (val > leftNode.val) {
+        currentNode.left = leftRotate(currentNode.left);
+        return rightRotate(currentNonce);
       }
     }
 
     // Right
-    if (!heavy_left && height_diff > 1) {
-      Node& right_node = get_node(current_node.right);
+    if (!heavyLeft && heightDiff > 1) {
+      Node& rightNode = getNode(currentNode.right);
       // Right Right Case
-      if (val > right_node.val) {
-        return left_rotate(current_nonce);
-      } else if (val < right_node.val) {
-        current_node.right = right_rotate(current_node.right);
-        return left_rotate(current_nonce);
+      if (val > rightNode.val) {
+        return leftRotate(currentNonce);
+      } else if (val < rightNode.val) {
+        currentNode.right = rightRotate(currentNode.right);
+        return leftRotate(currentNonce);
       }
     }
 
-    return current_nonce;
+    return currentNonce;
   }
 
-  // Delete node return new root_nonce
+  // Delete node return new rootNonce
 
-  uint64_t delete_node(uint64_t current_nonce, const T& val)
+  uint64_t deleteNode(uint64_t currentNonce, const T& val)
   {
-    if (current_nonce == 0)
+    if (currentNonce == 0)
       return 0;
 
-    Node& current_node = get_node(current_nonce);
-    if (val < current_node.val) {
-      current_node.left = delete_node(current_node.left, val);
-      update_parent(current_nonce, current_node.left);
-    } else if (val > current_node.val) {
-      current_node.right = delete_node(current_node.right, val);
-      update_parent(current_nonce, current_node.right);
+    Node& currentNode = getNode(currentNonce);
+    if (val < currentNode.val) {
+      currentNode.left = deleteNode(currentNode.left, val);
+      updateParent(currentNonce, currentNode.left);
+    } else if (val > currentNode.val) {
+      currentNode.right = deleteNode(currentNode.right, val);
+      updateParent(currentNonce, currentNode.right);
     } else {
-      if (current_node.left == 0 || current_node.right == 0) {
+      if (currentNode.left == 0 || currentNode.right == 0) {
         uint64_t child =
-            current_node.left ? current_node.left : current_node.right;
+            currentNode.left ? currentNode.left : currentNode.right;
         // No child case
-        uint64_t deleted_node_nonce;
+        uint64_t deletedNodeNonce;
         if (child == 0) {
-          deleted_node_nonce = current_nonce;
+          deletedNodeNonce = currentNonce;
         } else {
-          Node& child_node = get_node(child);
-          uint64_t old_parent = current_node.parent;
-          current_node = child_node;
-          current_node.parent = old_parent;
-          current_node.status = SetCacheStatus::Changed;
-          deleted_node_nonce = child;
+          Node& childNode = getNode(child);
+          uint64_t oldParent = currentNode.parent;
+          currentNode = childNode;
+          currentNode.parent = oldParent;
+          currentNode.status = SetCacheStatus::Changed;
+          deletedNodeNonce = child;
         }
 
         // Delete node
-        m_size--;
-        Node& delete_node = get_node(deleted_node_nonce);
-        delete_node.status = SetCacheStatus::Erased;
+        setSize--;
+        Node& deleteNode = getNode(deletedNodeNonce);
+        deleteNode.status = SetCacheStatus::Erased;
       } else {
-        Node& min_node = get_node(min_value_node(current_node.right));
+        Node& minNode = getNode(minValueNode(currentNode.right));
 
-        current_node.val = min_node.val;
-        current_node.right = delete_node(current_node.right, current_node.val);
+        currentNode.val = minNode.val;
+        currentNode.right = deleteNode(currentNode.right, currentNode.val);
       }
     }
 
-    if (current_node.status == SetCacheStatus::Erased)
+    if (currentNode.status == SetCacheStatus::Erased)
       return 0;
 
-    current_node.height = 1 + std::max(get_height(current_node.left),
-                                       get_height(current_node.right));
-    current_node.status = SetCacheStatus::Changed;
+    currentNode.height =
+        1 + std::max(getHeight(currentNode.left), getHeight(currentNode.right));
+    currentNode.status = SetCacheStatus::Changed;
 
     // Make tree balance
-    auto [heavy_left, height_diff] = get_balance(current_nonce);
+    auto [heavyLeft, heightDiff] = getBalance(currentNonce);
 
     // Left Left Case
-    if (heavy_left && height_diff > 1 && get_balance(current_node.left).first)
-      return right_rotate(current_nonce);
+    if (heavyLeft && heightDiff > 1 && getBalance(currentNode.left).first)
+      return rightRotate(currentNonce);
 
     // Left Right Case
-    if (heavy_left && height_diff > 1 &&
-        !get_balance(current_node.left).first) {
-      current_node.left = left_rotate(current_node.left);
-      return right_rotate(current_nonce);
+    if (heavyLeft && heightDiff > 1 && !getBalance(currentNode.left).first) {
+      currentNode.left = leftRotate(currentNode.left);
+      return rightRotate(currentNonce);
     }
 
     // Right Right Case
-    if (!heavy_left && height_diff > 1 &&
-        !get_balance(current_node.right).first)
-      return left_rotate(current_nonce);
+    if (!heavyLeft && heightDiff > 1 && !getBalance(currentNode.right).first)
+      return leftRotate(currentNonce);
 
     // Right Left Case
-    if (!heavy_left && height_diff > 1 &&
-        get_balance(current_node.right).first) {
-      current_node.right = right_rotate(current_node.right);
-      return left_rotate(current_nonce);
+    if (!heavyLeft && heightDiff > 1 && getBalance(currentNode.right).first) {
+      currentNode.right = rightRotate(currentNode.right);
+      return leftRotate(currentNonce);
     }
 
-    return current_nonce;
+    return currentNonce;
   }
 
 private:
@@ -593,9 +590,9 @@ private:
   const std::string key;
 
   /// Detail about avl-tree
-  uint64_t nonce_node;
-  uint64_t nonce_root;
-  uint64_t m_size;
+  uint64_t nonceNode;
+  uint64_t nonceRoot;
+  uint64_t setSize;
 
   /// The cache value containing changed/erased node in tree that need to
   /// save.

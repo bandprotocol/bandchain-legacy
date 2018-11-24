@@ -48,7 +48,7 @@ public:
       storage.switchToApply();
       auto& setContract = storage.load<TestContract>(Ident{"set"});
       setContract.s.insert(5);
-      setContract.s.insert(uint16_t(72));
+      setContract.s.insert(72);
       storage.flush();
     }
     {
@@ -56,18 +56,18 @@ public:
       auto& setContract = storage.load<TestContract>(Ident{"set"});
 
       TS_ASSERT_EQUALS(2, setContract.s.size());
-      TS_ASSERT_EQUALS(72, setContract.s.get_max());
+      TS_ASSERT_EQUALS(72, setContract.s.maxValue());
     }
     {
       storage.switchToApply();
       auto& setContract = storage.load<TestContract>(Ident{"set"});
-      setContract.s.insert(uint16_t(36));
+      setContract.s.insert(36);
       storage.flush();
     }
     {
       storage.switchToApply();
       auto& setContract = storage.load<TestContract>(Ident{"set"});
-      setContract.s.erase(uint16_t(72));
+      setContract.s.erase(72);
       storage.flush();
       // NOCOMMIT_LOG("================================");
       // s.pre_order(1);
@@ -79,9 +79,9 @@ public:
       // NOCOMMIT_LOG("================================");
       // s.pre_order(1);
       // NOCOMMIT_LOG("================================");
-      TS_ASSERT_EQUALS(36, setContract.s.get_max());
+      TS_ASSERT_EQUALS(36, setContract.s.maxValue());
       TS_ASSERT_EQUALS(2, setContract.s.size());
-      TS_ASSERT_EQUALS(false, setContract.s.insert(uint16_t(5)));
+      TS_ASSERT_EQUALS(false, setContract.s.insert(5));
       TS_ASSERT_EQUALS(2, setContract.s.size());
     }
     {
