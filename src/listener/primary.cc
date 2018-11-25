@@ -35,7 +35,7 @@ void PrimaryListener::init(const GenesisMsg& genesis)
 {
   storage.switchToApply();
   // Genesis account. This account can use it to create more accounts laer.
-  storage.create<Account>(genesis.account, genesis.publicKey);
+  storage.create<Account>(genesis.account, genesis.verifyKey);
   // Genesis token. This token is native to Band and is used to reward people.
   storage.create<Token>(genesis.token, genesis.token, Curve::linear());
   storage.flush();
@@ -73,7 +73,7 @@ CreateAccountResponse PrimaryListener::handle(const BlockMsg& blk,
                                               const HeaderMsg& hdr,
                                               const CreateAccountMsg& msg)
 {
-  storage.create<Account>(msg.user, msg.pk);
+  storage.create<Account>(msg.user, msg.vk);
   return {};
 }
 

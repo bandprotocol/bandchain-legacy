@@ -19,9 +19,9 @@
 
 #include "crypto/ed25519.h"
 
-void Account::init(const PublicKey& _publicKey)
+void Account::init(const VerifyKey& _verifyKey)
 {
-  publicKey = _publicKey;
+  verifyKey = _verifyKey;
   nonce = 0;
 }
 
@@ -36,6 +36,6 @@ void Account::setNonce(uint64_t _nonce)
 void Account::verifySignature(gsl::span<const byte> data,
                               const Signature& sig) const
 {
-  if (!ed25519_verify(sig, +publicKey, data))
+  if (!ed25519_verify(sig, +verifyKey, data))
     throw Error("Account::verifySignature: invalid transaction signature");
 }

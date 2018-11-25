@@ -64,7 +64,7 @@ STRUCT(
     /// Genesis Message is passed to the
     GenesisMsg,
     (Ident, account),       //< First user to hold all minted Band
-    (PublicKey, publicKey), //< Public key of the first account
+    (VerifyKey, verifyKey), //< Public key of the first account
     (Ident, token)          //< First token native to the blockchain
 )
 
@@ -95,7 +95,7 @@ MESSAGE(
     /// CreateAccount Message allows an existing account to create another
     /// account, given the necessary condition.
     CreateAccount,   //<
-    (PublicKey, pk), //< Ed25519 public key of the created account
+    (VerifyKey, vk), //< Ed25519 verify key of the created account
     (Ident, user)    //< Human-readable user identifier
 )
 

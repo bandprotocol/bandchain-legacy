@@ -28,10 +28,10 @@
 /// validator set update. The primary listener has total control over how
 /// this is implemented. See its implementation for more details.
 struct ValidatorUpdate {
-  /// The public key of the validator to update the voting power
-  PublicKey publicKey{};
+  /// The verify key of the validator to update the voting power
+  VerifyKey verifyKey{};
 
-  /// True if this publicKey is added to the set. False otherwise.
+  /// True if this verify key is added to the set. False otherwise.
   bool isAdd = false;
 };
 

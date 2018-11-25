@@ -82,7 +82,6 @@ private:
 using Address = Bytes<20>;   //< 20-Byte address
 using Hash = Bytes<32>;      //< SHA-256 hash value
 using VerifyKey = Bytes<32>; //< Ed25519 verify key
-using PublicKey = Bytes<32>; //< Ed25519 public key
 using SecretKey = Bytes<64>; //< Ed25519 secret key
 using Signature = Bytes<64>; //< Ed25519 signature
 
