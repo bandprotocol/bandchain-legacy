@@ -19,44 +19,46 @@
 
 #include <unordered_map>
 
-#include "crypto/sha256.h"
 #include "inc/essential.h"
-#include "store/global.h"
+#include "store/storage.h"
 #include "util/buffer.h"
 #include "util/bytes.h"
+
+/// Shorthand macro to define Vector field inside of contract.
+#define VECTOR(VAL, NAME) Vector<VAL> NAME{storage, key + "/" + #NAME + "/"};
 
 template <typename T>
 class Vector
 {
 public:
-  Vector(const Hash& _parent_hash)
-      : parent_hash(_parent_hash)
+  Vector(Storage& _storage, const std::string& _key)
+      : storage(_storage)
+      , baseKey(_key)
   {
-    auto result = Global::get().m_ctx->store.get(parent_hash);
+    auto result = storage.get(baseKey);
     if (result) {
-      m_size = Buffer::deserialize<uint256_t>(*result);
+      mSize = Buffer::deserialize<uint256_t>(*result);
     } else {
-      m_size = 0;
+      mSize = 0;
     }
   }
 
   ~Vector()
   {
-    if (Global::get().flush) {
-      if (is_destroyed) {
-        Global::get().m_ctx->store.del(parent_hash);
-        for (uint256_t i = 0; i < m_size; i++) {
-          Global::get().m_ctx->store.del(sha256(parent_hash, i));
+    if (storage.shouldFlush()) {
+      if (isDestroyed) {
+        DEBUG(log, "DELETE VECTOR {}", baseKey);
+        storage.del(baseKey);
+        for (uint256_t i = 0; i < mSize; i++) {
+          storage.del(baseKey + i.str());
         }
       } else {
-        Buffer buf;
-        Global::get().m_ctx->store.put(parent_hash,
-                                       Buffer::serialize<uint256_t>(m_size));
+        storage.put(baseKey, Buffer::serialize<uint256_t>(mSize));
 
         // Save every member in cache to storage.
         for (auto& [idx, value] : cache) {
-          Global::get().m_ctx->store.put(sha256(parent_hash, idx),
-                                         Buffer::serialize<T>(value));
+          storage.put(baseKey + idx.str(), Buffer::serialize<T>(value));
+          DEBUG(log, "PUT {}", baseKey + idx.str());
         }
       }
     }
@@ -64,55 +66,54 @@ public:
 
   T operator[](const uint256_t& idx) const
   {
-    if (is_destroyed) {
+    if (isDestroyed) {
       throw Error("Vector has been destroyed.");
     }
-    if (idx >= m_size) {
+    if (idx >= mSize) {
       throw Error("index out of range");
     }
     if (auto it = cache.find(idx); it != cache.end()) {
       return it->second;
     } else {
-      auto result = Global::get().m_ctx->store.get(sha256(parent_hash, idx));
+      auto result = storage.get(baseKey + idx.str());
       if (!result) {
         throw Failure("Value missing at index {}.", idx);
       }
-
       T value = Buffer::deserialize<T>(*result);
       return cache.emplace(idx, value).first->second;
     }
   }
 
-  void push_back(const T& value)
+  void pushBack(const T& value)
   {
-    if (is_destroyed) {
+    if (isDestroyed) {
       throw Error("Vector has been destroyed.");
     }
-    cache.emplace(m_size, value);
-    m_size++;
+    cache.emplace(mSize, value);
+    mSize++;
   }
 
   void destroy()
   {
-    is_destroyed = true;
+    isDestroyed = true;
   }
 
   uint256_t size() const
   {
-    return m_size;
+    return mSize;
   }
 
   T back() const
   {
-    if (m_size == 0)
+    if (mSize == 0)
       throw Error("Cannot get last element.");
-    return operator[](m_size - 1);
+    return operator[](mSize - 1);
   }
 
-  uint256_t lower_bound_index(const T& value) const
+  uint256_t lowerBoundIndex(const T& value) const
   {
     uint256_t st = 0;
-    uint256_t ed = m_size;
+    uint256_t ed = mSize;
     while (st < ed) {
       uint256_t mid = (st + ed) / 2;
       if (operator[](mid) >= value) {
@@ -125,8 +126,22 @@ public:
   }
 
 private:
-  const Hash parent_hash;
-  uint256_t m_size;
+  /// Reference to the storage layer.
+  Storage& storage;
+
+  /// The key to which this Vector use to access data.
+  const std::string baseKey;
+
+  /// Size of vector
+  uint256_t mSize;
+
+  /// The map to keep track of 'active' member in Vector. All member in cache
+  /// are saved when this Vector is deconstructed.
   mutable std::unordered_map<uint256_t, T> cache;
-  bool is_destroyed = false;
+
+  /// Boolean tells that Vector have been destroyed yet.
+  bool isDestroyed = false;
+
+  /// Static logger for this class.
+  static inline auto log = logger::get("vector");
 };

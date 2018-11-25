@@ -47,6 +47,12 @@ public:
     return result;
   }
 
+  void require(bool condition, const std::string& errorMsg)
+  {
+    if (!condition)
+      throw Error(errorMsg);
+  }
+
 protected:
   /// Reference to the storage layer.
   Storage& storage;

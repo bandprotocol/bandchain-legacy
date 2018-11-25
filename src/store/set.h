@@ -141,13 +141,13 @@ public:
 
 public:
   /// Create this data structure based on the given key and the storage
-  /// reference. Get details of this graph using key/details as key in storage.
+  /// reference. Get details of this graph using baseKey as key in storage.
   Set(Storage& _storage, const std::string& _key)
       : storage(_storage)
-      , key(_key)
+      , baseKey(_key)
   {
 
-    auto result = storage.get(key + "details");
+    auto result = storage.get(baseKey);
     if (result) {
       Buffer buf(gsl::as_bytes(gsl::make_span(*result)));
       buf >> nonceNode >> nonceRoot >> setSize;
@@ -164,14 +164,15 @@ public:
     if (storage.shouldFlush()) {
       Buffer buf;
       buf << nonceNode << nonceRoot << setSize;
-      storage.put(key + "details", buf.to_raw_string());
+      storage.put(baseKey, buf.to_raw_string());
       for (auto& [id, node] : cache) {
         if (node.status == SetCacheStatus::Changed) {
-          DEBUG(log, "PUT {} -> {}", key + std::to_string(id), node.val);
-          storage.put(key + std::to_string(id), Buffer::serialize<Node>(node));
+          DEBUG(log, "PUT {} -> {}", baseKey + std::to_string(id), node.val);
+          storage.put(baseKey + std::to_string(id),
+                      Buffer::serialize<Node>(node));
         } else if (node.status == SetCacheStatus::Erased) {
-          DEBUG(log, "DEL {}", key + std::to_string(id));
-          storage.del(key + std::to_string(id));
+          DEBUG(log, "DEL {}", baseKey + std::to_string(id));
+          storage.del(baseKey + std::to_string(id));
         }
       }
     }
@@ -296,7 +297,7 @@ private:
       return it->second;
     }
 
-    auto result = storage.get(key + std::to_string(nodeID));
+    auto result = storage.get(baseKey + std::to_string(nodeID));
     if (!result)
       throw Error("Node not found.");
     return cache.emplace(nodeID, Buffer::deserialize<Node>(*result))
@@ -587,7 +588,7 @@ private:
   Storage& storage;
 
   /// The key to which this set use to access data.
-  const std::string key;
+  const std::string baseKey;
 
   /// Detail about avl-tree
   uint64_t nonceNode;

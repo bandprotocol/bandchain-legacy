@@ -36,7 +36,7 @@ public:
   /// All token keys must begin with "t/" namespace.
   static constexpr char KeyPrefix[] = "t/";
 
-  /// Initialize account information. To be called right after the creation.
+  /// Initialize token information. To be called right after the creation.
   void init(const Ident& baseToken, const Curve& curve);
 
   /// Return the identification of its base token.
