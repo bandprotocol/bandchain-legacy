@@ -44,7 +44,7 @@
 
 #define BAND_MACRO_STRUCT_ABI(R, RET, TYPE)                                    \
   RET.push_back(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(1, TYPE)) + ":"s +      \
-                TypeID<BOOST_PP_TUPLE_ELEM(0, TYPE)>::name);
+                BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(0, TYPE)));
 
 #define BAND_STRUCT_DECL(NAME, SEQ)                                            \
   struct NAME {                                                                \

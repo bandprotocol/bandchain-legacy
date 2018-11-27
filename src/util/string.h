@@ -19,7 +19,6 @@
 
 #include "inc/essential.h"
 #include "util/buffer.h"
-#include "util/typeid.h"
 
 // enum telling string is case sensitive or not.
 enum class StringCase : uint8_t {
@@ -74,10 +73,6 @@ private:
 };
 
 using Ident = String<20, StringCase::InSensitive>; //< 20-char readable ident
-
-TYPEID(Ident)
-
 using NodeID =
     String<128, StringCase::Sensitive>; //< 128-length string represent node in
                                         // graph database
-TYPEID(NodeID)
